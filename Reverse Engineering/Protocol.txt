@@ -1,0 +1,37 @@
+Master Sends
+PID 18
+D1+D2 = ?
+D3 = Command. 
+  134 = rise   0x86
+  133 = lower  0x85
+  252 = idle   0xFC
+  135 = ? ?? fine move? 0x87
+  132 = ? ?? not sure. last command before idle.  0x84
+  196 = ?? BEFORE starting move.  0xC4
+
+
+  191 = INITIALIZE??
+
+
+2 Slaves respond
+PID 8 and 9
+D1+D2 = Height
+D3   2 = busy (fast adjust) 0x02
+     3 = busy (fine adjust response to 135?)?? 0x03
+     96 = idle  0x60
+     224 = used for the first time (powerup) position report
+
+
+Command	Dec	Hex	Bin
+Rise	134	86	10000110
+Lower	133	85	10000101
+Idle	252	FC	11111100
+
+
+---
+iNITIALIZE
+PID 18
+D0 246
+D1 255
+D2 191
+
