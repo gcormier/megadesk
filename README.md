@@ -11,10 +11,7 @@ Unfortunately the beeps aren't captured well in the video unless you turn up the
 
 ## Warnings
 * Plugging in any connectors backwards can probably damage your desk. Be very careful when working on your circuit.
-* The power supply is 24V. This can generate a decent amount of heat for the linear regulators. Make sure to use genuine parts, and check the heat output before putting it back inside the casing and attaching it to your wooden tabletop.
-
-## Parts
-If you want to create your own cable, the connector is a 4.2mm pitch (0.165"), AMP VAL-U-LOK by TE Coonectivity. This is available from DigiKey with part number A112430-ND or A112983-ND. I'm not sure on the difference between them to be honest. Don't forget the crimp pins - A30642-ND. Otherwise, the existing cable can be unsoldered from the board. Red is positive (24VDC), white is negative, blue is LIN.
+* The power supply is 24V, and raises higher when motors are in operation! (Between 35-37V) This can generate a decent amount of heat for the linear regulators. Make sure to use genuine parts, and check the heat output before putting it back inside the casing and attaching it to your wooden tabletop. Ensure to spec the main filtering capacitor appropriately.
 
 ## Atmega Fuses
 Don't forget to set fuses on your board for the appropriate oscillator.
@@ -33,7 +30,9 @@ PCB - ATTiny 841 - 8Mhz internal  `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
 
 ## Todo
 * Switching regulator might reduce heat slightly, but unsure if it can fit and keep the cost down versus linear regulator.
-* Look into acceleration/decelleration
 
 # BOM
 Coming soon.
+
+## Cable
+If you want to create your own cable, the connector is a 4.2mm pitch (0.165"), AMP VAL-U-LOK by TE Coonectivity. This is available from DigiKey with part number A112430-ND or A112983-ND. I'm not sure on the difference between them to be honest. Don't forget the crimp pins - A30642-ND. Otherwise, the existing cable can be unsoldered from the board. Red is positive (24VDC), white is negative, blue is LIN.
