@@ -1,5 +1,5 @@
-$csvInputFile = "C:\temp\up-down-downlimit-limit.csv"
-$csvOutputFile = "C:\temp\up-down-downlimit-limit-parsed.csv"
+$csvInputFile = "raise-to-limits.csv"
+$csvOutputFile = "raise-to-limits-analyse.csv"
 
 $out = @()
 

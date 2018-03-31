@@ -2,27 +2,45 @@
 #include "lin.h"
 #include "megadesk.h"
 
-
 // Standard arduino settings
-#define HYSTERESIS        20  // 20 seems ok
+#define HYSTERESIS            20  // 20 seems ok
 
-#define PIN_UP            0
-#define PIN_DOWN          1
-#define PIN_BEEP          3
-#define PIN_SERIAL        9
+#define PIN_UP                0
+#define PIN_DOWN              1
+#define PIN_BEEP              3
+#define PIN_SERIAL            9
 
-#define BEEP_DURATION     125
-#define BEEP_PAUSE        60
-#define BEEP_FREQ_LOW     2600
-#define BEEP_FREQ_HIGH    3000
-#define BEEP_FREQ_ACK     2000
+#define BEEP_DURATION         125
+#define BEEP_PAUSE            60
+#define BEEP_FREQ_LOW         2600
+#define BEEP_FREQ_HIGH        3000
+#define BEEP_FREQ_ACK         2000
 
-#define CLICK_TIMEOUT     400UL     // Timeout in MS.
-#define CLICK_LONG        900UL     // Long/hold minimum time in MS.
+#define CLICK_TIMEOUT         400UL     // Timeout in MS.
+#define CLICK_LONG            900UL     // Long/hold minimum time in MS.
 
-#define FINE_MOVEMENT_VALUE 100     // Based on protocol decoding
+#define FINE_MOVEMENT_VALUE   100     // Based on protocol decoding
 
-//////////////////
+// LIN commands/status
+#define LIN_CMD_IDLE          252
+#define LIN_CMD_RAISE         134
+#define LIN_CMD_LOWER         133
+#define LIN_CMD_FINE          135
+#define LIN_CMD_FINISH        132
+#define LIN_CMD_PREMOVE       196
+
+#define LIN_MOTOR_IDLE        96
+#define LIN_MOTOR_BUSY        2
+#define LIN_MOTOR_BUSY_FINE   3
+
+// Changing these might be a really bad idea. They are sourced from
+// decoding the OEM controller limits. If you really need a bit of extra travel
+// you can fiddle with SAFETY, it's an extra buffer of a few units.
+#define SAFETY                20
+#define DANGER_MAX_HEIGHT     6777 - HYSTERESIS - SAFETY
+#define DANGER_MIN_HEIGHT     162 + HYSTERESIS + SAFETY
+
+
 // Related to multi-touch
 bool button_pin_up, button_pin_down;
 bool goUp, goDown;
@@ -34,7 +52,7 @@ unsigned long firstPush = 0, lastPush = 0, pushLength = 0;
 
 Lin lin(Serial, PIN_SERIAL);
 
-int height = -1;
+int currentHeight = -1;
 int targetHeight = -1;
 unsigned long end, d;
 unsigned long t = 0;
@@ -46,19 +64,18 @@ State lastState = State::OFF;
 uint16_t enc_target;
 
 
-int up(bool pushed) {
+void up(bool pushed) {
   if (pushed)
     user_cmd = Command::UP;
   else
     user_cmd = Command::NONE;
 }
 
-int down(bool pushed) {
+void down(bool pushed) {
   if (pushed)
     user_cmd = Command::DOWN;
   else
     user_cmd = Command::NONE;
-
 }
 
 void ack()
@@ -145,15 +162,15 @@ void loop()
 
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
-  if (height > 5 && targetHeight == -1)
-    targetHeight = height;
+  if (currentHeight > 5 && targetHeight == -1)
+    targetHeight = currentHeight;
   
   if (waitingEvent)
   {
     if (pushCount > 0)
     {
       if (pushLong)
-        storeMemory(pushCount, height);
+        storeMemory(pushCount, currentHeight);
       else
       {
         targetHeight = getMemory(pushCount);
@@ -165,24 +182,24 @@ void loop()
   else if (goUp)
   {
     memoryMoving = false;
-    targetHeight = height + HYSTERESIS + 1;
+    targetHeight = currentHeight + HYSTERESIS + 1;
   }
   else if (goDown)
   {
     memoryMoving = false;
-    targetHeight = height - HYSTERESIS - 1;
+    targetHeight = currentHeight - HYSTERESIS - 1;
   }
   else if (!memoryMoving)
-    targetHeight = height;
+    targetHeight = currentHeight;
 
-  if (targetHeight > height && abs(targetHeight - height) > HYSTERESIS)
+  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT)
     up(true);
-  else if (targetHeight < height && abs(targetHeight - height) > HYSTERESIS)
+  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT)
     down(true);
   else
   {
     up(false);
-    targetHeight = height;
+    targetHeight = currentHeight;
     memoryMoving = false;
   }
 
@@ -200,19 +217,17 @@ void linBurst()
   uint8_t node_a[4] = { 0, 0, 0, 0 };
   uint8_t node_b[4] = { 0, 0, 0, 0 };
   uint8_t cmd[3] = { 0, 0, 0 };
-  uint8_t res = 0;
-
 
   // Send PID 17
   lin.send(17, empty, 3, 2);
   delay_until(5);
 
   // Recv from PID 09
-  res = lin.recv(9, node_b, 3, 2);
+  lin.recv(9, node_b, 3, 2);
   delay_until(5);
 
   // Recv from PID 08
-  res = lin.recv(8, node_a, 3, 2);
+  lin.recv(8, node_a, 3, 2);
   delay_until(5);
 
   
@@ -230,24 +245,24 @@ void linBurst()
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
   enc_target = enc_a;
-  height = enc_a;
+  currentHeight = enc_a;
 
   // Send PID 18
   switch (state) {
   case State::OFF:
-    cmd[2] = 252;
+    cmd[2] = LIN_CMD_IDLE;
     break;
   case State::STARTING:
-    cmd[2] = 196;
+    cmd[2] = LIN_CMD_PREMOVE;
     break;
   case State::UP:
     enc_target = min(enc_a, enc_b);
-    cmd[2] = 134;
+    cmd[2] = LIN_CMD_RAISE;
     lastState = State::UP;
     break;
   case State::DOWN:
     enc_target = max(enc_a, enc_b);
-    cmd[2] = 133;
+    cmd[2] = LIN_CMD_LOWER;
     lastState = State::DOWN;
     break;
   case State::STOPPING1:
@@ -259,12 +274,12 @@ void linBurst()
     else
       enc_target = getMin(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
     
-    cmd[2] = 135;
+    cmd[2] = LIN_CMD_FINE;
     
     break;
   case State::STOPPING4:
     enc_target = getMax(enc_a, enc_b);
-    cmd[2] = 132;
+    cmd[2] = LIN_CMD_FINISH;
     break;
   }
 
@@ -275,7 +290,7 @@ void linBurst()
   switch (state) {
   case State::OFF:
     if (user_cmd != Command::NONE) {
-      if (node_a[2] == 0x60 && node_b[2] == 0x60) {
+      if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE) {
         state = State::STARTING;
       }
     }
@@ -294,12 +309,12 @@ void linBurst()
     }
     break;
   case State::UP:
-    if (user_cmd != Command::UP) {
+    if (user_cmd != Command::UP || currentHeight >= DANGER_MAX_HEIGHT) {
       state = State::STOPPING1;
     }
     break;
   case State::DOWN:
-    if (user_cmd != Command::DOWN) {
+    if (user_cmd != Command::DOWN || currentHeight <= DANGER_MIN_HEIGHT) {
       state = State::STOPPING1;
     }
     break;
@@ -313,7 +328,7 @@ void linBurst()
     state = State::STOPPING4;
     break;
   case State::STOPPING4:
-    if (node_a[2] == 0x60 && node_b[2] == 0x60) {
+    if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE) {
       state = State::OFF;
     }
     break;
@@ -336,7 +351,7 @@ void storeMemory(int memorySlot, int value)
 int getMemory(int memorySlot)
 {
   if (memorySlot == 0)
-    return height;
+    return currentHeight;
 
   beep(memorySlot, BEEP_FREQ_LOW);
   

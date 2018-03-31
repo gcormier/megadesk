@@ -28,7 +28,7 @@ void initEEPROM()
 
   if (a != 18 && b != 13 && c != 19)
   {
-    for (int index = 0; index < EEPROM.length(); index++)
+    for (unsigned int index = 0; index < EEPROM.length(); index++)
       EEPROM.write(index, 100);
 
     // Store unique values
