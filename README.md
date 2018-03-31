@@ -32,7 +32,10 @@ PCB - ATTiny 841 - 8Mhz internal  `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
 * Switching regulator might reduce heat slightly, but unsure if it can fit and keep the cost down versus linear regulator.
 
 # BOM
-* If you want to be picky you can pick out the voltage rating for individual components based on their function. Otherwise, pick a general 
+* If you want to be picky you can pick out the voltage rating for individual components based on their function. Otherwise, pick a general value with enough safety margin.
+
+
+
 | Digikey           | Part Number    | Quantity | Description                                       | Package         |
 |-------------------|----------------|----------|---------------------------------------------------|-----------------|
 | 497-1203-1-ND     | L78M05CDT      | 1        | 500ma 5V regulator, 35V maximum                   | TO252-3 / DPAK2 |
