@@ -12,6 +12,7 @@ Unfortunately the beeps aren't captured well in the video unless you turn up the
 ## Warnings
 * Plugging in any connectors backwards can probably damage your desk. Be very careful when working on your circuit.
 * The power supply is 24V, and raises higher when motors are in operation! (Between 35-37V) This can generate a decent amount of heat for the linear regulators. Make sure to use genuine parts, and check the heat output before putting it back inside the casing and attaching it to your wooden tabletop. Ensure to spec the main filtering capacitor appropriately.
+* The limits of the desk are not yet handled. Proceed at your risk if you are raising it to the maximum/minimum levels.
 
 ## Atmega Fuses
 Don't forget to set fuses on your board for the appropriate oscillator.
