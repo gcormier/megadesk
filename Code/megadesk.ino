@@ -3,7 +3,7 @@
 #include "megadesk.h"
 
 // Standard arduino settings
-#define HYSTERESIS            20  // 20 seems ok
+#define HYSTERESIS            20        // 20 seems ok
 
 #define PIN_UP                0
 #define PIN_DOWN              1
@@ -19,7 +19,7 @@
 #define CLICK_TIMEOUT         400UL     // Timeout in MS.
 #define CLICK_LONG            900UL     // Long/hold minimum time in MS.
 
-#define FINE_MOVEMENT_VALUE   100     // Based on protocol decoding
+#define FINE_MOVEMENT_VALUE   100       // Based on protocol decoding
 
 // LIN commands/status
 #define LIN_CMD_IDLE          252
@@ -236,7 +236,6 @@ void linBurst()
     lin.send(16, 0, 0, 2);
     delay_until(5);
   }
-  
 
   // Send PID 1
   lin.send(1, 0, 0, 2);
