@@ -10,6 +10,8 @@ enum class State {
   DOWN,
   STOPPING1,
   STOPPING2,
+  STOPPING3,
+  STOPPING4,
 };
 
 enum class Command {

@@ -20,6 +20,8 @@
 #define CLICK_TIMEOUT     400UL     // Timeout in MS.
 #define CLICK_LONG        900UL     // Long/hold minimum time in MS.
 
+#define FINE_MOVEMENT_VALUE 100     // Based on protocol decoding
+
 //////////////////
 // Related to multi-touch
 bool button_pin_up, button_pin_down;
@@ -40,6 +42,9 @@ unsigned long t = 0;
 bool memoryMoving = false;
 Command user_cmd = Command::NONE;
 State state = State::OFF;
+State lastState = State::OFF;
+uint16_t enc_target;
+
 
 int up(bool pushed) {
   if (pushed)
@@ -224,37 +229,48 @@ void linBurst()
 
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
-  uint16_t enc_target = enc_a;
+  enc_target = enc_a;
   height = enc_a;
 
   // Send PID 18
   switch (state) {
   case State::OFF:
-    cmd[2] = 0xFC; // 0b11111100
+    cmd[2] = 252;
     break;
   case State::STARTING:
-    cmd[2] = 0xC4; // 0b10100100
+    cmd[2] = 196;
     break;
   case State::UP:
     enc_target = min(enc_a, enc_b);
-    cmd[2] = 0x86; // 0b10000110
+    cmd[2] = 134;
+    lastState = State::UP;
     break;
   case State::DOWN:
     enc_target = max(enc_a, enc_b);
-    cmd[2] = 0x85; // 0b10000101
+    cmd[2] = 133;
+    lastState = State::DOWN;
     break;
   case State::STOPPING1:
-    cmd[2] = 0x87; // 0b10000111
-    break;
   case State::STOPPING2:
-    cmd[2] = 0x84; // 0b10000100
+  case State::STOPPING3:
+    
+    if (lastState == State::UP)
+      enc_target = getMin(enc_a, enc_b) + FINE_MOVEMENT_VALUE;
+    else
+      enc_target = getMin(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
+    
+    cmd[2] = 135;
+    
+    break;
+  case State::STOPPING4:
+    enc_target = getMax(enc_a, enc_b);
+    cmd[2] = 132;
     break;
   }
+
   cmd[0] = enc_target & 0xFF;
   cmd[1] = enc_target >> 8;
   lin.send(18, cmd, 3, 2);
-
-
 
   switch (state) {
   case State::OFF:
@@ -291,6 +307,12 @@ void linBurst()
     state = State::STOPPING2;
     break;
   case State::STOPPING2:
+    state = State::STOPPING3;
+    break;
+  case State::STOPPING3:
+    state = State::STOPPING4;
+    break;
+  case State::STOPPING4:
     if (node_a[2] == 0x60 && node_b[2] == 0x60) {
       state = State::OFF;
     }
@@ -472,4 +494,20 @@ uint8_t recvInitPacket(uint8_t array[])
   return lin.recv(61, array, 8, 2);
 }
 
+// Return the smaller of the two parameters
+uint16_t getMin(uint16_t a, uint16_t b)
+{
+  if (a < b)
+    return a;
+  else
+    return b;
+}
 
+// Return the bigger of the two parameters
+uint16_t getMax(uint16_t a, uint16_t b)
+{
+  if (a > b)
+    return a;
+  else
+    return b;
+}
