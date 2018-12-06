@@ -340,7 +340,7 @@ void linBurst()
 void storeMemory(int memorySlot, int value)
 {
   // Sanity check
-  if (memorySlot == 0 || value < 5 || value > 32700)
+  if (memorySlot == 0 || memorySlot == 1 || value < 5 || value > 32700)
     return;
 
   EEPROM.write(5 + (2 * memorySlot), highByte(value));
@@ -349,7 +349,7 @@ void storeMemory(int memorySlot, int value)
 
 int getMemory(int memorySlot)
 {
-  if (memorySlot == 0)
+  if (memorySlot == 0 || memorySlot == 1)
     return currentHeight;
 
   beep(memorySlot, BEEP_FREQ_LOW);
