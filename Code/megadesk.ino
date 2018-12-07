@@ -89,17 +89,21 @@ void ack()
 }
 
 void setup() {
+  delay(500);
+  beep(1, 2093);
   initEEPROM();
+  beep(1, 2349);
   lin.begin(19200);
+  beep(1, 2637);
 
   pinMode(PIN_UP, INPUT_PULLUP);
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
   
   linInit();
-  beep(1, 2093);
-  beep(1, 2349);
-  beep(1, 2637);
+  beep(1, 2794);
+  
+  
 }
 
 void readButtons()
