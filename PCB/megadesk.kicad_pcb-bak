@@ -55,8 +55,8 @@
     (pad_size 1.524 1.524)
     (pad_drill 0.762)
     (pad_to_mask_clearance 0.05)
-    (aux_axis_origin 98.7 137.6)
-    (grid_origin 98.7 137.6)
+    (aux_axis_origin 98.7 137.35)
+    (grid_origin 98.7 137.35)
     (visible_elements 7FFFEFFF)
     (pcbplotparams
       (layerselection 0x010f0_80000001)
@@ -1239,6 +1239,7 @@
     )
   )
 
+  (gr_line (start 98.7 137.35) (end 98.7 104.6) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 140.45 104.6) (end 139.7 104.6) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 140.45 137.35) (end 140.45 104.6) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 139.7 137.35) (end 140.45 137.35) (layer Edge.Cuts) (width 0.15))
@@ -1256,7 +1257,6 @@
   (gr_line (start 140.95 117.6) (end 97.7 117.6) (angle 90) (layer Dwgs.User) (width 0.2))
   (gr_line (start 97.95 129.6) (end 140.7 129.6) (angle 90) (layer Dwgs.User) (width 0.2))
   (gr_line (start 98.7 104.6) (end 139.7 104.6) (angle 90) (layer Edge.Cuts) (width 0.15))
-  (gr_line (start 98.7 137.6) (end 98.7 104.6) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 98.7 137.35) (end 139.7 137.35) (layer Edge.Cuts) (width 0.15))
   (gr_text "megadesk\nv1" (at 118.175 124) (layer B.SilkS)
     (effects (font (size 1.2 1.2) (thickness 0.2)) (justify mirror))
