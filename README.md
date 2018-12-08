@@ -47,7 +47,7 @@ The piezo buzzer is pricey, but worth it for the audible feedback.
 |                   	|                	| 1        	| 2.54mm 1x3 Female Housing                         	|                 	|
 |                   	|                	| 3        	| Crimp terminals for female housing                	|                 	|
 | A112430-ND        	| 1586106-3      	| 1        	| TE Connectivity AMP Connectors VAL-U-LOCK         	|                 	|
-| A30642-ND         	| 1586315-1      	| 3        	| Crimp pins                                        	|                 	|
+| A30642-ND         	| 1586317-1      	| 3        	| Crimp pins                                        	|                 	|
 
 ## Cable
 If you want to create your own cable, the connector is a 4.2mm pitch (0.165"), AMP VAL-U-LOK by TE Coonectivity. This is available from DigiKey with part number A112430-ND or A112983-ND. I'm not sure on the difference between them to be honest. Don't forget the crimp pins - A30642-ND. Otherwise, the existing cable can be unsoldered from the board. Red is positive (24VDC), white is negative, blue is LIN.
