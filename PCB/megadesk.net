@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source C:\Users\Greg\Desktop\megadesk\PCB\megadesk.sch)
-    (date "2019-01-12 3:59:05 PM")
+    (date "2019-01-13 8:32:53 PM")
     (tool "Eeschema (5.0.2)-1")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -18,6 +18,8 @@
     (comp (ref U2)
       (value L7805)
       (footprint TO_SOT_Packages_SMD:TO-252-3_TabPin2)
+      (fields
+        (field (name "Part Number") L78M05CDT))
       (libsource (lib Regulator_Linear) (part L7805) (description "Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"))
       (sheetpath (names /) (tstamps /))
       (tstamp 5A824DF3))
@@ -36,6 +38,8 @@
     (comp (ref U4)
       (value MCP2003B)
       (footprint Housings_SOIC:SOIC-8_3.9x4.9mm_Pitch1.27mm)
+      (fields
+        (field (name "Part Number") MCP2003B-E/SN))
       (libsource (lib custom) (part MCP2003B) (description "LIN Transceiver with Voltage Regulator, 5V, PDIP"))
       (sheetpath (names /) (tstamps /))
       (tstamp 5A826DCE))
@@ -61,7 +65,8 @@
       (value L7812)
       (footprint TO_SOT_Packages_SMD:TO-252-3_TabPin2)
       (fields
-        (field (name Details) "STMicroelectronics L78M12CDT"))
+        (field (name Details) "STMicroelectronics L78M12CDT")
+        (field (name "Part Number") L78M12CDT))
       (libsource (lib Regulator_Linear) (part L7812) (description "Positive 1.5A 35V Linear Regulator, Fixed Output 12V, TO-220/TO-263/TO-252"))
       (sheetpath (names /) (tstamps /))
       (tstamp 5A836DF1))
@@ -122,6 +127,8 @@
     (comp (ref U3)
       (value ATTINY841-SSU)
       (footprint Housings_SOIC:SOIC-14_3.9x8.7mm_Pitch1.27mm)
+      (fields
+        (field (name "Part Number") ATTINY841-SSU))
       (libsource (lib MCU_Microchip_ATtiny) (part ATtiny841-SSU) (description "16MHz, 8kB Flash, 512B SRAM, 512B EEPROM, ADC, ACI, debugWIRE, SOIC-14"))
       (sheetpath (names /) (tstamps /))
       (tstamp 5AA1C491))
@@ -140,12 +147,16 @@
     (comp (ref J2)
       (value FFC)
       (footprint !Custom:FFC_10)
+      (fields
+        (field (name "Part Number") 1-84981-0))
       (libsource (lib Connector_Generic) (part Conn_01x10) (description "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"))
       (sheetpath (names /) (tstamps /))
       (tstamp 5AA53CE2))
     (comp (ref BZ1)
       (value Buzzer)
       (footprint Buzzer_Beeper:Buzzer_CUI_CPT-9019S-SMT)
+      (fields
+        (field (name "Part Number") CPT-9019S-SM))
       (libsource (lib device) (part Buzzer) (description "Buzzer, polarized"))
       (sheetpath (names /) (tstamps /))
       (tstamp 5AA5CDC1))

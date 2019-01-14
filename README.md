@@ -27,26 +27,27 @@ If you want to be picky you can pick out the voltage rating for individual compo
 The piezo buzzer is pricey, but worth it for the audible feedback.
 
 
-|            | References |Value          | Footprint                            | Quantity |
-|------------|------------|---------------|--------------------------------------|---| 
-| 1          | C3, C4, C5 | 0.1uf         | C_1206_3216Metric                    | 3 | 
-| 2          | C1         | 0.33uF        | C_1206_3216Metric                    | 1 | 
-| 3          | C2         | 10uf-DNP      | C_1206_3216Metric                    | 1 | 
-| 4          | C6         | 220pF         | C_1206_3216Metric                    | 1 | 
-| 5          | R1, R6     | 1k            | R_1206_3216Metric                    | 2 | 
-| 6          | R4, R5     | 2.2k          | R_1206_3216Metric                    | 2 | 
-| 7          | R3         | 4.7k          | R_1206_3216Metric                    | 1 | 
-| 8          | D1, D2     | 1N4148        | D_SOD-323_HandSoldering              | 2 | 
-| 9          | U3         | ATTINY841-SSU | SOIC-14_3.9x8.7mm_Pitch1.27mm        | 1 | 
-| 10         | U4         | MCP2003B      | SOIC-8_3.9x4.9mm_Pitch1.27mm         | 1 | 
-| 11         | U1         | L7812         | TO-252-3_TabPin2                     | 1 | 
-| 12         | U2         | L7805         | TO-252-3_TabPin2                     | 1 | 
-| 13         | BZ1        | Buzzer        | Buzzer_CUI_CPT-9019S-SMT             | 1 | 
-| 14         | TP1        | 5VLOGIC       | Pin_Header_Straight_1x01_Pitch2.54mm | 1 | 
-| 15         | TP2        | 12VLIN        | Pin_Header_Straight_1x01_Pitch2.54mm | 1 | 
-| 16         | CON1       | ISP           | Pin_Header_Straight_2x03_Pitch2.54mm | 1 | 
-| 17         | J2         | FFC           | FFC_10                               | 1 | 
-| 18         | J1         | Interface     | Pin_Header_Angled_1x03_Pitch2.54mm   | 1 | 
+|            | Part Number | References    |Value          | Footprint                            | Quantity |
+| 1          | C3, C4, C5  |               | 0.1uf         | C_1206_3216Metric                    | 3 | 
+| 2          | C1          |               | 0.33uF        | C_1206_3216Metric                    | 1 | 
+| 3          | C2          |               | 10uf-DNP      | C_1206_3216Metric                    | 1 | 
+| 4          | C6          |               | 220pF         | C_1206_3216Metric                    | 1 | 
+| 5          | R1, R6      |               | 1k            | R_1206_3216Metric                    | 2 | 
+| 6          | R4, R5      |               | 2.2k          | R_1206_3216Metric                    | 2 | 
+| 7          | R3          |               | 4.7k          | R_1206_3216Metric                    | 1 | 
+| 8          | D1, D2      |               | 1N4148        | D_SOD-323_HandSoldering              | 2 | 
+| 9          | U3          | ATTINY841-SSU | ATTINY841-SSU | SOIC-14_3.9x8.7mm_Pitch1.27mm        | 1 | 
+| 10         | U2          | L78M05CDT     | L7805         | TO-252-3_TabPin2                     | 1 | 
+| 11         | U1          | L78M12CDT     | L7812         | TO-252-3_TabPin2                     | 1 | 
+| 12         | U4          | MCP2003B-E/SN | MCP2003B      | SOIC-8_3.9x4.9mm_Pitch1.27mm         | 1 | 
+| 13         | TP1         |               | 5VLOGIC       | Pin_Header_Straight_1x01_Pitch2.54mm | 1 | 
+| 14         | TP2         |               | 12VLIN        | Pin_Header_Straight_1x01_Pitch2.54mm | 1 | 
+| 15         | CON1        |               | ISP           | Pin_Header_Straight_2x03_Pitch2.54mm | 1 | 
+| 16         | BZ1         | CPT-9019S-SM  | Buzzer        | Buzzer_CUI_CPT-9019S-SMT             | 1 | 
+| 17         | J1          |               | Interface     | Pin_Header_Angled_1x03_Pitch2.54mm   | 1 | 
+| 18         | J2          | 1-84981-0     | FFC           | FFC_10                               | 1 | 
+
+
 
 
 ## Cable
