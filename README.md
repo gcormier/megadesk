@@ -5,6 +5,9 @@ Custom Arduino-based Bekant controller. Design goals were to have it fit in the 
 
 <img src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png" width=20%/> <img src="https://github.com/gcormier/megadesk/blob/master/megadesk_rear.png" width=20%/>
 
+## Kits or Fully-assembled versions
+I've setup a store on Tindie for those who wish to order parts or an assembled version. <a href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+
 ## Video
 Unfortunately the beeps aren't captured well in the video unless you turn up the volume.
 <a href = "https://youtu.be/1j8Z5ZEFkNs"><img src = "http://img.youtube.com/vi/1j8Z5ZEFkNs/mqdefault.jpg" /></a>
