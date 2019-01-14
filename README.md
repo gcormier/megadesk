@@ -28,6 +28,7 @@ The piezo buzzer is pricey, but worth it for the audible feedback.
 
 
 |            | Part Number | References    |Value          | Footprint                            | Quantity |
+|------------|-------------|---------------|---------------|--------------------------------------|---| 
 | 1          | C3, C4, C5  |               | 0.1uf         | C_1206_3216Metric                    | 3 | 
 | 2          | C1          |               | 0.33uF        | C_1206_3216Metric                    | 1 | 
 | 3          | C2          |               | 10uf-DNP      | C_1206_3216Metric                    | 1 | 
@@ -46,8 +47,6 @@ The piezo buzzer is pricey, but worth it for the audible feedback.
 | 16         | BZ1         | CPT-9019S-SM  | Buzzer        | Buzzer_CUI_CPT-9019S-SMT             | 1 | 
 | 17         | J1          |               | Interface     | Pin_Header_Angled_1x03_Pitch2.54mm   | 1 | 
 | 18         | J2          | 1-84981-0     | FFC           | FFC_10                               | 1 | 
-
-
 
 
 ## Cable
