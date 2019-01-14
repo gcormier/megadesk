@@ -27,30 +27,27 @@ If you want to be picky you can pick out the voltage rating for individual compo
 The piezo buzzer is pricey, but worth it for the audible feedback.
 
 
-| Digikey           	| Part Number    	| Quantity 	| Description                                       	| Package         	|
-|-------------------	|----------------	|----------	|---------------------------------------------------	|-----------------	|
-| 497-1203-1-ND     	| L78M05CDT      	| 1        	| 500ma 5V regulator, 35V maximum                   	| TO252-3 / DPAK2 	|
-| 497-1211-1-ND     	| L78M12CDT      	| 1        	| 500ma 12V regulator, 35V maximum                  	| TO252-3 / DPAK2 	|
-| 1N4148WXTPMSCT-ND 	| 1N4148WX       	| 2        	| 1N4148 Diode                                      	| SOD-323         	|
-| ATTINY841-SSU-ND  	| ATTINY841-SSU  	| 1        	| ATTINY841                                         	| SOIC-14         	|
-| MCP2003B-E/SN-ND  	| MCP2003B-E/SN  	| 1        	| MCP2003B LIN Interface                            	| SOIC-8          	|
-| A100308CT-ND      	| 1-84981-0      	| 1        	| FFC FPC TOP 10POS 1MM                             	|                 	|
-|                   	|                	| 1        	| 220pF Ceramic                                     	| 1206            	|
-|                   	|                	| 1        	| 0.1uF Ceramic                                     	| 1206            	|
-|                   	|                	| 2        	| 0.1uF Electrolytic                                	| 4mm             	|
-|                   	|                	| 1        	| 0.33uF Ceramic 50V                                	| 1206            	|
-|                   	|                	| 1        	| 10uF Electrolytic                                 	| 5mm             	|
-|                   	|                	| 1        	| 1k Resistor                                       	| 1206            	|
-|                   	|                	| 2        	| 2.2k Resistor                                     	| 1206            	|
-|                   	|                	| 1        	| 4.7k Resistor                                     	| 1206            	|
-| 668-1572-1-ND     	| SMT-1141-T-5-R 	| 1        	| Low profile SMD Piezo (optional)                  	|                 	|
-|                   	|                	| 1        	| 500ohm or 1k resistor for Piezo volume (optional) 	| 1206            	|
-|                   	|                	| 1        	| 2.54mm 2x6 Pin Header (ICSP)                      	|                 	|
-|                   	|                	| 1        	| 2.54mm 1x3 Pin Header - Right Angle                 	|                 	|
-|                   	|                	| 1        	| 2.54mm 1x3 Female Housing                         	|                 	|
-|                   	|                	| 3        	| Crimp terminals for female housing                	|                 	|
-| A112430-ND        	| 1586106-3      	| 1        	| TE Connectivity AMP Connectors VAL-U-LOCK         	|                 	|
-| A30642-ND         	| 1586317-1      	| 3        	| Crimp pins                                        	|                 	|
+|            | References |Value          | Footprint                            | Quantity |
+|------------|------------|---------------|--------------------------------------|---| 
+| 1          | C3, C4, C5 | 0.1uf         | C_1206_3216Metric                    | 3 | 
+| 2          | C1         | 0.33uF        | C_1206_3216Metric                    | 1 | 
+| 3          | C2         | 10uf-DNP      | C_1206_3216Metric                    | 1 | 
+| 4          | C6         | 220pF         | C_1206_3216Metric                    | 1 | 
+| 5          | R1, R6     | 1k            | R_1206_3216Metric                    | 2 | 
+| 6          | R4, R5     | 2.2k          | R_1206_3216Metric                    | 2 | 
+| 7          | R3         | 4.7k          | R_1206_3216Metric                    | 1 | 
+| 8          | D1, D2     | 1N4148        | D_SOD-323_HandSoldering              | 2 | 
+| 9          | U3         | ATTINY841-SSU | SOIC-14_3.9x8.7mm_Pitch1.27mm        | 1 | 
+| 10         | U4         | MCP2003B      | SOIC-8_3.9x4.9mm_Pitch1.27mm         | 1 | 
+| 11         | U1         | L7812         | TO-252-3_TabPin2                     | 1 | 
+| 12         | U2         | L7805         | TO-252-3_TabPin2                     | 1 | 
+| 13         | BZ1        | Buzzer        | Buzzer_CUI_CPT-9019S-SMT             | 1 | 
+| 14         | TP1        | 5VLOGIC       | Pin_Header_Straight_1x01_Pitch2.54mm | 1 | 
+| 15         | TP2        | 12VLIN        | Pin_Header_Straight_1x01_Pitch2.54mm | 1 | 
+| 16         | CON1       | ISP           | Pin_Header_Straight_2x03_Pitch2.54mm | 1 | 
+| 17         | J2         | FFC           | FFC_10                               | 1 | 
+| 18         | J1         | Interface     | Pin_Header_Angled_1x03_Pitch2.54mm   | 1 | 
+
 
 ## Cable
 If you want to create your own cable, the connector is a 4.2mm pitch (0.165"), AMP VAL-U-LOK by TE Coonectivity. This is available from DigiKey with part number A112430-ND or A112983-ND. I'm not sure on the difference between them to be honest. Don't forget the crimp pins - A30642-ND. Otherwise, the existing cable can be unsoldered from the board. Red is positive (24VDC), white is negative, blue is LIN.
