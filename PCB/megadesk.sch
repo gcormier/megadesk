@@ -122,7 +122,7 @@ SCK
 Text Notes 1200 2250 0    52   ~ 0
 Programming
 $Comp
-L custom:MCP2003B U4
+L !Custom:MCP2003B U4
 U 1 1 5A826DCE
 P 7200 2950
 F 0 "U4" H 6900 3300 50  0000 L CNN
