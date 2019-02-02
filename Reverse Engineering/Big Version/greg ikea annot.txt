@@ -1,0 +1,2351 @@
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 255
+ Data: 7
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 255
+ Data: 7
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 255
+ Data: 1
+ Data: 7
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 247
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 208
+ Data: 2
+ Data: 7
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 38
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 0
+ Data: 2
+ Data: 7
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 246
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 2
+ Data: 7
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 245
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 255
+ Data: 0
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 0
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 6
+ Data: 9
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 239
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 9
+ Data: 1
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 245
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 6
+ Data: 12
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 236
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 12
+ Data: 26
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 217
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 6
+ Data: 13
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 235
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 13
+ Data: 198
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 44
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 6
+ Data: 10
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 10
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 245
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 6
+ Data: 11
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 237
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 11
+ Data: 95
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 149
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 1
+ Data: 4
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 250
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 255
+ Data: 0
+ Data: 0
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 0
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 2
+ Data: 2
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 251
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 2
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 250
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 255
+ Data: 0
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 0
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 6
+ Data: 9
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 237
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 9
+ Data: 1
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 245
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 6
+ Data: 12
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 234
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 12
+ Data: 26
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 217
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 6
+ Data: 13
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 233
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 13
+ Data: 198
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 44
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 6
+ Data: 10
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 236
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 10
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 245
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 6
+ Data: 11
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 235
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 11
+ Data: 95
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 149
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 3
+ Data: 4
+ Data: 1
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 247
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Data: 255
+ Data: 1
+ Data: 0
+ Data: 0
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 254
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 4
+ Data: 2
+ Data: 1
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 5
+ Data: 2
+ Data: 1
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 247
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 6
+ Data: 2
+ Data: 1
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 246
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 7
+ Data: 2
+ Data: 1
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 245
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 208
+ Data: 1
+ Data: 7
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 39
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 60 Parity: 0 (ok)
+ Data: 208
+ Data: 2
+ Data: 7
+ Data: 0
+ Data: 255
+ Data: 255
+ Data: 255
+ Data: 255
+ Checksum: 38
+ Break condition
+ Sync
+ ID: 61 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 224
+ Checksum: 191
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 224
+ Checksum: 120
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 246
+ Data: 255
+ Data: 191
+ Checksum: 182
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 16 Parity: 1 (ok)
+ Break condition
+ Sync
+ ID: 1 Parity: 3 (ok)
+ Break condition
+ Sync
+ ID: 18 Parity: 2 (ok)
+ Data: 90
+ Data: 3
+ Data: 252
+ Checksum: 19
+ Break condition
+ Sync
+ ID: 17 Parity: 0 (ok)
+ Data: 0
+ Data: 0
+ Data: 0
+ Checksum: 238
+ Break condition
+ Sync
+ ID: 8 Parity: 0 (ok)
+ Data: 84
+ Data: 3
+ Data: 96
+ Checksum: 64
+ Break condition
+ Sync
+ ID: 9 Parity: 1 (ok)
+ Data: 90
+ Data: 3
+ Data: 96
+ Checksum: 248
+ Break condition
