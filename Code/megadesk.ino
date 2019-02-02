@@ -262,8 +262,8 @@ void linBurst()
   delay_until(5);
 
   
-  // Send PID 16, 6 times
-  for (uint8_t i = 0; i < 6; i++) {
+  // Send PID 16, 7 times
+  for (uint8_t i = 0; i < 7; i++) {
     lin.send(16, 0, 0, 2);
     delay_until(5);
   }
