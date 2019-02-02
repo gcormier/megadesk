@@ -89,16 +89,43 @@ void ack()
 }
 
 void setup() {
-  delay(500);
+	pinMode(PIN_UP, INPUT_PULLUP);
+	pinMode(PIN_DOWN, INPUT_PULLUP);
+	pinMode(PIN_BEEP, OUTPUT);
+
+	delay(500);
+
+	// Power-on button test, 
+	if (!digitalRead(PIN_UP))
+		while (true)
+		{
+			beep(1, 2093);
+			delay(150);
+			beep(1, 2349);
+			delay(750);
+		}
+
+	
+
+	if (!digitalRead(PIN_DOWN))
+		while (true)
+		{
+			beep(1, 2349);
+			delay(150);
+			beep(1, 2093);
+			delay(750);
+		}
+
+	
+
+  
   beep(1, 2093);
   initEEPROM();
   beep(1, 2349);
   lin.begin(19200);
   beep(1, 2637);
 
-  pinMode(PIN_UP, INPUT_PULLUP);
-  pinMode(PIN_DOWN, INPUT_PULLUP);
-  pinMode(PIN_BEEP, OUTPUT);
+
   
   linInit();
   beep(1, 2794);
