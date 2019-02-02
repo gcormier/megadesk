@@ -95,42 +95,42 @@ void setup() {
 
 	delay(500);
 
-	// Power-on button test, 
+	// Button Test Mode
 	if (!digitalRead(PIN_UP))
+	{
 		while (true)
 		{
-			beep(1, 2093);
-			delay(150);
-			beep(1, 2349);
-			delay(750);
+			if (!digitalRead(PIN_DOWN))
+				{
+					beep(1, 2637);
+					delay(150);
+					beep(1, 2349);
+					delay(150);
+					beep(1, 2093);
+					delay(500);
+				}
+			if (!digitalRead(PIN_UP))
+			{
+				beep(1, 2093);
+				delay(150);
+				beep(1, 2349);
+				delay(150);
+				beep(1, 2637);
+				delay(500);
+
+			}
+			delay(50);
 		}
+	}
 
-	
-
-	if (!digitalRead(PIN_DOWN))
-		while (true)
-		{
-			beep(1, 2349);
-			delay(150);
-			beep(1, 2093);
-			delay(750);
-		}
-
-	
-
-  
   beep(1, 2093);
   initEEPROM();
   beep(1, 2349);
   lin.begin(19200);
   beep(1, 2637);
-
-
   
   linInit();
   beep(1, 2794);
-  
-  
 }
 
 void readButtons()
