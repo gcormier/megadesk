@@ -29,7 +29,6 @@
 #define LIN_CMD_FINISH        132
 #define LIN_CMD_PREMOVE       196
 
-#define LIN_MOTOR_IDLE        96
 #define LIN_MOTOR_BUSY        2
 #define LIN_MOTOR_BUSY_FINE   3
 
@@ -56,6 +55,10 @@ int currentHeight = -1;
 int targetHeight = -1;
 unsigned long end, d;
 unsigned long t = 0;
+
+// Set default to 96 but this might be change from EEPROM
+unsigned int LIN_MOTOR_IDLE = 96;
+
 
 bool memoryMoving = false;
 Command user_cmd = Command::NONE;
@@ -123,8 +126,18 @@ void setup() {
 		}
 	}
 
+	if (!digitalRead(PIN_DOWN))
+	{
+		initAndReadEEPROM(true);
+		while (true)
+		{
+			beep(1, 2093);
+			delay(1000);
+		}
+	}
+
   beep(1, 2093);
-  initEEPROM();
+  initAndReadEEPROM(false);
   beep(1, 2349);
   lin.begin(19200);
   beep(1, 2637);
@@ -198,14 +211,26 @@ void loop()
   
   if (waitingEvent)
   {
-    if (pushCount > 0)
+		if (pushCount == 16)
+		{
+			toggleIdleParameter();
+		}
+		else if (pushCount > 0)
     {
       if (pushLong)
-        storeMemory(pushCount, currentHeight);
+        saveMemory(pushCount, currentHeight);
       else
       {
-        targetHeight = getMemory(pushCount);
-        memoryMoving = true;
+        targetHeight = loadMemory(pushCount);
+				if (targetHeight == 0)
+				{
+					beep(1, 1865);
+					beep(1, 1976);
+					beep(1, 1865);
+					targetHeight = currentHeight;
+				}
+				else
+					memoryMoving = true;
       }
     }
       ack();
@@ -368,27 +393,36 @@ void linBurst()
   }
 }
 
-void storeMemory(int memorySlot, int value)
+void saveMemory(int memorySlot, int value)
 {
   // Sanity check
   if (memorySlot == 0 || memorySlot == 1 || value < 5 || value > 32700)
     return;
 
-  EEPROM.write(5 + (2 * memorySlot), highByte(value));
-  EEPROM.write(5 + (2 * memorySlot) + 1, lowByte(value));
+	//beep(memorySlot, BEEP_FREQ_HIGH);
+
+	EEPROM.put(2 * memorySlot, value);
 }
 
-int getMemory(int memorySlot)
+int loadMemory(int memorySlot)
 {
   if (memorySlot == 0 || memorySlot == 1)
     return currentHeight;
 
   beep(memorySlot, BEEP_FREQ_LOW);
+	
+	int memHeight;
+
+	EEPROM.get(2 * memorySlot, memHeight);
   
-  int h = EEPROM.read(5 + (2 * memorySlot));
-  int l = EEPROM.read(5 + (2 * memorySlot) + 1);
-  
-  return word(h, l);
+	if (memHeight == 0)
+	{
+		beep(1, 1865);
+		beep(1, 1976);
+		beep(1, 1865);
+	}
+
+	return memHeight;
 }
 
 void delay_until(unsigned long microSeconds) {
@@ -556,3 +590,77 @@ uint16_t getMax(uint16_t a, uint16_t b)
   else
     return b;
 }
+
+void initAndReadEEPROM(bool force)
+{
+	int a = EEPROM.read(0);
+	int b = EEPROM.read(1);
+
+	if ((a != 18 && b != 13) || force)
+	{
+		for (unsigned int index = 0; index < EEPROM.length(); index++)
+			EEPROM.write(index, 0);
+
+		// Store unique values
+		EEPROM.write(0, 18);
+		EEPROM.write(1, 13);
+
+		// This is the idle value
+		EEPROM.write(2, 96);
+	}
+
+
+	// Read this value
+	LIN_MOTOR_IDLE = EEPROM.read(2);
+
+}
+
+
+// Swap the IDLE values and save in EEPROM
+void toggleIdleParameter()
+{
+	LIN_MOTOR_IDLE = EEPROM.read(2);
+
+	if (LIN_MOTOR_IDLE == 96)
+	{
+		LIN_MOTOR_IDLE = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			beep(1, 2637);
+			delay(10);
+			beep(1, 2349);
+			delay(10);
+			beep(1, 2093);
+			delay(10);
+		}
+	}
+	
+	else
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			beep(1, 2093);
+			delay(50);
+			beep(1, 2349);
+			delay(50);
+			beep(1, 2637);
+			delay(50);
+		}
+		LIN_MOTOR_IDLE = 96;
+	}
+
+	EEPROM.write(2, LIN_MOTOR_IDLE);
+}
+
+/*
+void f()
+{
+	for (int i = 0; i < 187; i++)
+	{
+		tone(PIN_BEEP, melody[i]);
+		delay(tempo[i]);
+		noTone(PIN_BEEP);
+		delay(tempo[i]);
+	}
+}
+*/
