@@ -1,28 +1,54 @@
+
+  
+
 # megadesk
+
 Custom Arduino-based Bekant controller. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
 
-<img src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png" width=25%/>
+<img  src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png"  width=25%/>
 
-<img src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png" width=20%/> <img src="https://github.com/gcormier/megadesk/blob/master/megadesk_rear.png" width=20%/>
+<img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>  <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_rear.png"  width=20%/>
 
-## Kits or Fully-assembled versions
-I've setup a store on Tindie for those who wish to order parts or an assembled version. <a href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+# Kits or Fully-assembled versions
+
+I've setup a store on Tindie for those who wish to order parts or an assembled version. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+
+  
 
 ## Video
+
 Unfortunately the beeps aren't captured well in the video unless you turn up the volume.
-<a href = "https://youtu.be/1j8Z5ZEFkNs"><img src = "http://img.youtube.com/vi/1j8Z5ZEFkNs/mqdefault.jpg" /></a>
+
+<a  href = "https://youtu.be/1j8Z5ZEFkNs"><img  src = "http://img.youtube.com/vi/1j8Z5ZEFkNs/mqdefault.jpg"  /></a>
+
+  
 
 ## Warnings
+
 * Plugging in any connectors backwards can probably damage your desk. Be very careful when working on your circuit.
-* The power supply is 24V, and raises higher when motors are in operation! (Between 35-37V) This can generate a decent amount of heat for the linear regulators. Make sure to use genuine parts, and check the heat output before putting it back inside the casing and attaching it to your wooden tabletop. Ensure to spec the main filtering capacitor appropriately.
+
+* The power supply is 24V, and raises higher when motors are in operation! (Between 35-37V) This can generate a decent amount of heat for the linear regulators. **Make sure to use genuine name brand regulators**, and check the heat output before putting it back inside the casing and attaching it to your tabletop. Ensure to spec the main filtering capacitor appropriately (50v).
+
+* Do not use ATTinyCore 1.2.2, it contains bugs that will prevent proper operation.
+
+  
 
 # Operation
 * Use up/down buttons as per factory module (long press/hold)
 * To store in a memory slot, push the up button a certain number of times, but long-hold the last press until you hear some beeps corresponding to the memory position that has been saved.
 * To recall a saved position N, push the up button N times.
 
+  
+
+# Variants
+So far, a second variant to the protocol has been found. It is the larger sized BEKANT, so it is possible it has different motors.
+
+These motors report their "idle" status value as 0 instead of 96, which can cause the buttons to not respond. Pressing the memory button 20 times will play a tone and toggle the value (saved in EEPROM for persistence) that it will use.
+  
+  
+
 # BOM
-If you want to be picky you can pick out the voltage rating for individual components based on their function. Otherwise, pick a general value with enough safety margin.
+Make sure to pick components with suitable values (ie 50V for capacitors)
 
 The piezo buzzer is pricey, but worth it for the audible feedback.
 
@@ -48,18 +74,34 @@ The piezo buzzer is pricey, but worth it for the audible feedback.
 | 17         | J1          |               | Interface     | Pin_Header_Angled_1x03_Pitch2.54mm   | 1 | 
 | 18         | J2          | 1-84981-0     | FFC           | FFC_10                               | 1 | 
 
+  
+  
 
 ## Cable
-If you want to create your own cable, the connector is a 4.2mm pitch (0.165"), AMP VAL-U-LOK by TE Coonectivity. This is available from DigiKey with part number A112430-ND or A112983-ND. I'm not sure on the difference between them to be honest. Don't forget the crimp pins - A30642-ND. Otherwise, the existing cable can be unsoldered from the board. Red is positive (24VDC), white is negative, blue is LIN.
 
-# Misc
+If you want to create your own cable, the connector is AMP VAL-U-LOK by TE Connectivity - PN 1586106-3. Don't forget the crimp pins - Part Number 1586317-1 for 26-22AWG. Otherwise, the existing cable can be unsoldered from the board and fitted with a standard 2.54mm pitch header. Red is positive (24VDC), white is negative, blue is LIN.
+
+  
+
+# Debugging
+* Holding UP while powering on will enter a button test mode, where the up/down buttons can be held to test that they are working - a power cycle is required to exit this mode.
+* Holding DOWN while powering on will wipe the EEPROM memory - a power cycle is required to exit this mode.
+* When powering on, a series of 4 beeps will happen. The 4th beep indicates megadesk has established a connection with the desk over the LIN bus. Note that this 4th beep will be heard when programming the device.
+* There is a single empty hole on the OEM board which you can solder a single pin to for a logic analyzer to view the protocol.
+* Megadesk has a 5V logic test point which you can use to view the LIN bus traffic with 5V logic levels. It also has a 12V test point which will reflect the actual bus line.
+
+  
 
 ## Atmega Fuses
+
 Don't forget to set fuses on your board for the appropriate oscillator.
 
-Prototyping - ATMega 328p - 8Mhz internal `avrdude -c usbtiny -p m328p -U lfuse:w:0xe2:m`
+  
 
-PCB - ATTiny 841 - 8Mhz internal  `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
+ATTiny 841 - 8Mhz internal `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
+
+  
 
 ## Current Measurements
+
 16mA on the Atmega 328P, 3mA on the MCP2003B.
