@@ -19,7 +19,7 @@ I've setup a store on Tindie for those who wish to order parts or an assembled v
 
 Unfortunately the beeps aren't captured well in the video unless you turn up the volume.
 
-<a  href = "https://youtu.be/1j8Z5ZEFkNs"><img  src = "http://img.youtube.com/vi/1j8Z5ZEFkNs/mqdefault.jpg"  /></a>
+<a  href = "https://youtu.be/7XOhuRgoEjk"><img  src = "https://img.youtube.com/vi/7XOhuRgoEjk/0.jpg"  /></a>
 
   
 
