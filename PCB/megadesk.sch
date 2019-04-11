@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:megadesk-cache
 EELAYER 26 0
 EELAYER END
 $Descr USLetter 11000 8500
@@ -461,17 +460,6 @@ F 3 "" H 3650 2600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C2
-U 1 1 5AA206F9
-P 1550 1550
-F 0 "C2" H 1575 1650 50  0000 L CNN
-F 1 "10uf-DNP" H 1350 1350 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 1588 1400 50  0001 C CNN
-F 3 "" H 1550 1550 50  0001 C CNN
-	1    1550 1550
-	1    0    0    -1  
-$EndComp
-$Comp
 L Connector_Generic:Conn_01x10 J2
 U 1 1 5AA53CE2
 P 6350 1500
@@ -548,8 +536,6 @@ Wire Notes Line
 Wire Notes Line
 	4300 1850 4300 950 
 Wire Wire Line
-	1500 1400 1550 1400
-Wire Wire Line
 	7800 2250 7800 2350
 Wire Wire Line
 	8500 2750 8600 2750
@@ -575,10 +561,6 @@ Wire Wire Line
 	5300 3900 5150 3900
 Wire Wire Line
 	2500 1700 3100 1700
-Wire Wire Line
-	1200 1700 1550 1700
-Connection ~ 1550 1700
-Connection ~ 1550 1400
 Wire Wire Line
 	900  1400 750  1400
 Wire Wire Line
@@ -723,10 +705,6 @@ Wire Wire Line
 Wire Wire Line
 	6400 2650 6650 2650
 Wire Wire Line
-	1550 1700 1800 1700
-Wire Wire Line
-	1550 1400 1800 1400
-Wire Wire Line
 	4550 2400 4550 2300
 Wire Wire Line
 	4550 2300 3650 2300
@@ -783,4 +761,8 @@ NoConn ~ 6150 1400
 NoConn ~ 6150 1800
 NoConn ~ 6150 1900
 NoConn ~ 6150 2000
+Wire Wire Line
+	1500 1400 1800 1400
+Wire Wire Line
+	1200 1700 1800 1700
 $EndSCHEMATC
