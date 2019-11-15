@@ -7,7 +7,7 @@ Custom Arduino-based Bekant controller. Design goals were to have it fit in the 
 
 <img  src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png"  width=25%/>
 
-<img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>  <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_rear.png"  width=20%/>
+<img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>
 
 As of November 2019, version 4 is now a one-sided board for ease of assembly! The BOM remains unchanged.
 
