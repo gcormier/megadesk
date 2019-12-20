@@ -651,16 +651,3 @@ void toggleIdleParameter()
 
 	EEPROM.write(2, LIN_MOTOR_IDLE);
 }
-
-/*
-void f()
-{
-	for (int i = 0; i < 187; i++)
-	{
-		tone(PIN_BEEP, melody[i]);
-		delay(tempo[i]);
-		noTone(PIN_BEEP);
-		delay(tempo[i]);
-	}
-}
-*/
