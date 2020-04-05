@@ -45,9 +45,13 @@ Unfortunately the beeps aren't captured well in the video unless you turn up the
 # Variants
 So far, a second variant to the protocol has been found. It is the larger sized BEKANT, so it is possible it has different motors.
 
-These motors report their "idle" status value as 0 instead of 96, which can cause the buttons to not respond. Pressing the memory button 16 times will play a tone and toggle the value (saved in EEPROM for persistence) that it will use.
-  
-  
+These motors report their "idle" status value as 0 instead of 96, which can cause the buttons to not respond. Pressing the memory (UP) button 16 times will play a tone and toggle the value (saved in EEPROM for persistence) that it will use.
+
+- Small is 120cm x 80cm (47 1/4" x 31 1/2")
+    - Default firmware, should work out of the box
+- Large is 160cm x 80cm (63" x 31 1/2") 
+    - Requires the 16x toggle
+
 
 # BOM
 Make sure to pick components with suitable values (ie 50V for capacitors)
