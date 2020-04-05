@@ -2,9 +2,7 @@
 #include "lin.h"
 #include "megadesk.h"
 
-// Standard arduino settings
-#define HYSTERESIS            120
-#define COAST                 17
+#define HYSTERESIS            137
 #define PIN_UP                10
 #define PIN_DOWN              9
 #define PIN_BEEP              7
@@ -221,14 +219,7 @@ void loop()
         saveMemory(pushCount, currentHeight);
       else
       {
-        {
-          targetHeight = loadMemory(pushCount);
-          if (targetHeight > currentHeight)
-            targetHeight -= COAST;
-          else if (targetHeight < currentHeight)
-            targetHeight += COAST;
-        }
-
+        targetHeight = loadMemory(pushCount);
         
 				if (targetHeight == 0)
 				{
