@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:megadesk-cache
 EELAYER 30 0
 EELAYER END
 $Descr USLetter 11000 8500
@@ -31,7 +30,7 @@ U 1 1 5A824DF3
 P 2500 1400
 F 0 "U2" H 2350 1525 50  0000 C CNN
 F 1 "L7805" H 2500 1525 50  0000 L CNN
-F 2 "TO_SOT_Packages_SMD:TO-252-3_TabPin2" H 2525 1250 50  0001 L CIN
+F 2 "Package_TO_SOT_SMD:TO-252-3_TabPin2" H 2525 1250 50  0001 L CIN
 F 3 "" H 2500 1350 50  0001 C CNN
 F 4 "L78M05CDT" H 2500 1400 50  0001 C CNN "Part Number"
 	1    2500 1400
@@ -73,7 +72,7 @@ $EndComp
 Text Notes 1600 700  0    60   ~ 0
 Power Regulation
 $Comp
-L device:C C5
+L Device:C C5
 U 1 1 5A8250AF
 P 3100 1550
 F 0 "C5" H 3125 1650 50  0000 L CNN
@@ -89,22 +88,10 @@ Text GLabel 5300 3300 2    47   Output ~ 0
 MOSI
 Text GLabel 5300 3100 2    47   Output ~ 0
 SCK
-$Comp
-L !Custom:MCP2003B U4
-U 1 1 5A826DCE
-P 7200 2950
-F 0 "U4" H 6900 3300 50  0000 L CNN
-F 1 "MCP2003B" H 7000 2600 50  0000 L CNN
-F 2 "Housings_SOIC:SOIC-8_3.9x4.9mm_Pitch1.27mm" H 7300 2950 50  0001 C CNN
-F 3 "" H 7300 2950 50  0001 C CNN
-F 4 "MCP2003B-E/SN" H 7200 2950 50  0001 C CNN "Part Number"
-	1    7200 2950
-	1    0    0    -1  
-$EndComp
 Text GLabel 9100 3050 2    47   Output ~ 0
 LINBUS
 $Comp
-L device:R R5
+L Device:R R5
 U 1 1 5A8360B8
 P 6650 3050
 F 0 "R5" V 6730 3050 50  0000 C CNN
@@ -137,7 +124,7 @@ F 3 "" H 6650 2350 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R3
+L Device:R R3
 U 1 1 5A8362EA
 P 6650 2500
 F 0 "R3" V 6730 2500 50  0000 C CNN
@@ -159,7 +146,7 @@ F 3 "" H 7600 3200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R4
+L Device:R R4
 U 1 1 5A836716
 P 6650 2900
 F 0 "R4" V 6730 2900 50  0000 C CNN
@@ -186,7 +173,7 @@ U 1 1 5A836DF1
 P 1200 1400
 F 0 "U1" H 1050 1525 50  0000 C CNN
 F 1 "L7812" H 1200 1525 50  0000 L CNN
-F 2 "TO_SOT_Packages_SMD:TO-252-3_TabPin2" H 1225 1250 50  0001 L CIN
+F 2 "Package_TO_SOT_SMD:TO-252-3_TabPin2" H 1225 1250 50  0001 L CIN
 F 3 "" H 1200 1350 50  0001 C CNN
 F 4 "L78M12CDT" H 1200 1400 50  0000 C CNN "Part Number"
 F 5 "STMicroelectronics L78M12CDT" H 1200 1400 60  0001 C CNN "Details"
@@ -216,7 +203,7 @@ F 3 "" H 1900 1400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C3
+L Device:C C3
 U 1 1 5A83733B
 P 1800 1550
 F 0 "C3" H 1825 1650 50  0000 L CNN
@@ -238,7 +225,7 @@ F 3 "" H 7800 2250 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R6
+L Device:R R6
 U 1 1 5A8396C7
 P 8600 2900
 F 0 "R6" V 8680 2900 50  0000 C CNN
@@ -251,29 +238,29 @@ $EndComp
 $Comp
 L power:+24V #PWR014
 U 1 1 5A83B52F
-P 4600 1250
-F 0 "#PWR014" H 4600 1100 50  0001 C CNN
-F 1 "+24V" H 4600 1390 50  0000 C CNN
-F 2 "" H 4600 1250 50  0001 C CNN
-F 3 "" H 4600 1250 50  0001 C CNN
-	1    4600 1250
+P 4300 1000
+F 0 "#PWR014" H 4300 850 50  0001 C CNN
+F 1 "+24V" H 4300 1140 50  0000 C CNN
+F 2 "" H 4300 1000 50  0001 C CNN
+F 3 "" H 4300 1000 50  0001 C CNN
+	1    4300 1000
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR015
 U 1 1 5A83B5B8
-P 4450 1350
-F 0 "#PWR015" H 4450 1100 50  0001 C CNN
-F 1 "GND" H 4450 1200 50  0000 C CNN
-F 2 "" H 4450 1350 50  0001 C CNN
-F 3 "" H 4450 1350 50  0001 C CNN
-	1    4450 1350
+P 4150 1100
+F 0 "#PWR015" H 4150 850 50  0001 C CNN
+F 1 "GND" H 4150 950 50  0000 C CNN
+F 2 "" H 4150 1100 50  0001 C CNN
+F 3 "" H 4150 1100 50  0001 C CNN
+	1    4150 1100
 	1    0    0    -1  
 $EndComp
-Text GLabel 4800 1700 2    47   Output ~ 0
+Text GLabel 4500 1450 2    47   Output ~ 0
 LINBUS
 $Comp
-L device:C C6
+L Device:C C6
 U 1 1 5A83BE5C
 P 8400 3200
 F 0 "C6" H 8425 3300 50  0000 L CNN
@@ -300,25 +287,25 @@ Text GLabel 5300 3600 2    47   Input ~ 0
 Bup
 Text GLabel 5300 3700 2    47   Input ~ 0
 Bdown
-Text GLabel 6000 1450 0    47   Input ~ 0
+Text GLabel 5700 1200 0    47   Input ~ 0
 Bup
-Text GLabel 6000 1600 0    47   Input ~ 0
+Text GLabel 5700 1350 0    47   Input ~ 0
 Bdown
 $Comp
 L Connector_Generic:Conn_01x03 J1
 U 1 1 5A83B312
-P 5000 1350
-F 0 "J1" H 5000 1550 50  0000 C CNN
-F 1 "Interface" H 5000 1150 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x03_Pitch2.54mm" H 5000 1350 50  0001 C CNN
-F 3 "" H 5000 1350 50  0001 C CNN
-	1    5000 1350
+P 4700 1100
+F 0 "J1" H 4700 1300 50  0000 C CNN
+F 1 "Interface" H 4700 900 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Angled_1x03_Pitch2.54mm" H 4700 1100 50  0001 C CNN
+F 3 "" H 4700 1100 50  0001 C CNN
+	1    4700 1100
 	1    0    0    -1  
 $EndComp
-Text Notes 5600 1050 0    52   ~ 0
+Text Notes 5300 800  0    52   ~ 0
 Headers
 $Comp
-L device:D D1
+L Device:D D1
 U 1 1 5AA07680
 P 7800 2500
 F 0 "D1" V 7800 2600 50  0000 C CNN
@@ -329,7 +316,7 @@ F 3 "" H 7800 2500 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:D D2
+L Device:D D2
 U 1 1 5AA0777B
 P 8350 2750
 F 0 "D2" H 8350 2650 50  0000 C CNN
@@ -340,7 +327,7 @@ F 3 "" H 8350 2750 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L device:C C1
+L Device:C C1
 U 1 1 5AA096B7
 P 750 1550
 F 0 "C1" H 850 1550 50  0000 L CNN
@@ -367,7 +354,7 @@ U 1 1 5AA1C491
 P 4550 3300
 F 0 "U3" H 4100 4150 50  0000 C CNN
 F 1 "ATTINY841-SSU" H 4900 4150 50  0000 C CNN
-F 2 "Housings_SOIC:SOIC-14_3.9x8.7mm_Pitch1.27mm" H 4550 3100 50  0001 C CIN
+F 2 "Package_SO:SOIC-14_3.9x8.7mm_P1.27mm" H 4550 3100 50  0001 C CIN
 F 3 "" H 4550 3300 50  0001 C CNN
 F 4 "ATTINY841-SSU" H 4550 3300 50  0001 C CNN "Part Number"
 	1    4550 3300
@@ -385,7 +372,7 @@ F 3 "" H 4550 4200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C4
+L Device:C C4
 U 1 1 5AA1F9DA
 P 3650 2450
 F 0 "C4" H 3675 2550 50  0000 L CNN
@@ -409,13 +396,13 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x10 J2
 U 1 1 5AA53CE2
-P 6350 1500
-F 0 "J2" H 6350 2000 50  0000 C CNN
-F 1 "FFC" H 6350 900 50  0000 C CNN
-F 2 "!Custom:FFC_10" H 6350 1500 50  0001 C CNN
-F 3 "" H 6350 1500 50  0001 C CNN
-F 4 "1-84981-0" H 6350 1500 50  0001 C CNN "Part Number"
-	1    6350 1500
+P 6050 1250
+F 0 "J2" H 6050 1750 50  0000 C CNN
+F 1 "FFC" H 6050 650 50  0000 C CNN
+F 2 "!Custom:FFC_10" H 6050 1250 50  0001 C CNN
+F 3 "" H 6050 1250 50  0001 C CNN
+F 4 "1-84981-0" H 6050 1250 50  0001 C CNN "Part Number"
+	1    6050 1250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -430,31 +417,22 @@ Wire Wire Line
 	6300 2800 6300 2650
 Wire Wire Line
 	5750 2800 6300 2800
-Connection ~ 1800 1700
-Connection ~ 1800 1400
 Wire Wire Line
-	2800 1400 3100 1400
-Connection ~ 3100 1400
-Connection ~ 3100 1700
+	4300 1000 4500 1000
 Wire Wire Line
-	4600 1250 4800 1250
+	4500 1100 4150 1100
 Wire Wire Line
-	4800 1350 4450 1350
+	4500 1200 4350 1200
 Wire Wire Line
-	4800 1450 4650 1450
+	4350 1200 4350 1450
 Wire Wire Line
-	4650 1450 4650 1700
-Wire Wire Line
-	4650 1700 4800 1700
-Connection ~ 8400 3050
-Connection ~ 8600 3050
+	4350 1450 4500 1450
 Wire Wire Line
 	6500 3050 6400 3050
 Wire Wire Line
 	6400 3050 6400 3000
 Wire Wire Line
 	6400 3000 6300 3000
-Connection ~ 6650 2650
 Wire Wire Line
 	7600 2900 7800 2900
 Wire Wire Line
@@ -463,21 +441,11 @@ Wire Wire Line
 	8200 2750 7800 2750
 Connection ~ 7800 2750
 Wire Wire Line
-	7600 3050 8400 3050
-Wire Wire Line
 	5300 3700 5150 3700
 Wire Notes Line
 	600  700  3350 700 
 Wire Notes Line
 	3350 1950 600  1950
-Wire Notes Line
-	4300 950  7300 950 
-Wire Notes Line
-	7300 950  7300 1850
-Wire Notes Line
-	7300 1850 4300 1850
-Wire Notes Line
-	4300 1850 4300 950 
 Wire Wire Line
 	7800 2250 7800 2350
 Wire Wire Line
@@ -503,36 +471,34 @@ Wire Wire Line
 Wire Wire Line
 	5300 3900 5150 3900
 Wire Wire Line
-	2500 1700 3100 1700
-Wire Wire Line
 	900  1400 750  1400
 Wire Wire Line
 	2200 1400 2150 1400
 $Comp
 L power:GND #PWR021
 U 1 1 5AA54007
-P 5750 1700
-F 0 "#PWR021" H 5750 1450 50  0001 C CNN
-F 1 "GND" H 5750 1550 50  0000 C CNN
-F 2 "" H 5750 1700 50  0001 C CNN
-F 3 "" H 5750 1700 50  0001 C CNN
-	1    5750 1700
+P 5450 1450
+F 0 "#PWR021" H 5450 1200 50  0001 C CNN
+F 1 "GND" H 5450 1300 50  0000 C CNN
+F 2 "" H 5450 1450 50  0001 C CNN
+F 3 "" H 5450 1450 50  0001 C CNN
+	1    5450 1450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	6150 1700 5750 1700
+	5850 1450 5450 1450
 Wire Wire Line
-	6000 1450 6100 1450
+	5700 1200 5800 1200
 Wire Wire Line
-	6100 1450 6100 1500
+	5800 1200 5800 1250
 Wire Wire Line
-	6100 1500 6150 1500
+	5800 1250 5850 1250
 Wire Wire Line
-	6150 1600 6000 1600
+	5850 1350 5700 1350
 Wire Wire Line
 	5300 3600 5150 3600
 $Comp
-L device:Buzzer BZ1
+L Device:Buzzer BZ1
 U 1 1 5AA5CDC1
 P 5950 3500
 F 0 "BZ1" H 6100 3550 50  0000 L CNN
@@ -546,7 +512,7 @@ $EndComp
 Wire Wire Line
 	5150 3400 5850 3400
 $Comp
-L device:R R1
+L Device:R R1
 U 1 1 5AA5D01D
 P 5850 3750
 F 0 "R1" V 5930 3750 50  0000 C CNN
@@ -628,25 +594,11 @@ Wire Notes Line
 Text Notes 5950 4250 0    60   ~ 0
 Optional beeper
 Wire Wire Line
-	1800 1700 1900 1700
-Wire Wire Line
-	1800 1400 1900 1400
-Wire Wire Line
-	3100 1400 3200 1400
-Wire Wire Line
-	3100 1700 3200 1700
-Wire Wire Line
-	8400 3050 8600 3050
-Wire Wire Line
-	6650 2650 6800 2650
-Wire Wire Line
 	7800 2750 7800 2650
 Wire Wire Line
 	4550 2400 4550 2300
 Wire Wire Line
 	4550 2300 3650 2300
-Connection ~ 3650 2300
-Connection ~ 750  1400
 Wire Wire Line
 	2150 1000 2150 1400
 Wire Notes Line
@@ -664,21 +616,13 @@ NoConn ~ 5150 3800
 NoConn ~ 5150 3000
 NoConn ~ 5150 2700
 NoConn ~ 7600 2750
-NoConn ~ 6150 1100
-NoConn ~ 6150 1200
-NoConn ~ 6150 1300
-NoConn ~ 6150 1400
-NoConn ~ 6150 1800
-NoConn ~ 6150 1900
-NoConn ~ 6150 2000
-Wire Wire Line
-	1500 1400 1800 1400
-Wire Wire Line
-	1200 1700 1800 1700
-Wire Wire Line
-	8600 3050 9100 3050
-Wire Wire Line
-	6300 2650 6650 2650
+NoConn ~ 5850 850 
+NoConn ~ 5850 950 
+NoConn ~ 5850 1050
+NoConn ~ 5850 1150
+NoConn ~ 5850 1550
+NoConn ~ 5850 1650
+NoConn ~ 5850 1750
 $Comp
 L Connector:AVR-ISP-6 J3
 U 1 1 5DBF5698
@@ -728,4 +672,35 @@ Wire Wire Line
 	2900 3200 3000 3200
 Wire Wire Line
 	3000 3100 2900 3100
+$Comp
+L Custom:MCP2003B U4
+U 1 1 5EA90AFC
+P 7200 2950
+F 0 "U4" H 7200 3375 50  0000 C CNN
+F 1 "MCP2003B" H 7200 3284 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 7200 2500 50  0001 C CNN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/22299B.pdf" H 7300 2950 50  0001 C CNN
+	1    7200 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2800 1400 3200 1400
+Wire Wire Line
+	2500 1700 3200 1700
+Wire Wire Line
+	1200 1700 1900 1700
+Wire Wire Line
+	1500 1400 1900 1400
+Wire Wire Line
+	6300 2650 6800 2650
+Wire Wire Line
+	7600 3050 9100 3050
+Wire Notes Line
+	4000 700  4000 1950
+Wire Notes Line
+	4000 700  6350 700 
+Wire Notes Line
+	4000 1950 6350 1950
+Wire Notes Line
+	6350 700  6350 1950
 $EndSCHEMATC
