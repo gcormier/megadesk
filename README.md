@@ -126,6 +126,10 @@ As the megadesk does not have any USB connectivity, you will need a programmer t
 My go-to programmer is the <a href="https://www.sparkfun.com/products/9825">Sparkfun Pocket AVR Programmer</a>. It has a small switch which will either power the device, or not. Having power available is nice for one-off flashing, but if you plan on developing on an AVR, it can be useful to use serial logging. As the megadesk would already be powered up by the desk itself, you do not want to have the programmer supplying power as well.
 
 ## programming header
-The header is a standard 6 pin 2.54mm pitch connector. On board versions v1/v2, this is a standard connector which will accept a typical AVR programming cable on the top of the board. For v4 boards, as many people were not developing, I flipped it upside down so I could program the boards easier when making the boards. As a result, you will need to check the pin mapping accordingly for a top mounted programming header (I flash them from the bottom of the board, but I am not sure if there is room in the case for a bottom-mounted header)
+The header is a standard 6 pin 2.54mm pitch connector (eg. https://www.digikey.ca/en/products/detail/amphenol-icc-fci/68602-406HLF/1657836 )
 
-<img src="https://github.com/gcormier/megadesk/blob/master/programming_header.png" width=20%/>
+On board versions v1/v2, this is a standard connector which will accept a typical AVR programming cable on the top of the board. 
+
+For v4 boards, as many people were not developing, I flipped it upside down so I could program the boards easier when making the boards. As a result, you will need to check the pin mapping accordingly for a top mounted programming header (I flash them from the bottom of the board, but I am not sure if there is room in the case for a bottom-mounted header)
+
+<img src="https://github.com/gcormier/megadesk/blob/master/programming_header.png" width=40%/>
