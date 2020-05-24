@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source C:\Users\Greg\Desktop\megadesk\PCB\megadesk.sch)
-    (date "2020-04-28 8:11:41 PM")
+    (date "2020-04-28 8:34:38 PM")
     (tool "Eeschema (5.1.5)-3")
     (sheet (number 1) (name /) (tstamps /)
       (title_block

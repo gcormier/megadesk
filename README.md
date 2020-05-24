@@ -111,3 +111,16 @@ ATTiny 841 - 8Mhz internal `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
 ## Current Measurements
 
 16mA on the Atmega 328P, 3mA on the MCP2003B.
+
+# Contributing Notes
+## pio
+
+I'm using <a href="https://platform.io">platform.io</a> for development. Integrated into <a href="https://code.visualstudio.com/">Visual Studio Code</a>, it's miles above the Arduino IDE. Note that while we're using pio and vscode, the actual code is still using Arduino libraries - we are not coding
+native AVR code. In other words, there are still `setup()` and `loop()` blocks, and all Arduino modules are available (but handled via pio).
+
+You can find plenty of tutorials online on getting started - <a href="https://circuitdigest.com/microcontroller-projects/programming-arduino-using-platform-io-to-blink-an-led">this one</a> is a good start.
+
+## programming
+As the megadesk does not have any USB connectivity, you will need a programmer to connect and program the megadesk via PC.
+
+My go-to programmer is the <a href="https://www.sparkfun.com/products/9825">Sparkfun Pocket AVR Programmer</a>. It has a small switch which will either power the device, or not. Having power available is nice for one-off flashing, but if you plan on developing on an AVR, it can be useful to use serial logging. As the megadesk would already be powered up by the desk itself, you do not want to have the programmer supplying power as well.
