@@ -35,8 +35,9 @@ Pressing the UP button 16 times will play an ascending tone 3x and toggle the va
 
 # Troubleshooting
 1. Have you tried turning it off again? :)
-    - Seriously - from testing many of these units, about 1 out of 20 times the handshake seems to fail as it does contain some random elements.
-    A simple power cycle will provide a new handshake and the unit will power up.
+    - Seriously - from testing many of these units, about 1 out of 20 times the handshake seems to fail as it does contain some random elements. A simple power cycle will provide a new handshake and the unit will power up.
+    - Try unplugging the desk from the wall and plugging it back in (With megadesk connected)
+    - Alternatively, try powering on the desk with NO controller attached, and then plugging in the megadesk after the desk is powered on.
 2. Is the safety key inserted? It is still required for the motors to engage. You will not hear any beeps when using buttons if it is removed.
 3. Try toggling to the variant mode described above by pushing UP 16 times. You'll hear a unique series of tones depending which mode it's in.
     - Descending tone 3x, megadesk is now in VARIANT mode.
