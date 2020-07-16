@@ -7,12 +7,12 @@ Custom Arduino-based Bekant controller. Design goals were to have it fit in the 
 
 <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>
 
-As of November 2019, version 4 is now a one-sided board for ease of assembly! The BOM remains unchanged.
 
 # Kits or Fully-assembled versions
 
 I've setup a store on Tindie for those who wish to order parts or an assembled version. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
 
+**July 15 - July 20 - Use code `github` for 10$ off megadesk!**
   
 
 ## Video
