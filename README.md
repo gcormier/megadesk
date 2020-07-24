@@ -12,9 +12,6 @@ Custom Arduino-based Bekant controller. Design goals were to have it fit in the 
 
 I've setup a store on Tindie for those who wish to order parts or an assembled version. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
 
-**July 15 - July 20 - Use code `github` for 10$ off megadesk!**
-  
-
 ## Video
 
 Unfortunately the beeps aren't captured well in the video unless you turn up the volume.
