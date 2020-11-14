@@ -2,7 +2,7 @@
 <export version="D">
   <design>
     <source>C:\Users\Greg\Desktop\megadesk\PCB\megadesk.sch</source>
-    <date>2020-06-28 9:37:41 AM</date>
+    <date>2020-08-24 10:17:03 PM</date>
     <tool>Eeschema (5.1.6)-1</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -23,8 +23,9 @@
       <value>L7805</value>
       <footprint>Package_TO_SOT_SMD:TO-252-3_TabPin2</footprint>
       <fields>
-        <field name="LCSC">C20719</field>
-        <field name="Part Number">L78M05CDT</field>
+        <field name="LCSC">C58069</field>
+        <field name="Notes">35V INPUT</field>
+        <field name="Part Number">L78M05ABDT-TR</field>
       </fields>
       <libsource lib="Regulator_Linear" part="L7805" description="Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"/>
       <sheetpath names="/" tstamps="/"/>
@@ -34,6 +35,7 @@
       <value>0.1uF</value>
       <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 20% or better</field>
         <field name="LCSC">C24497</field>
       </fields>
       <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
@@ -44,6 +46,7 @@
       <value>4.7k</value>
       <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 10% or better</field>
         <field name="LCSC">C17936</field>
       </fields>
       <libsource lib="Device" part="R" description="Resistor"/>
@@ -54,6 +57,7 @@
       <value>4.7k</value>
       <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 10% or better</field>
         <field name="LCSC">C17936</field>
       </fields>
       <libsource lib="Device" part="R" description="Resistor"/>
@@ -64,6 +68,7 @@
       <value>4.7k</value>
       <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 10% or better</field>
         <field name="LCSC">C17936</field>
       </fields>
       <libsource lib="Device" part="R" description="Resistor"/>
@@ -74,9 +79,9 @@
       <value>L7812</value>
       <footprint>Package_TO_SOT_SMD:TO-252-3_TabPin2</footprint>
       <fields>
-        <field name="Details">STMicroelectronics L78M12CDT</field>
         <field name="LCSC">C67851</field>
-        <field name="Part Number">L78M12CDT</field>
+        <field name="Notes">35V INPUT</field>
+        <field name="Part Number">MC78M12CDTRKG</field>
       </fields>
       <libsource lib="Regulator_Linear" part="L7812" description="Positive 1.5A 35V Linear Regulator, Fixed Output 12V, TO-220/TO-263/TO-252"/>
       <sheetpath names="/" tstamps="/"/>
@@ -86,6 +91,7 @@
       <value>0.1uF</value>
       <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 20% or better</field>
         <field name="LCSC">C24497</field>
       </fields>
       <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
@@ -96,6 +102,7 @@
       <value>1k</value>
       <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 10% or better</field>
         <field name="LCSC">C4410</field>
       </fields>
       <libsource lib="Device" part="R" description="Resistor"/>
@@ -106,6 +113,7 @@
       <value>220pF</value>
       <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 20% or better</field>
         <field name="LCSC">C1854</field>
       </fields>
       <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
@@ -117,6 +125,8 @@
       <footprint>Pin_Headers:Pin_Header_Angled_1x03_Pitch2.54mm</footprint>
       <fields>
         <field name="LCSC">DNP</field>
+        <field name="Notes">Substitution OK</field>
+        <field name="Part Number">Molex 0022288030</field>
       </fields>
       <libsource lib="Connector_Generic" part="Conn_01x03" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
       <sheetpath names="/" tstamps="/"/>
@@ -127,6 +137,8 @@
       <footprint>Diodes_SMD:D_SOD-323_HandSoldering</footprint>
       <fields>
         <field name="LCSC">C2128</field>
+        <field name="Notes">Substitution OK</field>
+        <field name="Part Number">1N4148</field>
       </fields>
       <libsource lib="Device" part="D" description="Diode"/>
       <sheetpath names="/" tstamps="/"/>
@@ -137,6 +149,8 @@
       <footprint>Diodes_SMD:D_SOD-323_HandSoldering</footprint>
       <fields>
         <field name="LCSC">C2128</field>
+        <field name="Notes">Substitution OK</field>
+        <field name="Part Number">1N4148</field>
       </fields>
       <libsource lib="Device" part="D" description="Diode"/>
       <sheetpath names="/" tstamps="/"/>
@@ -146,6 +160,7 @@
       <value>0.33uF</value>
       <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 20% or better</field>
         <field name="LCSC">C307572</field>
       </fields>
       <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
@@ -167,6 +182,7 @@
       <value>0.1uF</value>
       <footprint>Capacitor_SMD:C_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 20% or better</field>
         <field name="LCSC">C24497</field>
       </fields>
       <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
@@ -178,7 +194,8 @@
       <footprint>!Custom:FFC_10</footprint>
       <fields>
         <field name="LCSC">DNP</field>
-        <field name="Part Number">1-84981-0</field>
+        <field name="Notes">Substitution OK</field>
+        <field name="Part Number">TE Connectivity AMP 1-84981-0</field>
       </fields>
       <libsource lib="Connector_Generic" part="Conn_01x10" description="Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
       <sheetpath names="/" tstamps="/"/>
@@ -189,7 +206,8 @@
       <footprint>!Greg:Buzzer_Murata_PKMCS0909E4000-R1-HAND-SOLDER</footprint>
       <fields>
         <field name="LCSC">DNP</field>
-        <field name="Part Number">CPT-9019S-SM</field>
+        <field name="Notes">Substition OK</field>
+        <field name="Part Number">PKMCS0909E4000-R1</field>
       </fields>
       <libsource lib="Device" part="Buzzer" description="Buzzer, polarized"/>
       <sheetpath names="/" tstamps="/"/>
@@ -199,6 +217,7 @@
       <value>1k</value>
       <footprint>Resistor_SMD:R_1206_3216Metric</footprint>
       <fields>
+        <field name="Details">+/- 10% or better</field>
         <field name="LCSC">C4410</field>
       </fields>
       <libsource lib="Device" part="R" description="Resistor"/>
@@ -211,6 +230,7 @@
       <datasheet> ~</datasheet>
       <fields>
         <field name="LCSC">DNP</field>
+        <field name="Part Number">DNP</field>
       </fields>
       <libsource lib="Connector" part="AVR-ISP-6" description="Atmel 6-pin ISP connector"/>
       <sheetpath names="/" tstamps="/"/>
@@ -219,9 +239,9 @@
     <comp ref="U4">
       <value>MCP2003B</value>
       <footprint>Package_SO:SOIC-8_3.9x4.9mm_P1.27mm</footprint>
-      <datasheet>http://ww1.microchip.com/downloads/en/DeviceDoc/22299B.pdf</datasheet>
       <fields>
         <field name="LCSC">C152207</field>
+        <field name="Part Number">MCP2003B</field>
       </fields>
       <libsource lib="!Custom" part="MCP2003B" description="LIN Transceiver with Voltage Regulator, 5V, PDIP"/>
       <sheetpath names="/" tstamps="/"/>

@@ -4,16 +4,15 @@
 Custom Arduino-based Bekant controller. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
 
 <img  src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png"  width=25%/>
-
 <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>
 
-
 # Kits or Fully-assembled versions
+I've setup a store on Tindie for those who wish to order an assembled version. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
 
-I've setup a store on Tindie for those who wish to order parts or an assembled version. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+# Installation
+I now have a <a href="https://www.youtube.com/watch?v=jCPlM2KYwDQ">video with a few tips</a> on disassembling the IKEA Bekant controller and installing megadesk.
 
 ## Video
-
 Unfortunately the beeps aren't captured well in the video unless you turn up the volume.
 
 <a  href = "https://youtu.be/7XOhuRgoEjk"><img  src = "https://img.youtube.com/vi/7XOhuRgoEjk/0.jpg"  /></a>
@@ -43,6 +42,7 @@ Pressing the UP button 16 times will play an ascending tone 3x and toggle the va
     - Holding UP while powering on will enter a button test mode, where the up/down buttons can be held to test that they are working - a power cycle is required to exit this mode.
 5. Clear all settings/memory
     - Holding DOWN while powering on will wipe the EEPROM memory - a power cycle is required to exit this mode. Note this will clear the VARIANT setting.
+    - Make sure to re-enable the VARIANT setting if it was required initially
 6. Recalibrate/reset the motors (New discovery : July 2020)
     - This step must be done with the **ORIGINAL** BEKANT controller.
     - Hold the UP and DOWN buttons for 8 seconds, after that let go of up while maintaining the pressure on the down button.
