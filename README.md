@@ -1,13 +1,13 @@
 
 # megadesk
 
-Custom Arduino-based Bekant controller. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
+Do you wish your IKEA Bekant had memory buttons? I sure did. So I made megadesk. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
 
 <img  src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png"  width=25%/>
 <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>
 
-# Kits or Fully-assembled versions
-I've setup a store on Tindie for those who wish to order an assembled version. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+# Assembled Versions
+I've setup a store on Tindie for those who wish to order an assembled version - plug and play. <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
 
 # Installation
 I now have a <a href="https://www.youtube.com/watch?v=jCPlM2KYwDQ">video with a few tips</a> on disassembling the IKEA Bekant controller and installing megadesk.
