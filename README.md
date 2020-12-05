@@ -53,7 +53,6 @@ Pressing the UP button 16 times will play an ascending tone 3x and toggle the va
 # Hacking and Contributing
 
 ## Warnings
-
 * Plugging in any connectors backwards can probably damage your desk. Be very careful when working on your circuit.
 * The power supply is 24V, and raises higher when motors are in operation! (Between 35-37V) This can generate a decent amount of heat for the linear regulators. **Make sure to use genuine name brand regulators**, and check the heat output before putting it back inside the casing and attaching it to your tabletop. Ensure to spec the main filtering capacitor appropriately (50v).
 * Do not use ATTinyCore 1.2.2, it contains bugs that will prevent proper operation.
