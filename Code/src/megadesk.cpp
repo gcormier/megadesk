@@ -37,7 +37,6 @@
 #define DANGER_MAX_HEIGHT     6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT     162 + HYSTERESIS + SAFETY
 
-
 // Related to multi-touch
 bool button_pin_up, button_pin_down;
 bool goUp, goDown;
@@ -64,6 +63,20 @@ State state = State::OFF;
 State lastState = State::OFF;
 uint16_t enc_target;
 
+const int numChars = 10;
+char receivedChars[numChars];
+boolean newData = false;
+
+const char command_increase = '+';
+const char command_decrease = '-';
+const char command_absolute = '=';
+const char command_write = 'W';
+const char command_load = 'L';
+const char command_current = 'C';
+const char command_read = 'R';
+
+const char startMarker = '<';
+const char endMarker = '>';
 
 void up(bool pushed) {
   if (pushed)
@@ -93,6 +106,8 @@ void setup() {
 	pinMode(PIN_UP, INPUT_PULLUP);
 	pinMode(PIN_DOWN, INPUT_PULLUP);
 	pinMode(PIN_BEEP, OUTPUT);
+
+  Serial1.begin(115200);
 
 	delay(500);
 
@@ -196,16 +211,125 @@ void readButtons()
 
 }
 
+
+// modified from https://forum.arduino.cc/index.php?topic=396450.0
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char rc;
+
+    while (Serial1.available() > 0 && newData == false) {
+        rc = Serial1.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
+void writeSerial(char operation, int position, int push_addr = -1)
+{
+  Serial1.write(startMarker);
+  Serial1.write(operation);
+  Serial1.write(position);
+  Serial1.write(push_addr);
+  Serial1.write(endMarker);
+  Serial1.write(0x10);
+
+}
+
+void parseData()
+{
+  char command = receivedChars[0];
+  int position = atoi(receivedChars[1]);
+  int push_addr = atoi(receivedChars[3]);
+
+  /*
+  command (first bit)
+    +    increase
+    -    decrease
+    =    absolute
+    C    Ask for current location
+    W    Write EEPROM
+    R    Read EEPROM location
+    L    Load EEPROM location
+
+  position (second bit)
+    +-   relitave to current
+    =W   absolute
+    CRL  -1 (ignore)
+
+  push_addr (third bit)
+    WRL   EEPROM pushCount number
+    *     -1 (ignore)
+  */
+
+  if (command==command_increase){
+    targetHeight = currentHeight + position;
+    memoryMoving = true;
+  }
+  else if( command==command_decrease){
+    targetHeight = currentHeight - position;
+    memoryMoving = true;
+  }
+  else if(command==command_absolute){
+    targetHeight = position;
+    memoryMoving = true;
+  }
+  else if(command==command_write){
+    if (position != 0){
+      saveMemory(push_addr, position);
+    }
+    else {
+      saveMemory(push_addr, currentHeight);
+    }
+  }
+  else if(command==command_load){
+    pushCount = push_addr;
+  }
+  else if(command==command_current){
+    writeSerial(command_absolute,currentHeight);
+  }
+  /*else if(command==command_read){
+    writeSerial(command_read,loadMemory(push_addr),push_addr);
+  }*/
+}
+
 void loop()
 {
   linBurst();
 
   readButtons();
 
+  recvWithStartEndMarkers();
+  
+  if (newData == true) {
+      parseData();
+      newData = false;
+  }
+
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
-  if (currentHeight > 5 && targetHeight == -1)
+  if (currentHeight > 5 && targetHeight == -1){
     targetHeight = currentHeight;
+    writeSerial(command_absolute,targetHeight);
+  }
   
   if (waitingEvent)
   {
@@ -216,11 +340,14 @@ void loop()
 		else if (pushCount > 0)
     {
       if (pushLong)
+      {
         saveMemory(pushCount, currentHeight);
+      }
       else
       {
         targetHeight = loadMemory(pushCount);
-        
+        writeSerial(command_load,targetHeight,pushCount);
+
 				if (targetHeight == 0)
 				{
 					beep(1, 1865);
@@ -247,10 +374,14 @@ void loop()
   else if (!memoryMoving)
     targetHeight = currentHeight;
 
-  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT)
+  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT){
     up(true);
-  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT)
+    writeSerial(command_absolute,targetHeight);
+  }
+  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT){
     down(true);
+    writeSerial(command_absolute,targetHeight);
+  }
   else
   {
     up(false);
