@@ -25,6 +25,10 @@ void initAndReadEEPROM(bool force);
 void linInit();
 void linBurst();
 
+void recvWithStartEndMarkers();
+void writeSerial(char operation, int position, int push_addr = -1); //fix default?
+void parseData();
+
 void delay_until(unsigned long microSeconds);
 
 void sendInitPacket(uint8_t a1 = 255, uint8_t a2 = 255, uint8_t a3 = 255, uint8_t a4 = 255);

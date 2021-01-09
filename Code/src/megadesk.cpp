@@ -243,7 +243,7 @@ void recvWithStartEndMarkers() {
     }
 }
 
-void writeSerial(char operation, int position, int push_addr = -1)
+void writeSerial(char operation, int position, int push_addr)
 {
   Serial1.write(startMarker);
   Serial1.write(operation);
@@ -257,8 +257,8 @@ void writeSerial(char operation, int position, int push_addr = -1)
 void parseData()
 {
   char command = receivedChars[0];
-  int position = atoi(receivedChars[1]);
-  int push_addr = atoi(receivedChars[3]);
+  int position = receivedChars[1];
+  int push_addr = receivedChars[3];
 
   /*
   command (first bit)
@@ -273,11 +273,11 @@ void parseData()
   position (second bit)
     +-   relitave to current
     =W   absolute
-    CRL  -1 (ignore)
+    CRL  (ignore)
 
   push_addr (third bit)
     WRL   EEPROM pushCount number
-    *     -1 (ignore)
+    *     (ignore)
   */
 
   if (command==command_increase){
@@ -293,11 +293,11 @@ void parseData()
     memoryMoving = true;
   }
   else if(command==command_write){
-    if (position != 0){
-      saveMemory(push_addr, position);
+    if (position == 0){
+      saveMemory(push_addr, currentHeight);
     }
     else {
-      saveMemory(push_addr, currentHeight);
+      saveMemory(push_addr, position);
     }
   }
   else if(command==command_load){
@@ -306,9 +306,9 @@ void parseData()
   else if(command==command_current){
     writeSerial(command_absolute,currentHeight);
   }
-  /*else if(command==command_read){
+  else if(command==command_read){
     writeSerial(command_read,loadMemory(push_addr),push_addr);
-  }*/
+  }
 }
 
 void loop()
@@ -586,7 +586,7 @@ void beep(int count, int freq)
   }
 }
 
-void sendInitPacket(uint8_t a1 = 255, uint8_t a2 = 255, uint8_t a3 = 255, uint8_t a4 = 255)
+void sendInitPacket(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4)
 {
   uint8_t packet[8] = { a1, a2, a3, a4, 255, 255, 255, 255 };
   
