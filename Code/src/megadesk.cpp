@@ -37,6 +37,8 @@
 #define DANGER_MAX_HEIGHT     6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT     162 + HYSTERESIS + SAFETY
 
+#define SERIAL_COMMAND_BYTES  5
+
 // Related to multi-touch
 bool button_pin_up, button_pin_down;
 bool goUp, goDown;
@@ -212,8 +214,6 @@ void readButtons()
 
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
-// remove endMarker and make use only header and next 5 bytes
-//    Otherwise if a byte is 62 (>) then problems could occur
 void recvWithStartMarker() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
@@ -223,7 +223,7 @@ void recvWithStartMarker() {
         rc = Serial1.read();
 
         if (recvInProgress == true) {
-            if (ndx >= 5) {
+            if (ndx >= SERIAL_COMMAND_BYTES) {
                 receivedChars[ndx] = rc;
                 ndx++;
                 if (ndx >= numChars) {
@@ -252,7 +252,6 @@ void writeSerial(char operation, int position, int push_addr)
   Serial1.write(position>>8);
   Serial1.write(push_addr);
   Serial1.write(push_addr>>8);
-
 }
 
 int BitShiftCombine( unsigned char x_high, unsigned char x_low)
@@ -280,12 +279,12 @@ void parseData()
     R    Read EEPROM location
     L    Load EEPROM location
 
-  position (second bit)
+  position (second/third bit)
     +-   relitave to current
     =W   absolute
     CRL  (ignore)
 
-  push_addr (third bit)
+  push_addr (fourth/fifth bit)
     WRL   EEPROM pushCount number
     *     (ignore)
   */
