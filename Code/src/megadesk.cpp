@@ -76,7 +76,6 @@ const char command_current = 'C';
 const char command_read = 'R';
 
 const char startMarker = '<';
-const char endMarker = '>';
 
 void up(bool pushed) {
   if (pushed)
@@ -213,7 +212,9 @@ void readButtons()
 
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
-void recvWithStartEndMarkers() {
+// remove endMarker and make use only header and next 5 bytes
+//    Otherwise if a byte is 62 (>) then problems could occur
+void recvWithStartMarker() {
     static boolean recvInProgress = false;
     static byte ndx = 0;
     char rc;
@@ -222,7 +223,7 @@ void recvWithStartEndMarkers() {
         rc = Serial1.read();
 
         if (recvInProgress == true) {
-            if (rc != endMarker) {
+            if (ndx >= 5) {
                 receivedChars[ndx] = rc;
                 ndx++;
                 if (ndx >= numChars) {
@@ -248,17 +249,26 @@ void writeSerial(char operation, int position, int push_addr)
   Serial1.write(startMarker);
   Serial1.write(operation);
   Serial1.write(position);
+  Serial1.write(position>>8);
   Serial1.write(push_addr);
-  Serial1.write(endMarker);
-  Serial1.write(0x10);
+  Serial1.write(push_addr>>8);
 
+}
+
+int BitShiftCombine( unsigned char x_high, unsigned char x_low)
+{
+  int combined;
+  combined = x_high;
+  combined = combined<<8;
+  combined |= x_low;
+  return combined;
 }
 
 void parseData()
 {
   char command = receivedChars[0];
-  int position = receivedChars[1];
-  int push_addr = receivedChars[3];
+  int position = BitShiftCombine(receivedChars[1],receivedChars[2]);
+  int push_addr = BitShiftCombine(receivedChars[3],receivedChars[4]);
 
   /*
   command (first bit)
@@ -302,6 +312,7 @@ void parseData()
   }
   else if(command==command_load){
     pushCount = push_addr;
+    waitingEvent = true;
   }
   else if(command==command_current){
     writeSerial(command_absolute,currentHeight);
@@ -317,7 +328,7 @@ void loop()
 
   readButtons();
 
-  recvWithStartEndMarkers();
+  recvWithStartMarker();
   
   if (newData == true) {
       parseData();
@@ -365,23 +376,22 @@ void loop()
   {
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
+    writeSerial(command_increase,HYSTERESIS+1);
+
   }
   else if (goDown)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
+    writeSerial(command_decrease,HYSTERESIS-1);
   }
   else if (!memoryMoving)
     targetHeight = currentHeight;
 
-  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT){
+  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT)
     up(true);
-    writeSerial(command_absolute,targetHeight);
-  }
-  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT){
+  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT)
     down(true);
-    writeSerial(command_absolute,targetHeight);
-  }
   else
   {
     up(false);

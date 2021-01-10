@@ -27,6 +27,7 @@ void linBurst();
 
 void recvWithStartEndMarkers();
 void writeSerial(char operation, int position, int push_addr = -1); //fix default?
+int BitShiftCombine( unsigned char x_high, unsigned char x_low);
 void parseData();
 
 void delay_until(unsigned long microSeconds);
