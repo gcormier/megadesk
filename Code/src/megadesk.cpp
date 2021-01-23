@@ -37,7 +37,7 @@
 #define DANGER_MAX_HEIGHT     6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT     162 + HYSTERESIS + SAFETY
 
-#define SERIAL_COMMAND_BYTES  5
+#define SERIAL_COMMAND_BYTES  4
 
 // Related to multi-touch
 bool button_pin_up, button_pin_down;
@@ -65,9 +65,9 @@ State state = State::OFF;
 State lastState = State::OFF;
 uint16_t enc_target;
 
-const int numChars = 10;
-char receivedChars[numChars];
-boolean newData = false;
+const int numBytes = 5;
+uint8_t receivedBytes[numBytes];
+uint8_t newData = false;
 
 const char command_increase = '+';
 const char command_decrease = '-';
@@ -77,7 +77,7 @@ const char command_load = 'L';
 const char command_current = 'C';
 const char command_read = 'R';
 
-const char startMarker = '<';
+const char startMarker = '<';//newline
 
 void up(bool pushed) {
   if (pushed)
@@ -107,8 +107,6 @@ void setup() {
 	pinMode(PIN_UP, INPUT_PULLUP);
 	pinMode(PIN_DOWN, INPUT_PULLUP);
 	pinMode(PIN_BEEP, OUTPUT);
-
-  Serial1.begin(115200);
 
 	delay(500);
 
@@ -149,6 +147,8 @@ void setup() {
 			delay(1000);
 		}
 	}
+
+  Serial1.begin(19200);
 
   beep(1, 2093);
   initAndReadEEPROM(false);
@@ -214,47 +214,51 @@ void readButtons()
 
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
-void recvWithStartMarker() {
-    static boolean recvInProgress = false;
-    static byte ndx = 0;
-    char rc;
+void recvData() {
+  bool recvInProgress = false;
+  uint8_t ndx = 0;
+  char rc;
 
-    while (Serial1.available() > 0 && newData == false) {
-        rc = Serial1.read();
+  while (Serial1.available() > 0 && newData == false) {
+    rc = Serial1.read();
 
-        if (recvInProgress == true) {
-            if (ndx >= SERIAL_COMMAND_BYTES) {
-                receivedChars[ndx] = rc;
-                ndx++;
-                if (ndx >= numChars) {
-                    ndx = numChars - 1;
-                }
-            }
-            else {
-                receivedChars[ndx] = '\0'; // terminate the string
-                recvInProgress = false;
-                ndx = 0;
-                newData = true;
+    if (recvInProgress == true) {
+        if (ndx < SERIAL_COMMAND_BYTES) {
+            receivedBytes[ndx] = rc;
+            ndx++;
+            if (ndx >= numBytes) {
+                ndx = numBytes - 1;
             }
         }
-
-        else if (rc == startMarker) {
-            recvInProgress = true;
+        else {
+            receivedBytes[ndx] = '\0'; // terminate the string
+            recvInProgress = false;
+            ndx = 0;
+            newData = true;
         }
     }
+    else if (rc == startMarker) {
+        recvInProgress = true;
+    }
+  }
 }
 
-void writeSerial(char operation, int position, int push_addr)
+void writeSerial(char command, int position, int push_addr)
 {
+  uint8_t tmp[2];
   Serial1.write(startMarker);
-  Serial1.write(operation);
-  Serial1.write(position);
-  Serial1.write(position>>8);
-  Serial1.write(push_addr);
-  Serial1.write(push_addr>>8);
+  Serial1.write(command);
+  tmp[0] = position & 0xff;
+  tmp[1] = (position>>8);
+  Serial1.write(tmp[1]);
+  Serial1.write(tmp[0]);
+  tmp[0] = push_addr & 0xff;
+  tmp[1] = (push_addr>>8);
+  Serial1.write(tmp[1]);
+  Serial1.write(tmp[0]);
 }
 
-int BitShiftCombine( unsigned char x_high, unsigned char x_low)
+int BitShiftCombine( uint8_t x_high, uint8_t x_low)
 {
   int combined;
   combined = x_high;
@@ -265,10 +269,10 @@ int BitShiftCombine( unsigned char x_high, unsigned char x_low)
 
 void parseData()
 {
-  char command = receivedChars[0];
-  int position = BitShiftCombine(receivedChars[1],receivedChars[2]);
-  int push_addr = BitShiftCombine(receivedChars[3],receivedChars[4]);
-
+  char command = receivedBytes[0];
+  int position = BitShiftCombine(receivedBytes[1],receivedBytes[2]);
+  int push_addr = BitShiftCombine(receivedBytes[3],receivedBytes[4]);
+  
   /*
   command (first bit)
     +    increase
@@ -301,7 +305,10 @@ void parseData()
     targetHeight = position;
     memoryMoving = true;
   }
-  else if(command==command_write){
+  else if(command==command_current){
+    writeSerial(command_absolute,currentHeight);
+  }
+  /*else if(command==command_write){
     if (position == 0){
       saveMemory(push_addr, currentHeight);
     }
@@ -313,12 +320,9 @@ void parseData()
     pushCount = push_addr;
     waitingEvent = true;
   }
-  else if(command==command_current){
-    writeSerial(command_absolute,currentHeight);
-  }
   else if(command==command_read){
     writeSerial(command_read,loadMemory(push_addr),push_addr);
-  }
+  }*/
 }
 
 void loop()
@@ -327,7 +331,7 @@ void loop()
 
   readButtons();
 
-  recvWithStartMarker();
+  recvData();
   
   if (newData == true) {
       parseData();
@@ -338,7 +342,6 @@ void loop()
   // So we don't randomly move on powerup.
   if (currentHeight > 5 && targetHeight == -1){
     targetHeight = currentHeight;
-    writeSerial(command_absolute,targetHeight);
   }
   
   if (waitingEvent)
@@ -352,11 +355,12 @@ void loop()
       if (pushLong)
       {
         saveMemory(pushCount, currentHeight);
+        writeSerial(command_write, currentHeight, pushCount);
       }
       else
       {
         targetHeight = loadMemory(pushCount);
-        writeSerial(command_load,targetHeight,pushCount);
+        writeSerial(command_load, targetHeight, pushCount);
 
 				if (targetHeight == 0)
 				{
@@ -376,13 +380,13 @@ void loop()
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
     writeSerial(command_increase,HYSTERESIS+1);
-
   }
   else if (goDown)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
     writeSerial(command_decrease,HYSTERESIS-1);
+
   }
   else if (!memoryMoving)
     targetHeight = currentHeight;
