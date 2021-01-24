@@ -41,7 +41,7 @@
 bool button_pin_up;
 bool goUp, goDown;
 bool previous, pushLong, waitingEvent = false;
-int pushCount = 0;
+uint8_t pushCount = 0;
 unsigned long currentMillis;
 unsigned long firstPush = 0, lastPush = 0, pushLength = 0;
 //////////////////
@@ -211,8 +211,10 @@ void readButtons()
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
 void recvData()
 {
-  bool recvInProgress = false;
-  byte ndx = 0;
+
+  uint8_t recvInProgress = false;
+  uint8_t ndx = 0;
+
   char rc;
 
   while (Serial1.available() > 0 && newData == false)
@@ -245,7 +247,7 @@ void recvData()
   }
 }
 
-void writeSerial(char command, int position, int push_addr)
+void writeSerial(char command, int position, uint8_t push_addr)
 {
   byte tmp[2];
   Serial1.write(startMarker);
@@ -254,8 +256,7 @@ void writeSerial(char command, int position, int push_addr)
   tmp[0] = position & 0xff;
   Serial1.write(tmp[1]);
   Serial1.write(tmp[0]);
-  tmp[0] = push_addr & 0xff;
-  Serial1.write(tmp[0]);
+  Serial1.write(push_addr);
 }
 
 int BitShiftCombine(byte x_high, byte x_low)
@@ -271,7 +272,7 @@ void parseData()
 {
   char command = receivedBytes[0];
   int position = BitShiftCombine(receivedBytes[1], receivedBytes[2]);
-  int push_addr = BitShiftCombine(0x00, receivedBytes[3]);
+  uint8_t push_addr = receivedBytes[3];
 
   /*
   data start (first byte)
@@ -556,7 +557,7 @@ void linBurst()
   }
 }
 
-void saveMemory(int memorySlot, int value)
+void saveMemory(uint8_t memorySlot, int value)
 {
   // Sanity check
   if (memorySlot == 0 || memorySlot == 1 || value < 5 || value > 32700)
@@ -567,7 +568,7 @@ void saveMemory(int memorySlot, int value)
   EEPROM.put(2 * memorySlot, value);
 }
 
-int loadMemory(int memorySlot)
+int loadMemory(uint8_t memorySlot)
 {
   if (memorySlot == 0 || memorySlot == 1)
     return currentHeight;
@@ -611,9 +612,9 @@ void delay_until(unsigned long microSeconds)
   t = end;
 }
 
-void beep(byte count, int freq)
+void beep(uint8_t count, int freq)
 {
-  for (byte i = 0; i < count; i++)
+  for (uint8_t i = 0; i < count; i++)
   {
     tone(PIN_BEEP, freq);
     delay(BEEP_DURATION);
@@ -655,7 +656,7 @@ void linInit()
   sendInitPacket(208, 2, 7);
   recvInitPacket(resp);
 
-  byte initA = 0;
+  uint8_t initA = 0;
   while (true)
   {
     sendInitPacket(initA, 2, 7);
@@ -682,7 +683,7 @@ void linInit()
   sendInitPacket(initA, 4, 0, 0);
   recvInitPacket(resp);
 
-  byte initB = initA + 1;
+  uint8_t initB = initA + 1;
   while (true)
   {
     sendInitPacket(initB, 2, 0, 0);
@@ -709,7 +710,7 @@ void linInit()
   sendInitPacket(initB, 4, 1, 0);
   recvInitPacket(resp);
 
-  byte initC = initB + 1;
+  uint8_t initC = initB + 1;
   while (initC < 8)
   {
     sendInitPacket(initC, 2, 1, 0);
@@ -784,7 +785,7 @@ void toggleIdleParameter()
   if (LIN_MOTOR_IDLE == 96)
   {
     LIN_MOTOR_IDLE = 0;
-    for (byte i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
       beep(1, 2637);
       delay(10);
@@ -797,7 +798,7 @@ void toggleIdleParameter()
 
   else
   {
-    for (byte i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
       beep(1, 2093);
       delay(50);
