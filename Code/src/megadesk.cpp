@@ -211,7 +211,7 @@ void readButtons()
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
 void recvData()
 {
-  bool recvInProgress = false;
+  uint8_t recvInProgress = false;
   uint8_t ndx = 0;
   char rc;
 
