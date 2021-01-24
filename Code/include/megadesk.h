@@ -1,9 +1,9 @@
 #pragma once
 
-uint8_t empty[] = { 0, 0, 0 };
+uint8_t empty[] = {0, 0, 0};
 
-
-enum class State {
+enum class State : byte
+{
   OFF,
   STARTING,
   UP,
@@ -14,20 +14,21 @@ enum class State {
   STOPPING4,
 };
 
-enum class Command {
+enum class Command : byte
+{
   NONE,
   UP,
   DOWN,
 };
 
-void beep(int count, int freq);
+void beep(byte count, int freq);
 void initAndReadEEPROM(bool force);
 void linInit();
 void linBurst();
 
 void recvWithStartEndMarkers();
 void writeSerial(char operation, int position, int push_addr = 0);
-int BitShiftCombine( uint8_t x_high, uint8_t x_low);
+int BitShiftCombine(uint8_t x_high, uint8_t x_low);
 void parseData();
 
 void delay_until(unsigned long microSeconds);

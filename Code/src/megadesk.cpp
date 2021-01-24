@@ -2,43 +2,43 @@
 #include "lin.h"
 #include "megadesk.h"
 
-#define HYSTERESIS            137
-#define PIN_UP                10
-#define PIN_DOWN              9
-#define PIN_BEEP              7
-#define PIN_SERIAL            1
+#define HYSTERESIS 137
+#define PIN_UP 10
+#define PIN_DOWN 9
+#define PIN_BEEP 7
+#define PIN_SERIAL 1
 
-#define BEEP_DURATION         125
-#define BEEP_PAUSE            60
-#define BEEP_FREQ_LOW         2600
-#define BEEP_FREQ_HIGH        3000
-#define BEEP_FREQ_ACK         2000
+#define BEEP_DURATION 125
+#define BEEP_PAUSE 60
+#define BEEP_FREQ_LOW 2600
+#define BEEP_FREQ_HIGH 3000
+#define BEEP_FREQ_ACK 2000
 
-#define CLICK_TIMEOUT         400UL     // Timeout in MS.
-#define CLICK_LONG            900UL     // Long/hold minimum time in MS.
+#define CLICK_TIMEOUT 400UL // Timeout in MS.
+#define CLICK_LONG 900UL    // Long/hold minimum time in MS.
 
-#define FINE_MOVEMENT_VALUE   100       // Based on protocol decoding
+#define FINE_MOVEMENT_VALUE 100 // Based on protocol decoding
 
 // LIN commands/status
-#define LIN_CMD_IDLE          252
-#define LIN_CMD_RAISE         134
-#define LIN_CMD_LOWER         133
-#define LIN_CMD_FINE          135
-#define LIN_CMD_FINISH        132
-#define LIN_CMD_PREMOVE       196
+#define LIN_CMD_IDLE 252
+#define LIN_CMD_RAISE 134
+#define LIN_CMD_LOWER 133
+#define LIN_CMD_FINE 135
+#define LIN_CMD_FINISH 132
+#define LIN_CMD_PREMOVE 196
 
-#define LIN_MOTOR_BUSY        2
-#define LIN_MOTOR_BUSY_FINE   3
+#define LIN_MOTOR_BUSY 2
+#define LIN_MOTOR_BUSY_FINE 3
 
 // Changing these might be a really bad idea. They are sourced from
 // decoding the OEM controller limits. If you really need a bit of extra travel
 // you can fiddle with SAFETY, it's an extra buffer of a few units.
-#define SAFETY                20
-#define DANGER_MAX_HEIGHT     6777 - HYSTERESIS - SAFETY
-#define DANGER_MIN_HEIGHT     162 + HYSTERESIS + SAFETY
+#define SAFETY 20
+#define DANGER_MAX_HEIGHT 6777 - HYSTERESIS - SAFETY
+#define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
 
 // Related to multi-touch
-bool button_pin_up, button_pin_down;
+bool button_pin_up;
 bool goUp, goDown;
 bool previous, pushLong, waitingEvent = false;
 int pushCount = 0;
@@ -55,7 +55,6 @@ unsigned long t = 0;
 
 // Set default to 96 but this might be change from EEPROM
 unsigned int LIN_MOTOR_IDLE = 96;
-
 
 bool memoryMoving = false;
 Command user_cmd = Command::NONE;
@@ -75,16 +74,18 @@ const char command_load = 'L';
 const char command_current = 'C';
 const char command_read = 'R';
 
-const char startMarker = '<';//newline
+const char startMarker = '<'; //newline
 
-void up(bool pushed) {
+void up(bool pushed)
+{
   if (pushed)
     user_cmd = Command::UP;
   else
     user_cmd = Command::NONE;
 }
 
-void down(bool pushed) {
+void down(bool pushed)
+{
   if (pushed)
     user_cmd = Command::DOWN;
   else
@@ -101,50 +102,50 @@ void ack()
   currentMillis = millis();
 }
 
-void setup() {
-	pinMode(PIN_UP, INPUT_PULLUP);
-	pinMode(PIN_DOWN, INPUT_PULLUP);
-	pinMode(PIN_BEEP, OUTPUT);
+void setup()
+{
+  pinMode(PIN_UP, INPUT_PULLUP);
+  pinMode(PIN_DOWN, INPUT_PULLUP);
+  pinMode(PIN_BEEP, OUTPUT);
 
-	delay(500);
+  delay(500);
 
-	// Button Test Mode
-	if (!digitalRead(PIN_UP))
-	{
-		while (true)
-		{
-			if (!digitalRead(PIN_DOWN))
-				{
-					beep(1, 2637);
-					delay(150);
-					beep(1, 2349);
-					delay(150);
-					beep(1, 2093);
-					delay(500);
-				}
-			if (!digitalRead(PIN_UP))
-			{
-				beep(1, 2093);
-				delay(150);
-				beep(1, 2349);
-				delay(150);
-				beep(1, 2637);
-				delay(500);
+  // Button Test Mode
+  if (!digitalRead(PIN_UP))
+  {
+    while (true)
+    {
+      if (!digitalRead(PIN_DOWN))
+      {
+        beep(1, 2637);
+        delay(150);
+        beep(1, 2349);
+        delay(150);
+        beep(1, 2093);
+        delay(500);
+      }
+      if (!digitalRead(PIN_UP))
+      {
+        beep(1, 2093);
+        delay(150);
+        beep(1, 2349);
+        delay(150);
+        beep(1, 2637);
+        delay(500);
+      }
+      delay(50);
+    }
+  }
 
-			}
-			delay(50);
-		}
-	}
-
-	if (!digitalRead(PIN_DOWN))
-	{
-		initAndReadEEPROM(true);
-		while (true)
-		{
-			beep(1, 2093);
-			delay(1000);
-		}
-	}
+  if (!digitalRead(PIN_DOWN))
+  {
+    initAndReadEEPROM(true);
+    while (true)
+    {
+      beep(1, 2093);
+      delay(1000);
+    }
+  }
 
   Serial1.begin(19200);
 
@@ -153,19 +154,18 @@ void setup() {
   beep(1, 2349);
   lin.begin(19200);
   beep(1, 2637);
-  
+
   linInit();
   beep(1, 2794);
 }
 
 void readButtons()
 {
-  button_pin_down = !digitalRead(PIN_DOWN);
-  goDown = button_pin_down;
+  goDown = !digitalRead(PIN_DOWN);
 
   previous = button_pin_up;
   button_pin_up = !digitalRead(PIN_UP);
-  
+
   currentMillis = millis();
 
   if (!previous && button_pin_up) // Just got pushed
@@ -175,7 +175,6 @@ void readButtons()
     else
       lastPush = currentMillis;
     // Otherwise, Nth time we have pushed, catch it on the release
-
   }
   else if (previous && button_pin_up) // Being held
   {
@@ -186,20 +185,20 @@ void readButtons()
       goUp = true;
     else if ((pushLength - lastPush) > CLICK_LONG && pushCount > 0 && !pushLong)
     {
-      beep(pushCount+1, BEEP_FREQ_ACK);
+      beep(pushCount + 1, BEEP_FREQ_ACK);
       pushLong = true;
     }
   }
-  else if (previous && !button_pin_up && !goUp)  // Just got released and it's a memory call
+  else if (previous && !button_pin_up && !goUp) // Just got released and it's a memory call
   {
     pushCount++;
   }
-  else if (previous && !button_pin_up && goUp)  // Just got released and we were moving
+  else if (previous && !button_pin_up && goUp) // Just got released and we were moving
   {
     ack();
     goUp = false;
   }
-  else    // State has not changed, and is not being held
+  else // State has not changed, and is not being held
   {
     if (firstPush == 0) // idle
       return;
@@ -207,36 +206,41 @@ void readButtons()
     if (currentMillis - lastPush > CLICK_TIMEOUT) // Released
       waitingEvent = true;
   }
-
 }
 
-
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
-void recvData() {
+void recvData()
+{
   bool recvInProgress = false;
   uint8_t ndx = 0;
   char rc;
 
-  while (Serial1.available() > 0 && newData == false) {
+  while (Serial1.available() > 0 && newData == false)
+  {
     rc = Serial1.read();
 
-    if (recvInProgress == true) {
-        if (ndx < numBytes-1) {
-            receivedBytes[ndx] = rc;
-            ndx++;
-            if (ndx >= numBytes) {
-                ndx = numBytes - 1;
-            }
+    if (recvInProgress == true)
+    {
+      if (ndx < numBytes - 1)
+      {
+        receivedBytes[ndx] = rc;
+        ndx++;
+        if (ndx >= numBytes)
+        {
+          ndx = numBytes - 1;
         }
-        else {
-            receivedBytes[ndx] = rc;
-            recvInProgress = false;
-            ndx = 0;
-            newData = true;
-        }
+      }
+      else
+      {
+        receivedBytes[ndx] = rc;
+        recvInProgress = false;
+        ndx = 0;
+        newData = true;
+      }
     }
-    else if (rc == startMarker) {
-        recvInProgress = true;
+    else if (rc == startMarker)
+    {
+      recvInProgress = true;
     }
   }
 }
@@ -246,7 +250,7 @@ void writeSerial(char command, int position, int push_addr)
   uint8_t tmp[2];
   Serial1.write(startMarker);
   Serial1.write(command);
-  tmp[1] = (position>>8);
+  tmp[1] = (position >> 8);
   tmp[0] = position & 0xff;
   Serial1.write(tmp[1]);
   Serial1.write(tmp[0]);
@@ -254,11 +258,11 @@ void writeSerial(char command, int position, int push_addr)
   Serial1.write(tmp[0]);
 }
 
-int BitShiftCombine( uint8_t x_high, uint8_t x_low)
+int BitShiftCombine(uint8_t x_high, uint8_t x_low)
 {
   int combined;
   combined = x_high;
-  combined = combined<<8;
+  combined = combined << 8;
   combined |= x_low;
   return combined;
 }
@@ -266,7 +270,7 @@ int BitShiftCombine( uint8_t x_high, uint8_t x_low)
 void parseData()
 {
   char command = receivedBytes[0];
-  int position = BitShiftCombine(receivedBytes[1],receivedBytes[2]);
+  int position = BitShiftCombine(receivedBytes[1], receivedBytes[2]);
   int push_addr = BitShiftCombine(0x00, receivedBytes[3]);
 
   /*
@@ -292,35 +296,44 @@ void parseData()
     *     (ignore)
   */
 
-  if (command==command_increase){
+  if (command == command_increase)
+  {
     targetHeight = currentHeight + position;
     memoryMoving = true;
   }
-  else if( command==command_decrease){
+  else if (command == command_decrease)
+  {
     targetHeight = currentHeight - position;
     memoryMoving = true;
   }
-  else if(command==command_absolute){
+  else if (command == command_absolute)
+  {
     targetHeight = position;
     memoryMoving = true;
   }
-  else if(command==command_current){
-    writeSerial(command_absolute,currentHeight);
+  else if (command == command_current)
+  {
+    writeSerial(command_absolute, currentHeight);
   }
-  else if(command==command_write){
-    if (position == 0){
+  else if (command == command_write)
+  {
+    if (position == 0)
+    {
       saveMemory(push_addr, currentHeight);
     }
-    else {
+    else
+    {
       saveMemory(push_addr, position);
     }
   }
-  else if(command==command_load){
+  else if (command == command_load)
+  {
     pushCount = push_addr;
     waitingEvent = true;
   }
-  else if(command==command_read){
-    writeSerial(command_read,BitShiftCombine(EEPROM.read(2 * push_addr),EEPROM.read((2 * push_addr)+1)),push_addr);
+  else if (command == command_read)
+  {
+    writeSerial(command_read, BitShiftCombine(EEPROM.read(2 * push_addr), EEPROM.read((2 * push_addr) + 1)), push_addr);
   }
 }
 
@@ -331,25 +344,27 @@ void loop()
   readButtons();
 
   recvData();
-  
-  if (newData == true) {
-      parseData();
-      newData = false;
+
+  if (newData == true)
+  {
+    parseData();
+    newData = false;
   }
 
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
-  if (currentHeight > 5 && targetHeight == -1){
+  if (currentHeight > 5 && targetHeight == -1)
+  {
     targetHeight = currentHeight;
   }
-  
+
   if (waitingEvent)
   {
-		if (pushCount == 16)
-		{
-			toggleIdleParameter();
-		}
-		else if (pushCount > 0)
+    if (pushCount == 16)
+    {
+      toggleIdleParameter();
+    }
+    else if (pushCount > 0)
     {
       if (pushLong)
       {
@@ -361,30 +376,30 @@ void loop()
         targetHeight = loadMemory(pushCount);
         writeSerial(command_load, targetHeight, pushCount);
 
-				if (targetHeight == 0)
-				{
-					beep(1, 1865);
-					beep(1, 1976);
-					beep(1, 1865);
-					targetHeight = currentHeight;
-				}
-				else
-					memoryMoving = true;
+        if (targetHeight == 0)
+        {
+          beep(1, 1865);
+          beep(1, 1976);
+          beep(1, 1865);
+          targetHeight = currentHeight;
+        }
+        else
+          memoryMoving = true;
       }
     }
-      ack();
+    ack();
   }
   else if (goUp)
   {
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
-    writeSerial(command_increase,HYSTERESIS+1);
+    writeSerial(command_increase, HYSTERESIS + 1);
   }
   else if (goDown)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
-    writeSerial(command_decrease,HYSTERESIS-1);
+    writeSerial(command_decrease, HYSTERESIS - 1);
   }
   else if (!memoryMoving)
     targetHeight = currentHeight;
@@ -404,16 +419,15 @@ void loop()
   if (targetHeight < 5)
     up(false);
 
-
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delay_until(25);
 }
 
 void linBurst()
 {
-  uint8_t node_a[4] = { 0, 0, 0, 0 };
-  uint8_t node_b[4] = { 0, 0, 0, 0 };
-  uint8_t cmd[3] = { 0, 0, 0 };
+  uint8_t node_a[4] = {0, 0, 0, 0};
+  uint8_t node_b[4] = {0, 0, 0, 0};
+  uint8_t cmd[3] = {0, 0, 0};
 
   // Send PID 17
   lin.send(17, empty, 3, 2);
@@ -427,9 +441,9 @@ void linBurst()
   lin.recv(8, node_a, 3, 2);
   delay_until(5);
 
-  
   // Send PID 16, 6 times
-  for (uint8_t i = 0; i < 6; i++) {
+  for (uint8_t i = 0; i < 6; i++)
+  {
     lin.send(16, 0, 0, 2);
     delay_until(5);
   }
@@ -444,7 +458,8 @@ void linBurst()
   currentHeight = enc_a;
 
   // Send PID 18
-  switch (state) {
+  switch (state)
+  {
   case State::OFF:
     cmd[2] = LIN_CMD_IDLE;
     break;
@@ -464,14 +479,14 @@ void linBurst()
   case State::STOPPING1:
   case State::STOPPING2:
   case State::STOPPING3:
-    
+
     if (lastState == State::UP)
       enc_target = getMin(enc_a, enc_b) + FINE_MOVEMENT_VALUE;
     else
       enc_target = getMin(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
-    
+
     cmd[2] = LIN_CMD_FINE;
-    
+
     break;
   case State::STOPPING4:
     enc_target = getMax(enc_a, enc_b);
@@ -483,16 +498,20 @@ void linBurst()
   cmd[1] = enc_target >> 8;
   lin.send(18, cmd, 3, 2);
 
-  switch (state) {
+  switch (state)
+  {
   case State::OFF:
-    if (user_cmd != Command::NONE) {
-      if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE) {
+    if (user_cmd != Command::NONE)
+    {
+      if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE)
+      {
         state = State::STARTING;
       }
     }
     break;
   case State::STARTING:
-    switch (user_cmd) {
+    switch (user_cmd)
+    {
     case Command::NONE:
       state = State::OFF;
       break;
@@ -505,12 +524,14 @@ void linBurst()
     }
     break;
   case State::UP:
-    if (user_cmd != Command::UP || currentHeight >= DANGER_MAX_HEIGHT) {
+    if (user_cmd != Command::UP || currentHeight >= DANGER_MAX_HEIGHT)
+    {
       state = State::STOPPING1;
     }
     break;
   case State::DOWN:
-    if (user_cmd != Command::DOWN || currentHeight <= DANGER_MIN_HEIGHT) {
+    if (user_cmd != Command::DOWN || currentHeight <= DANGER_MIN_HEIGHT)
+    {
       state = State::STOPPING1;
     }
     break;
@@ -524,7 +545,8 @@ void linBurst()
     state = State::STOPPING4;
     break;
   case State::STOPPING4:
-    if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE) {
+    if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE)
+    {
       state = State::OFF;
     }
     break;
@@ -540,9 +562,9 @@ void saveMemory(int memorySlot, int value)
   if (memorySlot == 0 || memorySlot == 1 || value < 5 || value > 32700)
     return;
 
-	//beep(memorySlot, BEEP_FREQ_HIGH);
+  //beep(memorySlot, BEEP_FREQ_HIGH);
 
-	EEPROM.put(2 * memorySlot, value);
+  EEPROM.put(2 * memorySlot, value);
 }
 
 int loadMemory(int memorySlot)
@@ -551,33 +573,36 @@ int loadMemory(int memorySlot)
     return currentHeight;
 
   beep(memorySlot, BEEP_FREQ_LOW);
-	
-	int memHeight;
 
-	EEPROM.get(2 * memorySlot, memHeight);
-  
-	if (memHeight == 0)
-	{
-		beep(1, 1865);
-		beep(1, 1976);
-		beep(1, 1865);
-	}
+  int memHeight;
 
-	return memHeight;
+  EEPROM.get(2 * memorySlot, memHeight);
+
+  if (memHeight == 0)
+  {
+    beep(1, 1865);
+    beep(1, 1976);
+    beep(1, 1865);
+  }
+
+  return memHeight;
 }
 
-void delay_until(unsigned long microSeconds) {
+void delay_until(unsigned long microSeconds)
+{
   end = t + (1000 * microSeconds);
   d = end - micros();
 
   // crazy long delay; probably negative wrap-around
   // just return
-  if (d > 1000000) {
+  if (d > 1000000)
+  {
     t = micros();
     return;
   }
 
-  if (d > 15000) {
+  if (d > 15000)
+  {
     unsigned long d2 = (d - 15000) / 1000;
     delay(d2);
     d = end - micros();
@@ -586,9 +611,9 @@ void delay_until(unsigned long microSeconds) {
   t = end;
 }
 
-void beep(int count, int freq)
+void beep(byte count, int freq)
 {
-  for (int i = 0; i < count; i++)
+  for (byte i = 0; i < count; i++)
   {
     tone(PIN_BEEP, freq);
     delay(BEEP_DURATION);
@@ -599,25 +624,25 @@ void beep(int count, int freq)
 
 void sendInitPacket(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4)
 {
-  uint8_t packet[8] = { a1, a2, a3, a4, 255, 255, 255, 255 };
-  
+  uint8_t packet[8] = {a1, a2, a3, a4, 255, 255, 255, 255};
+
   // Custom checksum formula for the initialization
   int chksum = a1 + a2 + a3 + a4;
   chksum = chksum % 255;
   chksum = 255 - chksum;
-  
+
   lin.send(60, packet, 8, 2, chksum);
   delay(3);
 }
 
 void linInit()
 {
-  // Really weird startup sequenced, sourced from the controller.  
+  // Really weird startup sequenced, sourced from the controller.
   uint8_t resp[8];
-  
+
   // Brief stabilization delay
   delay(150);
-  
+
   sendInitPacket(255, 7);
   recvInitPacket(resp);
 
@@ -629,7 +654,7 @@ void linInit()
 
   sendInitPacket(208, 2, 7);
   recvInitPacket(resp);
-  
+
   byte initA = 0;
   while (true)
   {
@@ -653,11 +678,11 @@ void linInit()
 
   sendInitPacket(initA, 6, 11, 0);
   recvInitPacket(resp);
-  
+
   sendInitPacket(initA, 4, 0, 0);
   recvInitPacket(resp);
 
-  byte initB = initA+1;
+  byte initB = initA + 1;
   while (true)
   {
     sendInitPacket(initB, 2, 0, 0);
@@ -700,14 +725,11 @@ void linInit()
 
   delay(15);
 
-  uint8_t magicPacket[3] = { 246, 255, 191 };
+  uint8_t magicPacket[3] = {246, 255, 191};
   lin.send(18, magicPacket, 3, 2);
-  
+
   delay(5);
-  
-
 }
-
 
 uint8_t recvInitPacket(uint8_t array[])
 {
@@ -734,61 +756,58 @@ uint16_t getMax(uint16_t a, uint16_t b)
 
 void initAndReadEEPROM(bool force)
 {
-	int a = EEPROM.read(0);
-	int b = EEPROM.read(1);
+  int a = EEPROM.read(0);
+  int b = EEPROM.read(1);
 
-	if ((a != 18 && b != 13) || force)
-	{
-		for (unsigned int index = 0; index < EEPROM.length(); index++)
-			EEPROM.write(index, 0);
+  if ((a != 18 && b != 13) || force)
+  {
+    for (unsigned int index = 0; index < EEPROM.length(); index++)
+      EEPROM.write(index, 0);
 
-		// Store unique values
-		EEPROM.write(0, 18);
-		EEPROM.write(1, 13);
+    // Store unique values
+    EEPROM.write(0, 18);
+    EEPROM.write(1, 13);
 
-		// This is the idle value
-		EEPROM.write(2, 96);
-	}
+    // This is the idle value
+    EEPROM.write(2, 96);
+  }
 
-
-	// Read this value
-	LIN_MOTOR_IDLE = EEPROM.read(2);
-
+  // Read this value
+  LIN_MOTOR_IDLE = EEPROM.read(2);
 }
-
 
 // Swap the IDLE values and save in EEPROM
 void toggleIdleParameter()
 {
-	LIN_MOTOR_IDLE = EEPROM.read(2);
+  LIN_MOTOR_IDLE = EEPROM.read(2);
 
-	if (LIN_MOTOR_IDLE == 96)
-	{
-		LIN_MOTOR_IDLE = 0;
-		for (int i = 0; i < 3; i++)
-		{
-			beep(1, 2637);
-			delay(10);
-			beep(1, 2349);
-			delay(10);
-			beep(1, 2093);
-			delay(10);
-		}
-	}
-	
-	else
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			beep(1, 2093);
-			delay(50);
-			beep(1, 2349);
-			delay(50);
-			beep(1, 2637);
-			delay(50);
-		}
-		LIN_MOTOR_IDLE = 96;
-	}
+  if (LIN_MOTOR_IDLE == 96)
+  {
+    LIN_MOTOR_IDLE = 0;
+    for (byte i = 0; i < 3; i++)
+    {
+      beep(1, 2637);
+      delay(10);
+      beep(1, 2349);
+      delay(10);
+      beep(1, 2093);
+      delay(10);
+    }
+  }
 
-	EEPROM.write(2, LIN_MOTOR_IDLE);
+  else
+  {
+    for (byte i = 0; i < 3; i++)
+    {
+      beep(1, 2093);
+      delay(50);
+      beep(1, 2349);
+      delay(50);
+      beep(1, 2637);
+      delay(50);
+    }
+    LIN_MOTOR_IDLE = 96;
+  }
+
+  EEPROM.write(2, LIN_MOTOR_IDLE);
 }
