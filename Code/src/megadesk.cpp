@@ -37,8 +37,6 @@
 #define DANGER_MAX_HEIGHT     6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT     162 + HYSTERESIS + SAFETY
 
-#define SERIAL_COMMAND_BYTES  4
-
 // Related to multi-touch
 bool button_pin_up, button_pin_down;
 bool goUp, goDown;
@@ -65,7 +63,7 @@ State state = State::OFF;
 State lastState = State::OFF;
 uint16_t enc_target;
 
-const int numBytes = 5;
+const int numBytes = 4;
 uint8_t receivedBytes[numBytes];
 uint8_t newData = false;
 
@@ -223,7 +221,7 @@ void recvData() {
     rc = Serial1.read();
 
     if (recvInProgress == true) {
-        if (ndx < SERIAL_COMMAND_BYTES) {
+        if (ndx < numBytes-1) {
             receivedBytes[ndx] = rc;
             ndx++;
             if (ndx >= numBytes) {
@@ -231,7 +229,7 @@ void recvData() {
             }
         }
         else {
-            receivedBytes[ndx] = '\0'; // terminate the string
+            receivedBytes[ndx] = rc;
             recvInProgress = false;
             ndx = 0;
             newData = true;
@@ -248,13 +246,11 @@ void writeSerial(char command, int position, int push_addr)
   uint8_t tmp[2];
   Serial1.write(startMarker);
   Serial1.write(command);
-  tmp[0] = position & 0xff;
   tmp[1] = (position>>8);
+  tmp[0] = position & 0xff;
   Serial1.write(tmp[1]);
   Serial1.write(tmp[0]);
   tmp[0] = push_addr & 0xff;
-  tmp[1] = (push_addr>>8);
-  Serial1.write(tmp[1]);
   Serial1.write(tmp[0]);
 }
 
@@ -271,8 +267,8 @@ void parseData()
 {
   char command = receivedBytes[0];
   int position = BitShiftCombine(receivedBytes[1],receivedBytes[2]);
-  int push_addr = BitShiftCombine(receivedBytes[3],receivedBytes[4]);
-  
+  int push_addr = BitShiftCombine(0x00, receivedBytes[3]);
+
   /*
   command (first bit)
     +    increase
@@ -308,7 +304,7 @@ void parseData()
   else if(command==command_current){
     writeSerial(command_absolute,currentHeight);
   }
-  /*else if(command==command_write){
+  else if(command==command_write){
     if (position == 0){
       saveMemory(push_addr, currentHeight);
     }
@@ -321,8 +317,8 @@ void parseData()
     waitingEvent = true;
   }
   else if(command==command_read){
-    writeSerial(command_read,loadMemory(push_addr),push_addr);
-  }*/
+    writeSerial(command_read,BitShiftCombine(EEPROM.read(2 * push_addr),EEPROM.read((2 * push_addr)+1)),push_addr);
+  }
 }
 
 void loop()
@@ -386,7 +382,6 @@ void loop()
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
     writeSerial(command_decrease,HYSTERESIS-1);
-
   }
   else if (!memoryMoving)
     targetHeight = currentHeight;
