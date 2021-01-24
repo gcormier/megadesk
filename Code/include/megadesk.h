@@ -1,6 +1,6 @@
 #pragma once
 
-uint8_t empty[] = {0, 0, 0};
+byte empty[] = {0, 0, 0};
 
 enum class State : byte
 {
@@ -33,8 +33,8 @@ void parseData();
 
 void delay_until(unsigned long microSeconds);
 
-void sendInitPacket(uint8_t a1 = 255, uint8_t a2 = 255, uint8_t a3 = 255, uint8_t a4 = 255);
-uint8_t recvInitPacket(uint8_t array[]);
+void sendInitPacket(byte a1 = 255, byte a2 = 255, byte a3 = 255, byte a4 = 255);
+byte recvInitPacket(byte array[]);
 
 uint16_t getMax(uint16_t a, uint16_t b);
 uint16_t getMin(uint16_t a, uint16_t b);
