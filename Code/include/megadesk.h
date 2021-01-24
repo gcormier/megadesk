@@ -27,7 +27,7 @@ void linInit();
 void linBurst();
 
 void recvWithStartEndMarkers();
-void writeSerial(char operation, int position, int push_addr = 0);
+void writeSerial(char operation, int position, uint8_t push_addr = 0);
 int BitShiftCombine(uint8_t x_high, uint8_t x_low);
 void parseData();
 
@@ -40,5 +40,5 @@ uint16_t getMax(uint16_t a, uint16_t b);
 uint16_t getMin(uint16_t a, uint16_t b);
 void toggleIdleParameter();
 
-int loadMemory(int memorySlot);
-void saveMemory(int memorySlot, int value);
+int loadMemory(uint8_t memorySlot);
+void saveMemory(uint8_t memorySlot, int value);
