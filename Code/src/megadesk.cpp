@@ -270,7 +270,10 @@ void parseData()
   int push_addr = BitShiftCombine(0x00, receivedBytes[3]);
 
   /*
-  command (first bit)
+  data start (first byte)
+    <    start data sentence
+
+  command (second byte)
     +    increase
     -    decrease
     =    absolute
@@ -279,12 +282,12 @@ void parseData()
     R    Read EEPROM location
     L    Load EEPROM location
 
-  position (second/third bit)
+  position (third/fourth bytes)
     +-   relitave to current
     =W   absolute
     CRL  (ignore)
 
-  push_addr (fourth/fifth bit)
+  push_addr (fifth byte)
     WRL   EEPROM pushCount number
     *     (ignore)
   */
