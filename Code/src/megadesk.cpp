@@ -54,7 +54,7 @@ unsigned long end, d;
 unsigned long t = 0;
 
 // Set default to 96 but this might be change from EEPROM
-unsigned int LIN_MOTOR_IDLE = 96;
+byte LIN_MOTOR_IDLE = 96;
 
 bool memoryMoving = false;
 Command user_cmd = Command::NONE;
