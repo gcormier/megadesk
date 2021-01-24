@@ -63,8 +63,8 @@ State lastState = State::OFF;
 uint16_t enc_target;
 
 const int numBytes = 4;
-uint8_t receivedBytes[numBytes];
-uint8_t newData = false;
+byte receivedBytes[numBytes];
+byte newData = false;
 
 const char command_increase = '+';
 const char command_decrease = '-';
@@ -212,7 +212,7 @@ void readButtons()
 void recvData()
 {
   bool recvInProgress = false;
-  uint8_t ndx = 0;
+  byte ndx = 0;
   char rc;
 
   while (Serial1.available() > 0 && newData == false)
@@ -247,7 +247,7 @@ void recvData()
 
 void writeSerial(char command, int position, int push_addr)
 {
-  uint8_t tmp[2];
+  byte tmp[2];
   Serial1.write(startMarker);
   Serial1.write(command);
   tmp[1] = (position >> 8);
@@ -258,7 +258,7 @@ void writeSerial(char command, int position, int push_addr)
   Serial1.write(tmp[0]);
 }
 
-int BitShiftCombine(uint8_t x_high, uint8_t x_low)
+int BitShiftCombine(byte x_high, byte x_low)
 {
   int combined;
   combined = x_high;
@@ -425,9 +425,9 @@ void loop()
 
 void linBurst()
 {
-  uint8_t node_a[4] = {0, 0, 0, 0};
-  uint8_t node_b[4] = {0, 0, 0, 0};
-  uint8_t cmd[3] = {0, 0, 0};
+  byte node_a[4] = {0, 0, 0, 0};
+  byte node_b[4] = {0, 0, 0, 0};
+  byte cmd[3] = {0, 0, 0};
 
   // Send PID 17
   lin.send(17, empty, 3, 2);
@@ -442,7 +442,7 @@ void linBurst()
   delay_until(5);
 
   // Send PID 16, 6 times
-  for (uint8_t i = 0; i < 6; i++)
+  for (byte i = 0; i < 6; i++)
   {
     lin.send(16, 0, 0, 2);
     delay_until(5);
@@ -622,9 +622,9 @@ void beep(byte count, int freq)
   }
 }
 
-void sendInitPacket(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4)
+void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 {
-  uint8_t packet[8] = {a1, a2, a3, a4, 255, 255, 255, 255};
+  byte packet[8] = {a1, a2, a3, a4, 255, 255, 255, 255};
 
   // Custom checksum formula for the initialization
   int chksum = a1 + a2 + a3 + a4;
@@ -638,7 +638,7 @@ void sendInitPacket(uint8_t a1, uint8_t a2, uint8_t a3, uint8_t a4)
 void linInit()
 {
   // Really weird startup sequenced, sourced from the controller.
-  uint8_t resp[8];
+  byte resp[8];
 
   // Brief stabilization delay
   delay(150);
@@ -725,13 +725,13 @@ void linInit()
 
   delay(15);
 
-  uint8_t magicPacket[3] = {246, 255, 191};
+  byte magicPacket[3] = {246, 255, 191};
   lin.send(18, magicPacket, 3, 2);
 
   delay(5);
 }
 
-uint8_t recvInitPacket(uint8_t array[])
+byte recvInitPacket(byte array[])
 {
   return lin.recv(61, array, 8, 2);
 }
