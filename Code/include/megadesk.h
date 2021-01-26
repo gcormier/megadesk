@@ -39,6 +39,8 @@ byte recvInitPacket(byte array[]);
 uint16_t getMax(uint16_t a, uint16_t b);
 uint16_t getMin(uint16_t a, uint16_t b);
 void toggleIdleParameter();
+void toggleMinHeight();
+void toggleMaxHeight();
 
 int loadMemory(uint8_t memorySlot);
 void saveMemory(uint8_t memorySlot, int value);

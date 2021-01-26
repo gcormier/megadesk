@@ -2,6 +2,9 @@
 #include "lin.h"
 #include "megadesk.h"
 
+#define SERIALCOMMS
+#define MINMAX
+
 #define HYSTERESIS 137
 #define PIN_UP 10
 #define PIN_DOWN 9
@@ -53,6 +56,11 @@ int targetHeight = -1;
 unsigned long end, d;
 unsigned long t = 0;
 
+#if defined MINMAX
+int maxHeight = DANGER_MAX_HEIGHT;
+int minHeight = DANGER_MIN_HEIGHT;
+#endif
+
 // Set default to 96 but this might be change from EEPROM
 byte LIN_MOTOR_IDLE = 96;
 
@@ -66,6 +74,7 @@ const int numBytes = 4;
 byte receivedBytes[numBytes];
 byte newData = false;
 
+#if defined SERIALCOMMS
 const char command_increase = '+';
 const char command_decrease = '-';
 const char command_absolute = '=';
@@ -74,7 +83,8 @@ const char command_load = 'L';
 const char command_current = 'C';
 const char command_read = 'R';
 
-const char startMarker = '<'; //newline
+const char startMarker = '<'; 
+#endif
 
 void up(bool pushed)
 {
@@ -147,7 +157,9 @@ void setup()
     }
   }
 
+#if defined SERIALCOMMS
   Serial1.begin(19200);
+#endif
 
   beep(1, 2093);
   initAndReadEEPROM(false);
@@ -209,6 +221,7 @@ void readButtons()
 }
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
+#if defined SERIALCOMMS
 void recvData()
 {
 
@@ -337,6 +350,7 @@ void parseData()
     writeSerial(command_read, BitShiftCombine(EEPROM.read(2 * push_addr), EEPROM.read((2 * push_addr) + 1)), push_addr);
   }
 }
+#endif
 
 void loop()
 {
@@ -344,6 +358,7 @@ void loop()
 
   readButtons();
 
+#if defined SERIALCOMMS
   recvData();
 
   if (newData == true)
@@ -351,6 +366,7 @@ void loop()
     parseData();
     newData = false;
   }
+#endif
 
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
@@ -365,17 +381,31 @@ void loop()
     {
       toggleIdleParameter();
     }
+#if defined MINMAX
+    else if (pushCount == 20)
+    {
+      toggleMinHeight();
+    }
+    else if (pushCount == 22)
+    {
+      toggleMaxHeight();
+    }
+#endif
     else if (pushCount > 0)
     {
       if (pushLong)
       {
         saveMemory(pushCount, currentHeight);
+#if defined SERIALCOMMS
         writeSerial(command_write, currentHeight, pushCount);
+#endif
       }
       else
       {
         targetHeight = loadMemory(pushCount);
+#if defined SERIALCOMMS
         writeSerial(command_load, targetHeight, pushCount);
+#endif
 
         if (targetHeight == 0)
         {
@@ -394,20 +424,32 @@ void loop()
   {
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
+#if defined SERIALCOMMS
     writeSerial(command_increase, HYSTERESIS + 1);
+#endif
   }
   else if (goDown)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
+#if defined SERIALCOMMS
     writeSerial(command_decrease, HYSTERESIS - 1);
+#endif
   }
   else if (!memoryMoving)
     targetHeight = currentHeight;
 
+#if defined MINMAX
+  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < maxHeight)
+#else
   if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT)
+#endif
     up(true);
+#if defined MINMAX
+  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > minHeight)
+#else
   else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT)
+#endif
     down(true);
   else
   {
@@ -525,13 +567,21 @@ void linBurst()
     }
     break;
   case State::UP:
+#if defined MINMAX
+    if (user_cmd != Command::UP || currentHeight >= maxHeight)
+#else
     if (user_cmd != Command::UP || currentHeight >= DANGER_MAX_HEIGHT)
+#endif
     {
       state = State::STOPPING1;
     }
     break;
   case State::DOWN:
+#if defined MINMAX
+    if (user_cmd != Command::DOWN || currentHeight <= minHeight)
+#else
     if (user_cmd != Command::DOWN || currentHeight <= DANGER_MIN_HEIGHT)
+#endif
     {
       state = State::STOPPING1;
     }
@@ -771,10 +821,21 @@ void initAndReadEEPROM(bool force)
 
     // This is the idle value
     EEPROM.write(2, 96);
+    
+#if defined MINMAX
+    // reset max/min height
+    EEPROM.write(40, minHeight);
+    EEPROM.write(44, maxHeight);
+#endif
   }
 
   // Read this value
   LIN_MOTOR_IDLE = EEPROM.read(2);
+#if defined MINMAX
+  EEPROM.get(40, minHeight);
+  EEPROM.get(44, maxHeight);
+#endif
+
 }
 
 // Swap the IDLE values and save in EEPROM
@@ -812,3 +873,49 @@ void toggleIdleParameter()
 
   EEPROM.write(2, LIN_MOTOR_IDLE);
 }
+
+#if defined MINMAX
+// Swap the minHeight values and save in EEPROM
+void toggleMinHeight()
+{
+  
+  if (minHeight == DANGER_MIN_HEIGHT)
+  {
+    minHeight = currentHeight;
+  }
+  else
+  {
+    minHeight = DANGER_MIN_HEIGHT;
+  }
+  
+  beep(1, 2093);
+  delay(50);
+  beep(1, 2349);
+  delay(50);
+  beep(1, minHeight);
+
+  EEPROM.write(40, minHeight);
+}
+
+// Swap the maxHeight values and save in EEPROM
+void toggleMaxHeight()
+{
+  
+  if (maxHeight == DANGER_MAX_HEIGHT)
+  {
+    maxHeight = currentHeight;
+  }
+  else
+  {
+    maxHeight = DANGER_MAX_HEIGHT;
+  }
+
+  beep(1, 2093);
+  delay(50);
+  beep(1, 2349);
+  delay(50);
+  beep(1, maxHeight);
+
+  EEPROM.write(44, maxHeight);
+}
+#endif
