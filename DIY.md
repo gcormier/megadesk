@@ -45,5 +45,7 @@ For v4 boards, as many people were not developing, I flipped it upside down so I
 
 ## Other Stuff
 ### Current Measurements
-
 16mA on the Atmega 328P, 3mA on the MCP2003B.
+
+### PCB Revisions
+There's no major differences that come to mind. If you want to cook your own, check out the v5 release. v6 moves to smaller SMD passive components to make mass-assembly a bit easier. The smaller passives are done with a pick and place and the rest by hand.
