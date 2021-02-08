@@ -423,7 +423,7 @@ void loop()
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
 #if defined SERIALCOMMS
-    writeSerial(command_increase, HYSTERESIS + 1);
+    writeSerial(command_absolute, targetHeight);
 #endif
   }
   else if (goDown)
@@ -431,7 +431,7 @@ void loop()
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
 #if defined SERIALCOMMS
-    writeSerial(command_decrease, HYSTERESIS - 1);
+    writeSerial(command_absolute, targetHeight);
 #endif
   }
   else if (!memoryMoving)
@@ -872,8 +872,6 @@ void toggleMinHeight()
   
   beep(1, 2093);
   delay(50);
-  beep(1, 2349);
-  delay(50);
   beep(1, minHeight);
 
   EEPROM.write(40, minHeight);
@@ -893,8 +891,6 @@ void toggleMaxHeight()
   }
 
   beep(1, 2093);
-  delay(50);
-  beep(1, 2349);
   delay(50);
   beep(1, maxHeight);
 
