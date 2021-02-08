@@ -56,10 +56,8 @@ int targetHeight = -1;
 unsigned long end, d;
 unsigned long t = 0;
 
-#if defined MINMAX
 int maxHeight = DANGER_MAX_HEIGHT;
 int minHeight = DANGER_MIN_HEIGHT;
-#endif
 
 // Set default to 96 but this might be change from EEPROM
 byte LIN_MOTOR_IDLE = 96;
@@ -439,17 +437,9 @@ void loop()
   else if (!memoryMoving)
     targetHeight = currentHeight;
 
-#if defined MINMAX
   if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < maxHeight)
-#else
-  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < DANGER_MAX_HEIGHT)
-#endif
     up(true);
-#if defined MINMAX
   else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > minHeight)
-#else
-  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > DANGER_MIN_HEIGHT)
-#endif
     down(true);
   else
   {
@@ -567,21 +557,13 @@ void linBurst()
     }
     break;
   case State::UP:
-#if defined MINMAX
     if (user_cmd != Command::UP || currentHeight >= maxHeight)
-#else
-    if (user_cmd != Command::UP || currentHeight >= DANGER_MAX_HEIGHT)
-#endif
     {
       state = State::STOPPING1;
     }
     break;
   case State::DOWN:
-#if defined MINMAX
     if (user_cmd != Command::DOWN || currentHeight <= minHeight)
-#else
-    if (user_cmd != Command::DOWN || currentHeight <= DANGER_MIN_HEIGHT)
-#endif
     {
       state = State::STOPPING1;
     }
