@@ -11,6 +11,8 @@ I've setup a store on Tindie for those who wish to order a ready to go, plug and
 # Disassembly of the existing control unit
 I now have a <a href="https://www.youtube.com/watch?v=jCPlM2KYwDQ">video with a few tips</a> on disassembling the IKEA Bekant controller and installing megadesk. Due to popular request, I now have a <a href="https://www.youtube.com/watch?v=qiOev3miDo8">second video with live surgery</a> of a brand new, unopened control unit.
 
+**NOTE:** Do NOT discard your original control unit board! If you ever need to re-calibrate your desk's motors, the only way to currently do this is using the original board, and they are extremely difficult to acquire again as individual separate units.
+
 ## Video
 Unfortunately the beeps aren't captured well in the video unless you turn up the volume.
 
