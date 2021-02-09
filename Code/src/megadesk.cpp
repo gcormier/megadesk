@@ -329,14 +329,26 @@ void parseData()
   }
   else if (command == command_write)
   {
+    // if position not set, then set to currentHeight
     if (position == 0)
     {
-      saveMemory(push_addr, currentHeight);
+      position = currentHeight;
     }
-    else
+
+    // save position to memory location
+    saveMemory(push_addr, position);
+
+#if defined MINMAX
+    //if changing memory location for min/max height, update corect variable
+    if (push_addr == 20)
     {
-      saveMemory(push_addr, position);
+      minHeight = position;
     }
+    else if (push_addr == 22)
+    {
+      maxHeight = position;
+    }
+#endif
   }
   else if (command == command_load)
   {
@@ -345,7 +357,7 @@ void parseData()
   }
   else if (command == command_read)
   {
-    writeSerial(command_read, BitShiftCombine(EEPROM.read(2 * push_addr), EEPROM.read((2 * push_addr) + 1)), push_addr);
+    writeSerial(command_read, BitShiftCombine(EEPROM.read((2 * push_addr) + 1), EEPROM.read(2 * push_addr)), push_addr);
   }
 }
 #endif
