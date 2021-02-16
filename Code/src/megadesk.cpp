@@ -454,6 +454,9 @@ void loop()
     targetHeight = currentHeight - HYSTERESIS - 1;
   }
   else if (!memoryMoving){
+    if (oldHeight != currentHeight){
+      writeSerial(command_absolute, currentHeight);
+    }
     targetHeight = currentHeight;
   }
 
