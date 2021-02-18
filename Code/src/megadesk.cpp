@@ -3,7 +3,7 @@
 #include "megadesk.h"
 
 #define SERIALCOMMS
-//#define MINMAX
+#define MINMAX
 
 #define HYSTERESIS 137
 #define PIN_UP 10
@@ -369,6 +369,7 @@ void loop()
   linBurst();
 
 #if defined SERIALCOMMS
+#if !defined MINMAX
   if (memoryMoving == false && oldHeight != currentHeight){
     if (oldHeight < currentHeight){
       writeSerial(command_increase, currentHeight-oldHeight, pushCount);
@@ -377,6 +378,7 @@ void loop()
       writeSerial(command_decrease, oldHeight-currentHeight, pushCount);
     }
   }
+#endif
 #endif
 
   readButtons();
