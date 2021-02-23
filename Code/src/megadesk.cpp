@@ -624,7 +624,7 @@ void toggleIdleParameter()
   if (LIN_MOTOR_IDLE == 96)
   {
     LIN_MOTOR_IDLE = 0;
-    for (int i = 0; i < 2; i++)
+    for (byte i = 0; i < 2; i++)
     {
       beep(1, 2637);
       delay(50);
@@ -635,7 +635,7 @@ void toggleIdleParameter()
   else if (LIN_MOTOR_IDLE == 0)
   {
     LIN_MOTOR_IDLE = 37;
-    for (int i = 0; i < 3; i++)
+    for (byte i = 0; i < 3; i++)
     {
       beep(1, 2637);
       delay(50);
