@@ -53,8 +53,10 @@ int targetHeight = -1;
 unsigned long end, d;
 unsigned long t = 0;
 
-// Set default to 96 but this might be change from EEPROM
-unsigned int LIN_MOTOR_IDLE = 96;
+// These are the 3 known idle states
+unsigned int LIN_MOTOR_IDLE1 = 0;
+unsigned int LIN_MOTOR_IDLE2 = 37;
+unsigned int LIN_MOTOR_IDLE3 = 96;
 
 bool memoryMoving = false;
 Command user_cmd = Command::NONE;
@@ -206,11 +208,7 @@ void loop()
 
   if (waitingEvent)
   {
-    if (pushCount == 16)
-    {
-      toggleIdleParameter();
-    }
-    else if (pushCount > 0)
+    if (pushCount > 0)
     {
       if (pushLong)
         saveMemory(pushCount, currentHeight);
@@ -343,9 +341,12 @@ void linBurst()
   case State::OFF:
     if (user_cmd != Command::NONE)
     {
-      if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE)
+      if (node_a[2] == node_b[2])
       {
-        state = State::STARTING;
+        if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
+        {
+          state = State::STARTING;
+        }
       }
     }
     break;
@@ -385,9 +386,12 @@ void linBurst()
     state = State::STOPPING4;
     break;
   case State::STOPPING4:
-    if (node_a[2] == LIN_MOTOR_IDLE && node_b[2] == LIN_MOTOR_IDLE)
+    if (node_a[2] == node_b[2])
     {
-      state = State::OFF;
+      if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
+      {
+        state = State::OFF;
+      }
     }
     break;
   default:
@@ -608,49 +612,6 @@ void initAndReadEEPROM(bool force)
     EEPROM.write(0, 18);
     EEPROM.write(1, 13);
 
-    // This is the idle value
-    EEPROM.write(2, 96);
   }
 
-  // Read this value
-  LIN_MOTOR_IDLE = EEPROM.read(2);
-}
-
-// Swap the IDLE values and save in EEPROM
-void toggleIdleParameter()
-{
-  LIN_MOTOR_IDLE = EEPROM.read(2);
-
-  if (LIN_MOTOR_IDLE == 96)
-  {
-    LIN_MOTOR_IDLE = 0;
-    for (byte i = 0; i < 2; i++)
-    {
-      beep(1, 2637);
-      delay(50);
-      beep(1, 2349);
-      delay(50);
-    }
-  }
-  else if (LIN_MOTOR_IDLE == 0)
-  {
-    LIN_MOTOR_IDLE = 37;
-    for (byte i = 0; i < 3; i++)
-    {
-      beep(1, 2637);
-      delay(50);
-      beep(1, 2349);
-      delay(50);
-    }
-  }
-  else
-  {
-    LIN_MOTOR_IDLE = 96;
-    beep(1, 2637);
-    delay(50);
-    beep(1, 2349);
-    delay(50);
-  }
-
-  EEPROM.write(2, LIN_MOTOR_IDLE);
 }

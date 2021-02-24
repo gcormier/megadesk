@@ -32,7 +32,6 @@ uint8_t recvInitPacket(uint8_t array[]);
 
 uint16_t getMax(uint16_t a, uint16_t b);
 uint16_t getMin(uint16_t a, uint16_t b);
-void toggleIdleParameter();
 
 int loadMemory(int memorySlot);
 void saveMemory(int memorySlot, int value);
