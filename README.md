@@ -29,6 +29,14 @@ Pressing the UP button 16 times will play a 2-note "beep-boop" tone.
 
 Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode. Units from shipped prior will need to be flashed with the new firmware.
 
+# Setting and Recalling memory slots
+
+## Setting
+To set assign a memory slot you press the up button two or more times. On the final button press you hold until you hear a tone that indicates what slot you have assigned (2 beeps, 3 beeps, etc).
+
+## Recalling
+To recall a memory slot you push the up button the number of times for that memory slot (2 for first slot, 3 for second slot, etc). If you try to recall a memory slot that has not been saved you will here a "beep-boop" chime indicating that no height information could be recalled.
+
 
 # Troubleshooting
 1. Have you tried turning it off again? :)
