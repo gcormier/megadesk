@@ -15,8 +15,12 @@
 #define PIN_SERIAL 1
 
 // beeps
-#define BEEP_DURATION 125
-#define BEEP_PAUSE 60
+#define BEEP_DURATION 150
+#define SHORT_PAUSE 50
+#define PAUSE BEEP_DURATION
+#define LONG_PAUSE 500
+#define ONE_SEC_PAUSE 1000
+
 // notes to beep
 #define NOTE_G6 1568
 #define NOTE_B6 1976
@@ -135,7 +139,7 @@ void setup()
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
 
-  delay(500);
+  delay(LONG_PAUSE);
 
   // Button Test Mode
   if (!digitalRead(PIN_UP))
@@ -145,22 +149,22 @@ void setup()
       if (!digitalRead(PIN_DOWN))
       {
         beep(1, NOTE_E7);
-        delay(150);
+        delay(PAUSE);
         beep(1, NOTE_D7);
-        delay(150);
+        delay(PAUSE);
         beep(1, NOTE_C7);
-        delay(500);
+        delay(LONG_PAUSE);
       }
       if (!digitalRead(PIN_UP))
       {
         beep(1, NOTE_C7);
-        delay(150);
+        delay(PAUSE);
         beep(1, NOTE_D7);
-        delay(150);
+        delay(PAUSE);
         beep(1, NOTE_E7);
-        delay(500);
+        delay(LONG_PAUSE);
       }
-      delay(50);
+      delay(SHORT_PAUSE);
     }
   }
 
@@ -171,7 +175,7 @@ void setup()
     while (true)
     {
       beep(1, NOTE_C7);
-      delay(1000);
+      delay(ONE_SEC_PAUSE);
     }
   }
 
@@ -663,7 +667,7 @@ int loadMemory(uint8_t memorySlot)
   if (memHeight == 0)
   {
     // empty
-    delay(BEEP_DURATION);
+    delay(LONG_PAUSE);
     // sad trombone
     beep(1, NOTE_DSHARP7);
     beep(1, NOTE_D7);
@@ -704,7 +708,7 @@ void beep(uint8_t count, int freq)
     tone(PIN_BEEP, freq);
     delay(BEEP_DURATION);
     noTone(PIN_BEEP);
-    delay(BEEP_PAUSE);
+    delay(SHORT_PAUSE);
   }
 }
 
