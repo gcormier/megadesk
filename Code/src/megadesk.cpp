@@ -14,11 +14,23 @@
 #define PIN_BEEP 7
 #define PIN_SERIAL 1
 
+// beeps
 #define BEEP_DURATION 125
 #define BEEP_PAUSE 60
-#define BEEP_FREQ_LOW 2600
-#define BEEP_FREQ_HIGH 3000
-#define BEEP_FREQ_ACK 2000
+// notes to beep
+#define NOTE_G6 1568
+#define NOTE_B6 1976
+#define NOTE_C7 2093
+#define NOTE_CSHARP7 2217
+#define NOTE_D7 2344
+#define NOTE_DSHARP7 2489
+#define NOTE_E7 2637
+#define NOTE_F7 2794
+#define NOTE_G7 3136
+#define NOTE_C8 4186
+#define NOTE_LOW NOTE_C7
+#define NOTE_ACK NOTE_G7
+#define NOTE_HIGH NOTE_C8
 
 #define CLICK_TIMEOUT 400UL // Timeout in MS.
 #define CLICK_LONG 900UL    // Long/hold minimum time in MS.
@@ -132,32 +144,33 @@ void setup()
     {
       if (!digitalRead(PIN_DOWN))
       {
-        beep(1, 2637);
+        beep(1, NOTE_E7);
         delay(150);
-        beep(1, 2349);
+        beep(1, NOTE_D7);
         delay(150);
-        beep(1, 2093);
+        beep(1, NOTE_C7);
         delay(500);
       }
       if (!digitalRead(PIN_UP))
       {
-        beep(1, 2093);
+        beep(1, NOTE_C7);
         delay(150);
-        beep(1, 2349);
+        beep(1, NOTE_D7);
         delay(150);
-        beep(1, 2637);
+        beep(1, NOTE_E7);
         delay(500);
       }
       delay(50);
     }
   }
 
+  // factory reset
   if (!digitalRead(PIN_DOWN))
   {
     initAndReadEEPROM(true);
     while (true)
     {
-      beep(1, 2093);
+      beep(1, NOTE_C7);
       delay(1000);
     }
   }
@@ -166,14 +179,15 @@ void setup()
   Serial1.begin(19200);
 #endif
 
-  beep(1, 2093);
+  // init + arpeggio
+  beep(1, NOTE_C7);
   initAndReadEEPROM(false);
-  beep(1, 2349);
+  beep(1, NOTE_E7);
   lin.begin(19200);
-  beep(1, 2637);
+  beep(1, NOTE_G7);
 
   linInit();
-  beep(1, 2794);
+  beep(1, NOTE_C8);
 }
 
 void readButtons()
@@ -202,7 +216,7 @@ void readButtons()
       goUp = true;
     else if ((pushLength - lastPush) > CLICK_LONG && pushCount > 0 && !pushLong)
     {
-      beep(pushCount + 1, BEEP_FREQ_ACK);
+      beep(pushCount + 1, NOTE_ACK);
       pushLong = true;
     }
   }
@@ -435,9 +449,6 @@ void loop()
 
         if (targetHeight == 0)
         {
-          beep(1, 1865);
-          beep(1, 1976);
-          beep(1, 1865);
           targetHeight = currentHeight;
         }
         else
@@ -546,15 +557,15 @@ void linBurst()
   case State::STOPPING3:
 
     if (lastState == State::UP)
-      enc_target = getMin(enc_a, enc_b) + FINE_MOVEMENT_VALUE;
+      enc_target = min(enc_a, enc_b) + FINE_MOVEMENT_VALUE;
     else
-      enc_target = getMin(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
+      enc_target = min(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
 
     cmd[2] = LIN_CMD_FINE;
 
     break;
   case State::STOPPING4:
-    enc_target = getMax(enc_a, enc_b);
+    enc_target = max(enc_a, enc_b);
     cmd[2] = LIN_CMD_FINISH;
     break;
   }
@@ -630,20 +641,20 @@ void linBurst()
 void saveMemory(uint8_t memorySlot, int value)
 {
   // Sanity check
-  if (memorySlot == 0 || memorySlot == 1 || value < 5 || value > 32700)
+  if (memorySlot < 2 || value < 5 || value > 32700)
     return;
 
-  //beep(memorySlot, BEEP_FREQ_HIGH);
+  //beep(memorySlot, NOTE_HIGH);
 
   EEPROM.put(2 * memorySlot, value);
 }
 
 int loadMemory(uint8_t memorySlot)
 {
-  if (memorySlot == 0 || memorySlot == 1)
+  if (memorySlot < 2)
     return currentHeight;
 
-  beep(memorySlot, BEEP_FREQ_LOW);
+  beep(memorySlot, NOTE_LOW);
 
   int memHeight;
 
@@ -651,9 +662,13 @@ int loadMemory(uint8_t memorySlot)
 
   if (memHeight == 0)
   {
-    beep(1, 1865);
-    beep(1, 1976);
-    beep(1, 1865);
+    // empty
+    delay(BEEP_DURATION);
+    // sad trombone
+    beep(1, NOTE_DSHARP7);
+    beep(1, NOTE_D7);
+    beep(1, NOTE_CSHARP7);
+    beep(2, NOTE_C7);
   }
 
   return memHeight;
@@ -807,24 +822,6 @@ byte recvInitPacket(byte array[])
   return lin.recv(61, array, 8, 2);
 }
 
-// Return the smaller of the two parameters
-uint16_t getMin(uint16_t a, uint16_t b)
-{
-  if (a < b)
-    return a;
-  else
-    return b;
-}
-
-// Return the bigger of the two parameters
-uint16_t getMax(uint16_t a, uint16_t b)
-{
-  if (a > b)
-    return a;
-  else
-    return b;
-}
-
 void initAndReadEEPROM(bool force)
 {
   int a = EEPROM.read(0);
@@ -888,6 +885,5 @@ void toggleMaxHeight()
   beep(4, maxHeight); // tone based upon new maxHeight
 
   EEPROM.put(44, maxHeight);
-=======
   }
 #endif
