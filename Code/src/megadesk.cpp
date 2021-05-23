@@ -52,6 +52,11 @@
 #define LIN_MOTOR_BUSY 2
 #define LIN_MOTOR_BUSY_FINE 3
 
+// These are the 3 known idle states
+#define LIN_MOTOR_IDLE1 0
+#define LIN_MOTOR_IDLE2 37
+#define LIN_MOTOR_IDLE3 96
+
 // Changing these might be a really bad idea. They are sourced from
 // decoding the OEM controller limits. If you really need a bit of extra travel
 // you can fiddle with SAFETY, it's an extra buffer of a few units.
@@ -59,38 +64,38 @@
 #define DANGER_MAX_HEIGHT 6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
 
+// constants related to presses
+#define MIN_HEIGHT_SLOT 20
+#define MAX_HEIGHT_SLOT 22
+
+// EEPROM magic signature to detect if eeprom is valid
+#define EEPROM_LOCATION_SIG 0
+#define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
+
 // Related to multi-touch
 bool button_pin_up;
 bool goUp, goDown;
 bool previous, pushLong, waitingEvent = false;
 uint8_t pushCount = 0;
-unsigned long currentMillis;
+// timestamps
 unsigned long firstPush = 0, lastPush = 0, pushLength = 0;
+unsigned long t = 0;
 //////////////////
 
 Lin lin(Serial, PIN_SERIAL);
 
-int currentHeight = -1;
-int targetHeight = -1;
-unsigned long end, d;
-unsigned long t = 0;
+uint16_t currentHeight = 0;
+uint16_t targetHeight = 0;
 
-int maxHeight = DANGER_MAX_HEIGHT;
-int minHeight = DANGER_MIN_HEIGHT;
-
-// These are the 3 known idle states
-unsigned int LIN_MOTOR_IDLE1 = 0;
-unsigned int LIN_MOTOR_IDLE2 = 37;
-unsigned int LIN_MOTOR_IDLE3 = 96;
+uint16_t maxHeight = DANGER_MAX_HEIGHT;
+uint16_t minHeight = DANGER_MIN_HEIGHT;
 
 bool memoryMoving = false;
 Command user_cmd = Command::NONE;
 State state = State::OFF;
-State lastState = State::OFF;
-uint16_t enc_target;
 
 #ifdef SERIALCOMMS
-int oldHeight = -1;
+uint16_t oldHeight = 0;
 
 const int numBytes = 4;
 byte receivedBytes[numBytes];
@@ -130,7 +135,6 @@ void ack()
   pushCount = 0;
   pushLong = false;
   waitingEvent = false;
-  currentMillis = millis();
 }
 
 void setup()
@@ -201,7 +205,7 @@ void readButtons()
   previous = button_pin_up;
   button_pin_up = !digitalRead(PIN_UP);
 
-  currentMillis = millis();
+  unsigned long currentMillis = millis();
 
   if (!previous && button_pin_up) // Just got pushed
   {
@@ -251,11 +255,9 @@ void recvData()
   uint8_t recvInProgress = false;
   uint8_t ndx = 0;
 
-  char rc;
-
   while (Serial1.available() > 0 && newData == false)
   {
-    rc = Serial1.read();
+    char rc = Serial1.read();
 
     if (recvInProgress == true)
     {
@@ -283,7 +285,7 @@ void recvData()
   }
 }
 
-void writeSerial(char command, int position, uint8_t push_addr)
+void writeSerial(char command, uint16_t position, uint8_t push_addr)
 {
   byte tmp[2];
   Serial1.write(startMarker);
@@ -297,11 +299,7 @@ void writeSerial(char command, int position, uint8_t push_addr)
 
 int BitShiftCombine(byte x_high, byte x_low)
 {
-  int combined;
-  combined = x_high;
-  combined = combined << 8;
-  combined |= x_low;
-  return combined;
+  return (( x_high << 8 ) | x_low );
 }
 
 void parseData()
@@ -365,11 +363,11 @@ void parseData()
 
 #ifdef MINMAX
     //if changing memory location for min/max height, update corect variable
-    if (push_addr == 20)
+    if (push_addr == MIN_HEIGHT_SLOT)
     {
       minHeight = position;
     }
-    else if (push_addr == 22)
+    else if (push_addr == MAX_HEIGHT_SLOT)
     {
       maxHeight = position;
     }
@@ -418,7 +416,7 @@ void loop()
 
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
-  if (currentHeight > 5 && targetHeight == -1)
+  if (currentHeight > 5 && targetHeight == 0)
   {
     targetHeight = currentHeight;
   }
@@ -426,11 +424,11 @@ void loop()
   if (waitingEvent)
   {
     #ifdef MINMAX
-    if (pushCount == 20)
+    if (pushCount == MIN_HEIGHT_SLOT)
     {
       toggleMinHeight();
     }
-    else if (pushCount == 22)
+    else if (pushCount == MAX_HEIGHT_SLOT)
     {
       toggleMaxHeight();
     } else // else if continued next line
@@ -508,6 +506,7 @@ void linBurst()
   byte node_a[4] = {0, 0, 0, 0};
   byte node_b[4] = {0, 0, 0, 0};
   byte cmd[3] = {0, 0, 0};
+  State lastState = State::OFF;
 
   // Send PID 17
   lin.send(17, empty, 3, 2);
@@ -534,7 +533,7 @@ void linBurst()
 
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
-  enc_target = enc_a;
+  uint16_t enc_target = enc_a;
   currentHeight = enc_a;
 
   // Send PID 18
@@ -642,7 +641,7 @@ void linBurst()
   }
 }
 
-void saveMemory(uint8_t memorySlot, int value)
+void saveMemory(uint8_t memorySlot, uint16_t value)
 {
   // Sanity check
   if (memorySlot < 2 || value < 5 || value > 32700)
@@ -653,14 +652,14 @@ void saveMemory(uint8_t memorySlot, int value)
   EEPROM.put(2 * memorySlot, value);
 }
 
-int loadMemory(uint8_t memorySlot)
+uint16_t loadMemory(uint8_t memorySlot)
 {
   if (memorySlot < 2)
     return currentHeight;
 
   beep(memorySlot, NOTE_LOW);
 
-  int memHeight;
+  uint16_t memHeight;
 
   EEPROM.get(2 * memorySlot, memHeight);
 
@@ -672,7 +671,7 @@ int loadMemory(uint8_t memorySlot)
     beep(1, NOTE_DSHARP7);
     beep(1, NOTE_D7);
     beep(1, NOTE_CSHARP7);
-    beep(2, NOTE_C7);
+    beep(1, NOTE_C7);
   }
 
   return memHeight;
@@ -680,8 +679,8 @@ int loadMemory(uint8_t memorySlot)
 
 void delay_until(unsigned long microSeconds)
 {
-  end = t + (1000 * microSeconds);
-  d = end - micros();
+  unsigned long end = t + (1000 * microSeconds);
+  unsigned long d = end - micros();
 
   // crazy long delay; probably negative wrap-around
   // just return
@@ -841,13 +840,13 @@ void initAndReadEEPROM(bool force)
 
     #ifdef MINMAX
     // reset max/min height
-    EEPROM.put(40, DANGER_MIN_HEIGHT);
-    EEPROM.put(44, DANGER_MAX_HEIGHT);
+    EEPROM.put(2*MIN_HEIGHT_SLOT, DANGER_MIN_HEIGHT);
+    EEPROM.put(2*MAX_HEIGHT_SLOT, DANGER_MAX_HEIGHT);
     #endif
   }
     #ifdef MINMAX
-    EEPROM.get(40, minHeight);
-    EEPROM.get(44, maxHeight);
+    EEPROM.get(2*MIN_HEIGHT_SLOT, minHeight);
+    EEPROM.get(2*MAX_HEIGHT_SLOT, maxHeight);
     #endif
 }
 
@@ -869,7 +868,7 @@ void toggleMinHeight()
   //Min height change sound
   beep(4, minHeight); // tone based upon new minHeight
 
-  EEPROM.put(40, minHeight);
+  EEPROM.put(2*MIN_HEIGHT_SLOT, minHeight);
 }
 
 // Swap the maxHeight values and save in EEPROM
@@ -888,6 +887,6 @@ void toggleMaxHeight()
   //Max height change sound
   beep(4, maxHeight); // tone based upon new maxHeight
 
-  EEPROM.put(44, maxHeight);
-  }
+  EEPROM.put(2*MAX_HEIGHT_SLOT, maxHeight);
+}
 #endif
