@@ -41,5 +41,8 @@ void toggleMinHeight();
 void toggleMaxHeight();
 #endif
 
+uint16_t eeprom_get16( int idx );
+void eeprom_put16( int idx, uint16_t val );
+
 uint16_t loadMemory(uint8_t memorySlot);
 void saveMemory(uint8_t memorySlot, uint16_t value);

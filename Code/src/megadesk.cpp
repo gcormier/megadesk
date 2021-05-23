@@ -380,7 +380,7 @@ void parseData()
   }
   else if (command == command_read)
   {
-    writeSerial(command_read, BitShiftCombine(EEPROM.read((2 * push_addr) + 1), EEPROM.read(2 * push_addr)), push_addr);
+    writeSerial(command_read, eeprom_get16(push_addr), push_addr);
   }
 }
 #endif
@@ -641,6 +641,19 @@ void linBurst()
   }
 }
 
+// lean EEPROM functions to get/put 16bit values
+// and address eeprom by 16bit slot.
+uint16_t eeprom_get16( int slot )
+{
+  return ((EEPROM.read( 2*slot+1 ) << 8) | EEPROM.read( 2*slot ));
+}
+
+void eeprom_put16( int slot, uint16_t val )
+{
+  EEPROM.write( 2*slot, val & 0xff);
+  EEPROM.write( 2*slot+1, val >> 8);
+}
+
 void saveMemory(uint8_t memorySlot, uint16_t value)
 {
   // Sanity check
@@ -649,7 +662,7 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
 
   //beep(memorySlot, NOTE_HIGH);
 
-  EEPROM.put(2 * memorySlot, value);
+  eeprom_put16(memorySlot, value);
 }
 
 uint16_t loadMemory(uint8_t memorySlot)
@@ -659,9 +672,7 @@ uint16_t loadMemory(uint8_t memorySlot)
 
   beep(memorySlot, NOTE_LOW);
 
-  uint16_t memHeight;
-
-  EEPROM.get(2 * memorySlot, memHeight);
+  uint16_t memHeight = eeprom_get16(memorySlot);
 
   if (memHeight == 0)
   {
@@ -827,26 +838,24 @@ byte recvInitPacket(byte array[])
 
 void initAndReadEEPROM(bool force)
 {
-  int a = EEPROM.read(0);
-  int b = EEPROM.read(1);
+  int signature = eeprom_get16(EEPROM_LOCATION_SIG);
 
-  if ((a != 18 && b != 13) || force)
+  if ((signature != MAGIC_SIG) || force)
   {
     for (unsigned int index = 0; index < EEPROM.length(); index++)
       EEPROM.write(index, 0);
-    // Store unique values
-    EEPROM.write(0, 18);
-    EEPROM.write(1, 13);
+    // Store signature value
+    eeprom_put16(EEPROM_LOCATION_SIG, MAGIC_SIG);
 
     #ifdef MINMAX
     // reset max/min height
-    EEPROM.put(2*MIN_HEIGHT_SLOT, DANGER_MIN_HEIGHT);
-    EEPROM.put(2*MAX_HEIGHT_SLOT, DANGER_MAX_HEIGHT);
+    eeprom_put16(MIN_HEIGHT_SLOT, DANGER_MIN_HEIGHT);
+    eeprom_put16(MAX_HEIGHT_SLOT, DANGER_MAX_HEIGHT);
     #endif
   }
     #ifdef MINMAX
-    EEPROM.get(2*MIN_HEIGHT_SLOT, minHeight);
-    EEPROM.get(2*MAX_HEIGHT_SLOT, maxHeight);
+    minHeight = eeprom_get16(MIN_HEIGHT_SLOT);
+    maxHeight = eeprom_get16(MAX_HEIGHT_SLOT);
     #endif
 }
 
@@ -868,7 +877,7 @@ void toggleMinHeight()
   //Min height change sound
   beep(4, minHeight); // tone based upon new minHeight
 
-  EEPROM.put(2*MIN_HEIGHT_SLOT, minHeight);
+  eeprom_put16(MIN_HEIGHT_SLOT, minHeight);
 }
 
 // Swap the maxHeight values and save in EEPROM
@@ -887,6 +896,6 @@ void toggleMaxHeight()
   //Max height change sound
   beep(4, maxHeight); // tone based upon new maxHeight
 
-  EEPROM.put(2*MAX_HEIGHT_SLOT, maxHeight);
+  eeprom_put16(MAX_HEIGHT_SLOT, maxHeight);
 }
 #endif
