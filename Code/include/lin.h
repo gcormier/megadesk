@@ -57,8 +57,7 @@ public:
   void begin(int speed);
 
   // Send a message right now, ignoring the schedule table.
-  void send(uint8_t addr, const uint8_t* message,uint8_t nBytes,uint8_t proto=2);
-  void send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t proto, uint8_t cksum);
+  void send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t proto=2, int16_t cksum=-1);
 
   // Receive a message right now, returns 0xff if good checksum, # bytes received (including checksum) if checksum is bad.
   uint8_t recv(uint8_t addr, uint8_t* message, uint8_t nBytes,uint8_t proto=2);
