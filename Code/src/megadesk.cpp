@@ -20,6 +20,7 @@
 #define PAUSE BEEP_DURATION
 #define LONG_PAUSE 500
 #define ONE_SEC_PAUSE 1000
+#define PITCH_ADJUST (64000000 / F_CPU) // digitalWrite takes ~8us at 8MHz
 
 // notes to beep
 #define NOTE_G6 1568
@@ -707,13 +708,23 @@ void delay_until(unsigned long microSeconds)
   t = end;
 }
 
-void beep(uint8_t count, int freq)
+// simple tone generation - leaner than tone()
+// sound will break up if servicing ISRs/interrupts.
+void playTone(uint16_t freq, uint16_t duration) {
+  uint16_t halfperiod = 1000000L / freq;
+  for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
+    digitalWrite(PIN_BEEP, HIGH);
+    delayMicroseconds(halfperiod - PITCH_ADJUST);
+    digitalWrite(PIN_BEEP, LOW);
+    delayMicroseconds(halfperiod - PITCH_ADJUST);
+  }
+}
+
+void beep(uint8_t count, int16_t freq)
 {
   for (uint8_t i = 0; i < count; i++)
   {
-    tone(PIN_BEEP, freq);
-    delay(BEEP_DURATION);
-    noTone(PIN_BEEP);
+    playTone(freq, BEEP_DURATION);
     delay(SHORT_PAUSE);
   }
 }
