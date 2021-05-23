@@ -265,10 +265,6 @@ void recvData()
       {
         receivedBytes[ndx] = rc;
         ndx++;
-        if (ndx >= numBytes)
-        {
-          ndx = numBytes - 1;
-        }
       }
       else
       {
