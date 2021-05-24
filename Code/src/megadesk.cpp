@@ -74,13 +74,14 @@
 #define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
 
 // Related to multi-touch
-bool button_pin_up;
-bool goUp, goDown;
-bool previous, pushLong, waitingEvent = false;
+bool goUp, goDown; // when holding first press of up/down
+bool previous = false; // previous state of left button
+bool savePosition = false; // was pushLong
+bool waitingEvent = false;
 uint8_t pushCount = 0;
 // timestamps
-unsigned long firstPush = 0, lastPush = 0, pushLength = 0;
-unsigned long t = 0;
+unsigned long lastPush = 0;
+unsigned long time_ref = 0;
 //////////////////
 
 Lin lin(Serial, PIN_SERIAL);
@@ -132,9 +133,9 @@ void down(bool pushed)
 void ack()
 {
   previous = false;
-  firstPush = lastPush = pushLength = 0;
+  lastPush = 0;
   pushCount = 0;
-  pushLong = false;
+  savePosition = false;
   waitingEvent = false;
 }
 
@@ -199,53 +200,61 @@ void setup()
   beep(1, NOTE_C8);
 }
 
+// global vars
+// goDown : state of down button + tell loop() to go down
+// goUp : tell loop() to go up
+// previous : previous value of buttons
+// l- buttons : current state of up button.
+// pushCount : current count
+// --firstPush : timestamp of first push - lastPush is sufficient...
+// lastPush : timestamp of last push
+// l- pushLength : current push/hold time
+// savePosition : non-first long-press, so save
+// waiting_event : work to do - lookup or store.
 void readButtons()
 {
   goDown = !digitalRead(PIN_DOWN);
 
-  previous = button_pin_up;
-  button_pin_up = !digitalRead(PIN_UP);
+  bool buttons = !digitalRead(PIN_UP);
 
   unsigned long currentMillis = millis();
 
-  if (!previous && button_pin_up) // Just got pushed
+  if (!previous && buttons) // Just got pushed
   {
-    if (firstPush == 0) // First time we have pushed
-      firstPush = lastPush = currentMillis;
-    else
-      lastPush = currentMillis;
+    lastPush = currentMillis;
     // Otherwise, Nth time we have pushed, catch it on the release
   }
-  else if (previous && button_pin_up) // Being held
+  else if (previous && buttons) // Being held
   {
-    pushLength = currentMillis;
+    unsigned long pushLength = currentMillis - lastPush;
 
     // Are we holding the first push (not a memory function)
-    if ((pushLength - lastPush) > CLICK_TIMEOUT && pushCount == 0)
+    if (pushLength > CLICK_TIMEOUT && pushCount == 0)
       goUp = true;
-    else if ((pushLength - lastPush) > CLICK_LONG && pushCount > 0 && !pushLong)
+    else if (pushLength > CLICK_LONG && pushCount > 0 && !savePosition)
     {
       beep(pushCount + 1, NOTE_ACK);
-      pushLong = true;
+      savePosition = true;
     }
   }
-  else if (previous && !button_pin_up && !goUp) // Just got released and it's a memory call
+  else if (previous && !buttons && !goUp) // Just got released and it's a memory call
   {
     pushCount++;
   }
-  else if (previous && !button_pin_up && goUp) // Just got released and we were moving
+  else if (previous && !buttons && goUp) // Just got released and we were moving
   {
     ack();
     goUp = false;
   }
   else // State has not changed, and is not being held
   {
-    if (firstPush == 0) // idle
+    if (lastPush == 0) // idle
       return;
 
     if (currentMillis - lastPush > CLICK_TIMEOUT) // Released
       waitingEvent = true;
   }
+  previous = buttons;
 }
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
@@ -432,7 +441,7 @@ void loop()
 #endif
     if (pushCount > 1)
     {
-      if (pushLong)
+      if (savePosition)
       {
         saveMemory(pushCount, currentHeight);
 #ifdef SERIALCOMMS
@@ -504,6 +513,9 @@ void linBurst()
   byte node_b[4] = {0, 0, 0, 0};
   byte cmd[3] = {0, 0, 0};
   State lastState = State::OFF;
+
+  // ensure accurate timing from this point
+  time_ref = micros();
 
   // Send PID 17
   lin.send(17, empty, 3, 2);
@@ -657,7 +669,7 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
   if (memorySlot < 2 || value < 5 || value > 32700)
     return;
 
-  //beep(memorySlot, NOTE_HIGH);
+  beep(1, NOTE_HIGH);
 
   eeprom_put16(memorySlot, value);
 }
@@ -685,27 +697,32 @@ uint16_t loadMemory(uint8_t memorySlot)
   return memHeight;
 }
 
+
+// accurate delay from the last time delay_until() returned.
+// for precise periodic timing
 void delay_until(unsigned long microSeconds)
 {
-  unsigned long end = t + (1000 * microSeconds);
-  unsigned long d = end - micros();
+  unsigned long target = time_ref + (1000 * microSeconds);
+  unsigned long micro_delay = target - micros();
 
-  // crazy long delay; probably negative wrap-around
-  // just return
-  if (d > 1000000)
+  if (micro_delay > 1000000)
   {
-    t = micros();
+    // crazy long delay - target time is in the past!
+    // reset time_ref and return
+    time_ref = micros();
     return;
   }
 
-  if (d > 15000)
+  if (micro_delay > 15000)
   {
-    unsigned long d2 = (d - 15000) / 1000;
-    delay(d2);
-    d = end - micros();
+    // need delayMicroseconds() and delay()
+    unsigned long millidelay = (micro_delay - 15000) / 1000;
+    delay(millidelay);
+    // recalculate microsec delay
+    micro_delay = target - micros();
   }
-  delayMicroseconds(d);
-  t = end;
+  delayMicroseconds(micro_delay);
+  time_ref = target;
 }
 
 // simple tone generation - leaner than tone()
