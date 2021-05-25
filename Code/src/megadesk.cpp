@@ -68,8 +68,9 @@
 #define DANGER_MAX_HEIGHT 6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
 
-// constants related to presses
-#define RIGHT_SLOT_START 10
+// constants related to presses/eeprom slots
+// (on attiny841: 512byte eeprom means max 255 slots)
+#define RIGHT_SLOT_START 32
 #define MIN_HEIGHT_SLOT 20
 #define MAX_HEIGHT_SLOT 22
 
@@ -246,6 +247,9 @@ void readButtons()
 #endif
   } else {
     buttons = NONE;
+#ifndef BOTH_BUTTONS
+    goDown = false;
+#endif
   }
 
   // If already moving and any button is pressed - stop
