@@ -4,6 +4,9 @@
 // Uncomment this if you want to override minimum/maximum heights
 //#define MINMAX
 
+// Uncomment to store/recall memories from both buttons
+#define BOTH_BUTTONS
+
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
@@ -66,6 +69,7 @@
 #define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
 
 // constants related to presses
+#define RIGHT_SLOT_START 10
 #define MIN_HEIGHT_SLOT 20
 #define MAX_HEIGHT_SLOT 22
 
@@ -75,9 +79,12 @@
 
 // Related to multi-touch
 bool goUp, goDown; // when holding first press of up/down
-bool previous = false; // previous state of left button
+enum button_state { NONE=0, UP=1, DOWN=2, BOTH=3 };
+
+button_state previous = NONE; // previous state of buttons
+button_state lastbutton = NONE; // last button to be pressed
 bool savePosition = false; // was pushLong
-bool waitingEvent = false;
+bool memoryEvent = false; // should be loadPosition??
 uint8_t pushCount = 0;
 // timestamps
 unsigned long lastPush = 0;
@@ -132,11 +139,11 @@ void down(bool pushed)
 
 void ack()
 {
-  previous = false;
+  previous = button_state::NONE;
   lastPush = 0;
   pushCount = 0;
   savePosition = false;
-  waitingEvent = false;
+  memoryEvent = false;
 }
 
 void setup()
@@ -200,6 +207,12 @@ void setup()
   beep(1, NOTE_C8);
 }
 
+#ifdef BOTH_BUTTONS
+#define DIRECTION_BUTTON(button) ((button == UP) || (button == DOWN))
+#else
+#define DIRECTION_BUTTON(button) (button == UP)
+#endif
+
 // global vars
 // goDown : state of down button + tell loop() to go down
 // goUp : tell loop() to go up
@@ -213,46 +226,93 @@ void setup()
 // waiting_event : work to do - lookup or store.
 void readButtons()
 {
-  goDown = !digitalRead(PIN_DOWN);
-
-  bool buttons = !digitalRead(PIN_UP);
+  button_state buttons;
+  bool stop = false;
 
   unsigned long currentMillis = millis();
 
-  if (!previous && buttons) // Just got pushed
-  {
-    lastPush = currentMillis;
-    // Otherwise, Nth time we have pushed, catch it on the release
+  if (!digitalRead(PIN_UP)) {
+    if (!digitalRead(PIN_DOWN)) {
+      // invalid state
+      buttons = BOTH;
+      stop = true;
+    } else {
+      buttons = UP;
+    }
+  } else if (!digitalRead(PIN_DOWN)) {
+    buttons = DOWN;
+#ifndef BOTH_BUTTONS
+    goDown = true;
+#endif
+  } else {
+    buttons = NONE;
   }
-  else if (previous && buttons) // Being held
+
+  // If already moving and any button is pressed - stop
+  if ( memoryMoving && buttons != NONE)
+    targetHeight = currentHeight;
+
+  if ((previous == NONE) && 
+      DIRECTION_BUTTON(buttons) ) // Just pushed
+  {
+#ifdef BOTH_BUTTONS
+    // clear pushCount if pushing a different button from last
+    if (buttons != lastbutton) ack();
+#endif
+
+    lastPush = currentMillis;
+    lastbutton = buttons;
+  }
+  else if ((previous == buttons) &&
+           DIRECTION_BUTTON(buttons) ) // button being held
   {
     unsigned long pushLength = currentMillis - lastPush;
 
-    // Are we holding the first push (not a memory function)
-    if (pushLength > CLICK_TIMEOUT && pushCount == 0)
-      goUp = true;
-    else if (pushLength > CLICK_LONG && pushCount > 0 && !savePosition)
-    {
-      beep(pushCount + 1, NOTE_ACK);
-      savePosition = true;
+    // long push?
+    if (pushLength > CLICK_TIMEOUT) {
+      // first long push? then move!
+      if (pushCount == 0) {
+        if (buttons == UP) goUp = true;
+        if (buttons == DOWN) goDown = true;
+      }
+      else if (!savePosition)
+      {
+        // longpress after previous pushes - save this position
+        beep(pushCount + 1, NOTE_ACK); // first provide feedback to release...
+        savePosition = true;
+      }
     }
   }
-  else if (previous && !buttons && !goUp) // Just got released and it's a memory call
+  else if (DIRECTION_BUTTON(previous) && (buttons == NONE)) // Just got released
   {
-    pushCount++;
+    // moving?
+    if ( !goUp && !goDown )
+    {
+      // not moving manually
+      pushCount++; // short press increase the count
+    }
+    if ( goUp || goDown )
+    {
+      // we were under manual control before, stop now
+      stop = true;
+    }
   }
-  else if (previous && !buttons && goUp) // Just got released and we were moving
+  else // invalid transition, State has not changed, or is not being held
   {
+    // check timeout on release
+    if ((lastPush != 0) && (currentMillis - lastPush > CLICK_TIMEOUT)) // Released
+    {
+      if (pushCount > 1)
+        memoryEvent = true; // either store or recall a setting
+      else
+        stop = true; // or start fresh
+    }
+  }
+
+  if (stop) {
     ack();
     goUp = false;
-  }
-  else // State has not changed, and is not being held
-  {
-    if (lastPush == 0) // idle
-      return;
-
-    if (currentMillis - lastPush > CLICK_TIMEOUT) // Released
-      waitingEvent = true;
+    goDown = false;
   }
   previous = buttons;
 }
@@ -382,7 +442,7 @@ void parseData()
   else if (command == command_load)
   {
     pushCount = push_addr;
-    waitingEvent = true;
+    memoryEvent = true;
   }
   else if (command == command_read)
   {
@@ -427,9 +487,9 @@ void loop()
     targetHeight = currentHeight;
   }
 
-  if (waitingEvent)
+  if (memoryEvent)
   {
-    #ifdef MINMAX
+#ifdef MINMAX
     if (pushCount == MIN_HEIGHT_SLOT)
     {
       toggleMinHeight();
@@ -439,31 +499,35 @@ void loop()
       toggleMaxHeight();
     } else // else if continued next line
 #endif
-    if (pushCount > 1)
+    if (savePosition)
     {
-      if (savePosition)
-      {
-        saveMemory(pushCount, currentHeight);
-#ifdef SERIALCOMMS
-        writeSerial(command_write, currentHeight, pushCount);
+#ifdef BOTH_BUTTONS
+      if (lastbutton == DOWN) pushCount += RIGHT_SLOT_START;
 #endif
-      }
-      else
-      {
-        targetHeight = loadMemory(pushCount);
+      saveMemory(pushCount, currentHeight);
 #ifdef SERIALCOMMS
-        writeSerial(command_load, targetHeight, pushCount);
+      writeSerial(command_write, currentHeight, pushCount);
+#endif
+    }
+    else
+    {
+      beep(pushCount, NOTE_LOW);
+#ifdef BOTH_BUTTONS
+      if (lastbutton == DOWN) pushCount += RIGHT_SLOT_START;
+#endif
+      targetHeight = loadMemory(pushCount);
+#ifdef SERIALCOMMS
+      writeSerial(command_load, targetHeight, pushCount);
 #endif
 
-        if (targetHeight == 0)
-        {
-          targetHeight = currentHeight;
-        }
-        else
-          memoryMoving = true;
+      if (targetHeight == 0)
+      {
+        targetHeight = currentHeight;
       }
+      else
+        memoryMoving = true;
     }
-    ack();
+    ack(); // clears memoryEvent, pushCount, lastPush
   }
   else if (goUp)
   {
@@ -678,8 +742,6 @@ uint16_t loadMemory(uint8_t memorySlot)
 {
   if (memorySlot < 2)
     return currentHeight;
-
-  beep(memorySlot, NOTE_LOW);
 
   uint16_t memHeight = eeprom_get16(memorySlot);
 
