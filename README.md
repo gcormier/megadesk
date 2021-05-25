@@ -22,6 +22,7 @@ Unfortunately the beeps aren't captured well in the video unless you turn up the
 (Updated Feb 20, 2021)
 There are now 3 different status codes, which means 3 possible configurations. The unit ships by default with mode 1 activated. Changing to an incorrect mode will not harm the desk. The unit will beep and be responsive, but the motors will not engage.
 
+(older software)
 Pressing the UP button 16 times will play a 2-note "beep-boop" tone. 
 - Single - variant mode 1
 - Double - variant mode 2
@@ -35,7 +36,7 @@ Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode
 To set assign a memory slot you press the up button two or more times. On the final button press you hold until you hear a tone that indicates what slot you have assigned (2 beeps, 3 beeps, etc).
 
 ## Recalling
-To recall a memory slot you push the up button the number of times for that memory slot (2 for first slot, 3 for second slot, etc). If you try to recall a memory slot that has not been saved you will here a "beep-boop" chime indicating that no height information could be recalled.
+To recall a memory slot you push the up button the number of times for that memory slot (2 for first slot, 3 for second slot, etc). If you try to recall a memory slot that has not been saved you will hear an "error" chime indicating that no height information could be recalled.
 
 
 # Troubleshooting

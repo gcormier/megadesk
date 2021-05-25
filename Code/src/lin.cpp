@@ -86,22 +86,11 @@ uint8_t Lin::addrParity(uint8_t addr)
   return (p0 | (p1<<1))<<6;
 }
 
-/* Send a message across the Lin bus */
-void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes,uint8_t proto)
-{
-  uint8_t addrbyte = (addr&0x3f) | addrParity(addr);
-  uint8_t cksum = dataChecksum(message,nBytes,(proto==1) ? 0:addrbyte);
-  serialBreak();       // Generate the low signal that exceeds 1 char.
-  serial.write(0x55);  // Sync byte
-  serial.write(addrbyte);  // ID byte
-  serial.write(message,nBytes);  // data bytes
-  serial.write(cksum);  // checksum
-  serial.flush();
-}
-
-void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t proto, uint8_t cksum)
+void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t proto, int16_t cksum)
 {
   uint8_t addrbyte = (addr & 0x3f) | addrParity(addr);
+  if (cksum == -1)
+    cksum = dataChecksum(message,nBytes,(proto==1) ? 0:addrbyte);
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte
   serial.write(addrbyte);  // ID byte
