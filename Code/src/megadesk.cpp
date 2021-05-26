@@ -448,7 +448,6 @@ void loop()
   linBurst();
 
 #ifdef SERIALCOMMS
-#if !defined MINMAX || (FLASHEND-FLASHSTART+1 > 8192)
   if (memoryMoving == false && oldHeight != currentHeight){
     if (oldHeight < currentHeight){
       writeSerial(command_increase, currentHeight-oldHeight, pushCount);
@@ -457,7 +456,6 @@ void loop()
       writeSerial(command_decrease, oldHeight-currentHeight, pushCount);
     }
   }
-#endif
 #endif
 
   readButtons();
