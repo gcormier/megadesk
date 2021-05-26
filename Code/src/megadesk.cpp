@@ -4,6 +4,9 @@
 // Uncomment this if you want to override minimum/maximum heights
 //#define MINMAX
 
+// Uncomment to store/recall memories from both buttons
+#define BOTHBUTTONS
+
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
@@ -20,7 +23,7 @@
 #define PAUSE BEEP_DURATION
 #define LONG_PAUSE 500
 #define ONE_SEC_PAUSE 1000
-#define PITCH_ADJUST (64000000 / F_CPU) // digitalWrite takes ~8us at 8MHz
+#define PITCH_ADJUST (48000000 / F_CPU) // digitalWrite takes ~6us at 8MHz
 
 // notes to beep
 #define NOTE_G6 1568
@@ -65,22 +68,35 @@
 #define DANGER_MAX_HEIGHT 6777 - HYSTERESIS - SAFETY
 #define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
 
-// constants related to presses
+// constants related to presses/eeprom slots
+// (on attiny841: 512byte eeprom means max 255 slots)
 #define MIN_HEIGHT_SLOT 20
 #define MAX_HEIGHT_SLOT 22
+#define RIGHT_SLOT_START 32 // 0x20 in hex
 
 // EEPROM magic signature to detect if eeprom is valid
 #define EEPROM_LOCATION_SIG 0
 #define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
 
-// Related to multi-touch
-bool button_pin_up;
-bool goUp, goDown;
-bool previous, pushLong, waitingEvent = false;
-uint8_t pushCount = 0;
+// is a memory button?
+#ifdef BOTHBUTTONS
+#define MEMORY_BUTTON(button) ((button == Button::UP) || (button == Button::DOWN))
+#else
+#define MEMORY_BUTTON(button) (button == Button::UP)
+#endif
+#define PRESSED(button) (button != Button::NONE)
+
+// Tracking multipress/longpress of buttons
+Button previous = Button::NONE; // previous state of buttons
+Button lastbutton = Button::NONE; // last button to be pressed
+uint8_t pushCount = 0; // tracks button pushes
+bool savePosition = false; // flag to save currentHeight to pushCount slot
+bool memoryEvent = false; // flag to load/save a pushCount slot
+bool manualUp, manualDown; // manual-mode. when holding first press of up/down
+
 // timestamps
-unsigned long firstPush = 0, lastPush = 0, pushLength = 0;
-unsigned long t = 0;
+unsigned long lastPushTime = 0;
+unsigned long refTime = 0;
 //////////////////
 
 Lin lin(Serial, PIN_SERIAL);
@@ -113,29 +129,32 @@ const char command_read = 'R';
 const char startMarker = '<'; 
 #endif
 
-void up(bool pushed)
+// set/clear motor up command
+void motorUp(bool go)
 {
-  if (pushed)
+  if (go)
     user_cmd = Command::UP;
   else
     user_cmd = Command::NONE;
 }
 
-void down(bool pushed)
+// set/clear motor down command
+void motorDown(bool go)
 {
-  if (pushed)
+  if (go)
     user_cmd = Command::DOWN;
   else
     user_cmd = Command::NONE;
 }
 
-void ack()
+// clean slate for button presses
+void startFresh()
 {
-  previous = false;
-  firstPush = lastPush = pushLength = 0;
+  previous = Button::NONE;
+  lastPushTime = 0;
   pushCount = 0;
-  pushLong = false;
-  waitingEvent = false;
+  savePosition = false;
+  memoryEvent = false;
 }
 
 void setup()
@@ -153,20 +172,20 @@ void setup()
     {
       if (!digitalRead(PIN_DOWN))
       {
-        beep(1, NOTE_E7);
+        beep(NOTE_E7);
         delay(PAUSE);
-        beep(1, NOTE_D7);
+        beep(NOTE_D7);
         delay(PAUSE);
-        beep(1, NOTE_C7);
+        beep(NOTE_C7);
         delay(LONG_PAUSE);
       }
       if (!digitalRead(PIN_UP))
       {
-        beep(1, NOTE_C7);
+        beep(NOTE_C7);
         delay(PAUSE);
-        beep(1, NOTE_D7);
+        beep(NOTE_D7);
         delay(PAUSE);
-        beep(1, NOTE_E7);
+        beep(NOTE_E7);
         delay(LONG_PAUSE);
       }
       delay(SHORT_PAUSE);
@@ -179,7 +198,7 @@ void setup()
     initAndReadEEPROM(true);
     while (true)
     {
-      beep(1, NOTE_C7);
+      beep(NOTE_C7);
       delay(ONE_SEC_PAUSE);
     }
   }
@@ -189,63 +208,110 @@ void setup()
 #endif
 
   // init + arpeggio
-  beep(1, NOTE_C7);
+  beep(NOTE_C7);
   initAndReadEEPROM(false);
-  beep(1, NOTE_E7);
+  beep(NOTE_E7);
   lin.begin(19200);
-  beep(1, NOTE_G7);
+  beep(NOTE_G7);
 
   linInit();
-  beep(1, NOTE_C8);
+  beep(NOTE_C8);
 }
 
+// track button presses - short and long
 void readButtons()
 {
-  goDown = !digitalRead(PIN_DOWN);
-
-  previous = button_pin_up;
-  button_pin_up = !digitalRead(PIN_UP);
+  Button buttons;
+  bool stop = false;
 
   unsigned long currentMillis = millis();
 
-  if (!previous && button_pin_up) // Just got pushed
-  {
-    if (firstPush == 0) // First time we have pushed
-      firstPush = lastPush = currentMillis;
-    else
-      lastPush = currentMillis;
-    // Otherwise, Nth time we have pushed, catch it on the release
+  if (!digitalRead(PIN_UP)) {
+    if (!digitalRead(PIN_DOWN)) {
+      // invalid state
+      buttons = Button::BOTH;
+      stop = true;
+    } else {
+      buttons = Button::UP;
+    }
+  } else if (!digitalRead(PIN_DOWN)) {
+    buttons = Button::DOWN;
+#ifndef BOTHBUTTONS
+    manualDown = true;
+#endif
+  } else {
+    buttons = Button::NONE;
+#ifndef BOTHBUTTONS
+    manualDown = false;
+#endif
   }
-  else if (previous && button_pin_up) // Being held
-  {
-    pushLength = currentMillis;
 
-    // Are we holding the first push (not a memory function)
-    if ((pushLength - lastPush) > CLICK_TIMEOUT && pushCount == 0)
-      goUp = true;
-    else if ((pushLength - lastPush) > CLICK_LONG && pushCount > 0 && !pushLong)
-    {
-      beep(pushCount + 1, NOTE_ACK);
-      pushLong = true;
+  // If already moving and any button is pressed - stop
+  if ( memoryMoving && PRESSED(buttons))
+    targetHeight = currentHeight;
+
+  if ( !PRESSED(previous) && MEMORY_BUTTON(buttons) ) // Just pushed
+  {
+#ifdef BOTHBUTTONS
+    // clear pushCount if pushing a different button from last
+    if (buttons != lastbutton) startFresh();
+#endif
+
+    lastPushTime = currentMillis;
+    lastbutton = buttons;
+  }
+  else if ((previous == buttons) && MEMORY_BUTTON(buttons) ) // button held
+  {
+    unsigned long pushLength = currentMillis - lastPushTime;
+
+    // long push?
+    if (pushLength > CLICK_TIMEOUT) {
+      // first long push? then move!
+      if (pushCount == 0) {
+        if (buttons == Button::UP) manualUp = true;
+        if (buttons == Button::DOWN) manualDown = true;
+      }
+      else if (!savePosition)
+      {
+        // longpress after previous pushes - save this position
+        beep(NOTE_ACK, pushCount + 1); // first provide feedback to release...
+        savePosition = true;
+      }
     }
   }
-  else if (previous && !button_pin_up && !goUp) // Just got released and it's a memory call
+  else if ( MEMORY_BUTTON(previous) && !PRESSED(buttons) ) // just released
   {
-    pushCount++;
+    // moving?
+    if ( !manualUp && !manualDown )
+    {
+      // not moving manually
+      pushCount++; // short press increase the count
+    }
+    if ( manualUp || manualDown )
+    {
+      // we were under manual control before, stop now
+      stop = true;
+    }
   }
-  else if (previous && !button_pin_up && goUp) // Just got released and we were moving
+  else // other states: both-buttons / idle etc.
   {
-    ack();
-    goUp = false;
+    // check timeout on release - indicating last press
+    if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT)) // Released
+    {
+      // last press
+      if (pushCount > 1)
+        memoryEvent = true; // either store or recall a setting
+      else
+        stop = true; // or start fresh
+    }
   }
-  else // State has not changed, and is not being held
-  {
-    if (firstPush == 0) // idle
-      return;
 
-    if (currentMillis - lastPush > CLICK_TIMEOUT) // Released
-      waitingEvent = true;
+  if (stop) {
+    startFresh();
+    manualUp = false;
+    manualDown = false;
   }
+  previous = buttons;
 }
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
@@ -294,15 +360,10 @@ void writeSerial(char command, uint16_t position, uint8_t push_addr)
   Serial1.write(push_addr);
 }
 
-int BitShiftCombine(byte x_high, byte x_low)
-{
-  return (( x_high << 8 ) | x_low );
-}
-
 void parseData()
 {
   char command = receivedBytes[0];
-  int position = BitShiftCombine(receivedBytes[1], receivedBytes[2]);
+  int position = makeWord(receivedBytes[1], receivedBytes[2]);
   uint8_t push_addr = receivedBytes[3];
 
   /*
@@ -373,11 +434,11 @@ void parseData()
   else if (command == command_load)
   {
     pushCount = push_addr;
-    waitingEvent = true;
+    memoryEvent = true;
   }
   else if (command == command_read)
   {
-    writeSerial(command_read, eeprom_get16(push_addr), push_addr);
+    writeSerial(command_read, eepromGet16(push_addr), push_addr);
   }
 }
 #endif
@@ -387,7 +448,6 @@ void loop()
   linBurst();
 
 #ifdef SERIALCOMMS
-#if !defined MINMAX || (FLASHEND-FLASHSTART+1 > 8192)
   if (memoryMoving == false && oldHeight != currentHeight){
     if (oldHeight < currentHeight){
       writeSerial(command_increase, currentHeight-oldHeight, pushCount);
@@ -396,7 +456,6 @@ void loop()
       writeSerial(command_decrease, oldHeight-currentHeight, pushCount);
     }
   }
-#endif
 #endif
 
   readButtons();
@@ -418,9 +477,9 @@ void loop()
     targetHeight = currentHeight;
   }
 
-  if (waitingEvent)
+  if (memoryEvent)
   {
-    #ifdef MINMAX
+#ifdef MINMAX
     if (pushCount == MIN_HEIGHT_SLOT)
     {
       toggleMinHeight();
@@ -430,38 +489,43 @@ void loop()
       toggleMaxHeight();
     } else // else if continued next line
 #endif
-    if (pushCount > 1)
+    if (savePosition)
     {
-      if (pushLong)
-      {
-        saveMemory(pushCount, currentHeight);
-#ifdef SERIALCOMMS
-        writeSerial(command_write, currentHeight, pushCount);
+#ifdef BOTHBUTTONS
+      if (lastbutton == Button::DOWN) pushCount += RIGHT_SLOT_START;
 #endif
-      }
-      else
-      {
-        targetHeight = loadMemory(pushCount);
+      saveMemory(pushCount, currentHeight);
 #ifdef SERIALCOMMS
-        writeSerial(command_load, targetHeight, pushCount);
+      writeSerial(command_write, currentHeight, pushCount);
+#endif
+    }
+    else
+    {
+      // load position
+      beep(NOTE_LOW, pushCount);
+#ifdef BOTHBUTTONS
+      if (lastbutton == Button::DOWN) pushCount += RIGHT_SLOT_START;
+#endif
+      targetHeight = loadMemory(pushCount);
+#ifdef SERIALCOMMS
+      writeSerial(command_load, targetHeight, pushCount);
 #endif
 
-        if (targetHeight == 0)
-        {
-          targetHeight = currentHeight;
-        }
-        else
-          memoryMoving = true;
+      if (targetHeight == 0)
+      {
+        targetHeight = currentHeight;
       }
+      else
+        memoryMoving = true;
     }
-    ack();
+    startFresh(); // clears memoryEvent, pushCount, lastPushTime
   }
-  else if (goUp)
+  else if (manualUp)
   {
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
   }
-  else if (goDown)
+  else if (manualDown)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
@@ -476,26 +540,26 @@ void loop()
   }
 
   if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < maxHeight)
-    up(true);
+    motorUp(true);
   else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > minHeight)
-    down(true);
+    motorDown(true);
   else
   {
-    up(false);
+    motorUp(false);
     targetHeight = currentHeight;
     memoryMoving = false;
   }
 
   // Override all logic above and disable if we aren't initialized yet.
   if (targetHeight < 5)
-    up(false);
+    motorUp(false);
 
 #ifdef SERIALCOMMS
   oldHeight = currentHeight;
 #endif
 
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
-  delay_until(25);
+  delayUntil(25);
 }
 
 void linBurst()
@@ -505,28 +569,31 @@ void linBurst()
   byte cmd[3] = {0, 0, 0};
   State lastState = State::OFF;
 
+  // ensure accurate timing from this point
+  refTime = micros();
+
   // Send PID 17
   lin.send(17, empty, 3, 2);
-  delay_until(5);
+  delayUntil(5);
 
   // Recv from PID 09
   lin.recv(9, node_b, 3, 2);
-  delay_until(5);
+  delayUntil(5);
 
   // Recv from PID 08
   lin.recv(8, node_a, 3, 2);
-  delay_until(5);
+  delayUntil(5);
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
     lin.send(16, 0, 0, 2);
-    delay_until(5);
+    delayUntil(5);
   }
 
   // Send PID 1
   lin.send(1, 0, 0, 2);
-  delay_until(5);
+  delayUntil(5);
 
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
@@ -640,12 +707,12 @@ void linBurst()
 
 // lean EEPROM functions to get/put 16bit values
 // and address eeprom by 16bit slot.
-uint16_t eeprom_get16( int slot )
+uint16_t eepromGet16( int slot )
 {
   return ((EEPROM.read( 2*slot+1 ) << 8) | EEPROM.read( 2*slot ));
 }
 
-void eeprom_put16( int slot, uint16_t val )
+void eepromPut16( int slot, uint16_t val )
 {
   EEPROM.write( 2*slot, val & 0xff);
   EEPROM.write( 2*slot+1, val >> 8);
@@ -657,9 +724,10 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
   if (memorySlot < 2 || value < 5 || value > 32700)
     return;
 
-  //beep(memorySlot, NOTE_HIGH);
+  // save confirmation tone
+  beep(NOTE_HIGH);
 
-  eeprom_put16(memorySlot, value);
+  eepromPut16(memorySlot, value);
 }
 
 uint16_t loadMemory(uint8_t memorySlot)
@@ -667,52 +735,58 @@ uint16_t loadMemory(uint8_t memorySlot)
   if (memorySlot < 2)
     return currentHeight;
 
-  beep(memorySlot, NOTE_LOW);
-
-  uint16_t memHeight = eeprom_get16(memorySlot);
+  uint16_t memHeight = eepromGet16(memorySlot);
 
   if (memHeight == 0)
   {
     // empty
     delay(LONG_PAUSE);
     // sad trombone
-    beep(1, NOTE_DSHARP7);
-    beep(1, NOTE_D7);
-    beep(1, NOTE_CSHARP7);
-    beep(1, NOTE_C7);
+    beep(NOTE_DSHARP7);
+    beep(NOTE_D7);
+    beep(NOTE_CSHARP7);
+    beep(NOTE_C7);
   }
 
   return memHeight;
 }
 
-void delay_until(unsigned long microSeconds)
-{
-  unsigned long end = t + (1000 * microSeconds);
-  unsigned long d = end - micros();
 
-  // crazy long delay; probably negative wrap-around
-  // just return
-  if (d > 1000000)
+// accurate delay from the last time delayUntil() returned.
+// for precise periodic timing
+void delayUntil(unsigned long microSeconds)
+{
+  unsigned long target = refTime + (1000 * microSeconds);
+  unsigned long micro_delay = target - micros();
+
+  if (micro_delay > 1000000)
   {
-    t = micros();
+    // crazy long delay - target time is in the past!
+    // reset refTime and return
+    refTime = micros();
     return;
   }
 
-  if (d > 15000)
+  if (micro_delay > 15000)
   {
-    unsigned long d2 = (d - 15000) / 1000;
-    delay(d2);
-    d = end - micros();
+    // need delayMicroseconds() and delay()
+    unsigned long millidelay = (micro_delay - 15000) / 1000;
+    delay(millidelay);
+    // recalculate microsec delay
+    micro_delay = target - micros();
   }
-  delayMicroseconds(d);
-  t = end;
+  delayMicroseconds(micro_delay);
+  refTime = target;
 }
 
-// simple tone generation - leaner than tone()
-// sound will break up if servicing ISRs/interrupts.
+// simple, limited tone generation - leaner than tone()
+// but sound will break up if servicing interrupts.
+// freq is in Hz. duration is in ms. (max 524ms)
 void playTone(uint16_t freq, uint16_t duration) {
-  uint16_t halfperiod = 1000000L / freq;
-  for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
+  uint16_t halfperiod = 1000000L / freq; // in us.
+  // mostly equivalent to:
+  // for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
+  for ( duration = (125 * duration) / (halfperiod / 4); duration > 0; duration -= 1 ) {
     digitalWrite(PIN_BEEP, HIGH);
     delayMicroseconds(halfperiod - PITCH_ADJUST);
     digitalWrite(PIN_BEEP, LOW);
@@ -720,9 +794,11 @@ void playTone(uint16_t freq, uint16_t duration) {
   }
 }
 
-void beep(uint8_t count, int16_t freq)
+void beep(uint16_t freq, uint8_t count)
 {
-  for (uint8_t i = 0; i < count; i++)
+  // functionally equivalent to:
+  // for (uint8_t i = 0; i < count; i++)
+  for ( ; count > 0; count--)
   {
     playTone(freq, BEEP_DURATION);
     delay(SHORT_PAUSE);
@@ -845,25 +921,25 @@ byte recvInitPacket(byte array[])
 
 void initAndReadEEPROM(bool force)
 {
-  int signature = eeprom_get16(EEPROM_LOCATION_SIG);
+  int signature = eepromGet16(EEPROM_LOCATION_SIG);
 
   if ((signature != MAGIC_SIG) || force)
   {
     for (unsigned int index = 0; index < EEPROM.length(); index++)
       EEPROM.write(index, 0);
     // Store signature value
-    eeprom_put16(EEPROM_LOCATION_SIG, MAGIC_SIG);
+    eepromPut16(EEPROM_LOCATION_SIG, MAGIC_SIG);
 
     #ifdef MINMAX
     // reset max/min height
-    eeprom_put16(MIN_HEIGHT_SLOT, DANGER_MIN_HEIGHT);
-    eeprom_put16(MAX_HEIGHT_SLOT, DANGER_MAX_HEIGHT);
+    eepromPut16(MIN_HEIGHT_SLOT, DANGER_MIN_HEIGHT);
+    eepromPut16(MAX_HEIGHT_SLOT, DANGER_MAX_HEIGHT);
     #endif
   }
-    #ifdef MINMAX
-    minHeight = eeprom_get16(MIN_HEIGHT_SLOT);
-    maxHeight = eeprom_get16(MAX_HEIGHT_SLOT);
-    #endif
+  #ifdef MINMAX
+  minHeight = eepromGet16(MIN_HEIGHT_SLOT);
+  maxHeight = eepromGet16(MAX_HEIGHT_SLOT);
+  #endif
 }
 
 
@@ -882,9 +958,9 @@ void toggleMinHeight()
   }
   
   //Min height change sound
-  beep(4, minHeight); // tone based upon new minHeight
+  beep(minHeight, 4); // tone based upon new minHeight
 
-  eeprom_put16(MIN_HEIGHT_SLOT, minHeight);
+  eepromPut16(MIN_HEIGHT_SLOT, minHeight);
 }
 
 // Swap the maxHeight values and save in EEPROM
@@ -901,8 +977,8 @@ void toggleMaxHeight()
   }
 
   //Max height change sound
-  beep(4, maxHeight); // tone based upon new maxHeight
+  beep(maxHeight, 4); // tone based upon new maxHeight
 
-  eeprom_put16(MAX_HEIGHT_SLOT, maxHeight);
+  eepromPut16(MAX_HEIGHT_SLOT, maxHeight);
 }
 #endif

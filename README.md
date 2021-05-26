@@ -32,6 +32,8 @@ Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode
 
 # Setting and Recalling memory slots
 
+Note. Recent software allows either button to store and recall memory.
+
 ## Setting
 To set assign a memory slot you press the up button two or more times. On the final button press you hold until you hear a tone that indicates what slot you have assigned (2 beeps, 3 beeps, etc).
 
