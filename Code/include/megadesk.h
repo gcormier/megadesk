@@ -29,7 +29,7 @@ enum class Button : byte
   BOTH,
 };
 
-void beep(byte count, int16_t freq);
+void beep(uint16_t freq, byte count=1);
 void initAndReadEEPROM(bool force);
 void linInit();
 void linBurst();

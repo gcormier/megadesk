@@ -1,8 +1,8 @@
 // Uncomment this define if you want serial
-//#define SERIALCOMMS
+#define SERIALCOMMS
 
 // Uncomment this if you want to override minimum/maximum heights
-//#define MINMAX
+#define MINMAX
 
 // Uncomment to store/recall memories from both buttons
 #define BOTHBUTTONS
@@ -23,7 +23,7 @@
 #define PAUSE BEEP_DURATION
 #define LONG_PAUSE 500
 #define ONE_SEC_PAUSE 1000
-#define PITCH_ADJUST (64000000 / F_CPU) // digitalWrite takes ~8us at 8MHz
+#define PITCH_ADJUST (48000000 / F_CPU) // digitalWrite takes ~6us at 8MHz
 
 // notes to beep
 #define NOTE_G6 1568
@@ -172,20 +172,20 @@ void setup()
     {
       if (!digitalRead(PIN_DOWN))
       {
-        beep(1, NOTE_E7);
+        beep(NOTE_E7);
         delay(PAUSE);
-        beep(1, NOTE_D7);
+        beep(NOTE_D7);
         delay(PAUSE);
-        beep(1, NOTE_C7);
+        beep(NOTE_C7);
         delay(LONG_PAUSE);
       }
       if (!digitalRead(PIN_UP))
       {
-        beep(1, NOTE_C7);
+        beep(NOTE_C7);
         delay(PAUSE);
-        beep(1, NOTE_D7);
+        beep(NOTE_D7);
         delay(PAUSE);
-        beep(1, NOTE_E7);
+        beep(NOTE_E7);
         delay(LONG_PAUSE);
       }
       delay(SHORT_PAUSE);
@@ -198,7 +198,7 @@ void setup()
     initAndReadEEPROM(true);
     while (true)
     {
-      beep(1, NOTE_C7);
+      beep(NOTE_C7);
       delay(ONE_SEC_PAUSE);
     }
   }
@@ -208,14 +208,14 @@ void setup()
 #endif
 
   // init + arpeggio
-  beep(1, NOTE_C7);
+  beep(NOTE_C7);
   initAndReadEEPROM(false);
-  beep(1, NOTE_E7);
+  beep(NOTE_E7);
   lin.begin(19200);
-  beep(1, NOTE_G7);
+  beep(NOTE_G7);
 
   linInit();
-  beep(1, NOTE_C8);
+  beep(NOTE_C8);
 }
 
 // track button presses - short and long
@@ -274,7 +274,7 @@ void readButtons()
       else if (!savePosition)
       {
         // longpress after previous pushes - save this position
-        beep(pushCount + 1, NOTE_ACK); // first provide feedback to release...
+        beep(NOTE_ACK, pushCount + 1); // first provide feedback to release...
         savePosition = true;
       }
     }
@@ -504,7 +504,7 @@ void loop()
     else
     {
       // load position
-      beep(pushCount, NOTE_LOW);
+      beep(NOTE_LOW, pushCount);
 #ifdef BOTHBUTTONS
       if (lastbutton == Button::DOWN) pushCount += RIGHT_SLOT_START;
 #endif
@@ -727,7 +727,7 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
     return;
 
   // save confirmation tone
-  beep(1, NOTE_HIGH);
+  beep(NOTE_HIGH);
 
   eepromPut16(memorySlot, value);
 }
@@ -744,10 +744,10 @@ uint16_t loadMemory(uint8_t memorySlot)
     // empty
     delay(LONG_PAUSE);
     // sad trombone
-    beep(1, NOTE_DSHARP7);
-    beep(1, NOTE_D7);
-    beep(1, NOTE_CSHARP7);
-    beep(1, NOTE_C7);
+    beep(NOTE_DSHARP7);
+    beep(NOTE_D7);
+    beep(NOTE_CSHARP7);
+    beep(NOTE_C7);
   }
 
   return memHeight;
@@ -781,11 +781,14 @@ void delayUntil(unsigned long microSeconds)
   refTime = target;
 }
 
-// simple tone generation - leaner than tone()
-// sound will break up if servicing ISRs/interrupts.
+// simple, limited tone generation - leaner than tone()
+// but sound will break up if servicing interrupts.
+// freq is in Hz. duration is in ms. (max 524ms)
 void playTone(uint16_t freq, uint16_t duration) {
-  uint16_t halfperiod = 1000000L / freq;
-  for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
+  uint16_t halfperiod = 1000000L / freq; // in us.
+  // mostly equivalent to:
+  // for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
+  for ( duration = (125 * duration) / (halfperiod / 4); duration > 0; duration -= 1 ) {
     digitalWrite(PIN_BEEP, HIGH);
     delayMicroseconds(halfperiod - PITCH_ADJUST);
     digitalWrite(PIN_BEEP, LOW);
@@ -793,9 +796,11 @@ void playTone(uint16_t freq, uint16_t duration) {
   }
 }
 
-void beep(uint8_t count, int16_t freq)
+void beep(uint16_t freq, uint8_t count)
 {
-  for (uint8_t i = 0; i < count; i++)
+  // functionally equivalent to:
+  // for (uint8_t i = 0; i < count; i++)
+  for ( ; count > 0; count--)
   {
     playTone(freq, BEEP_DURATION);
     delay(SHORT_PAUSE);
@@ -955,7 +960,7 @@ void toggleMinHeight()
   }
   
   //Min height change sound
-  beep(4, minHeight); // tone based upon new minHeight
+  beep(minHeight, 4); // tone based upon new minHeight
 
   eepromPut16(MIN_HEIGHT_SLOT, minHeight);
 }
@@ -974,7 +979,7 @@ void toggleMaxHeight()
   }
 
   //Max height change sound
-  beep(4, maxHeight); // tone based upon new maxHeight
+  beep(maxHeight, 4); // tone based upon new maxHeight
 
   eepromPut16(MAX_HEIGHT_SLOT, maxHeight);
 }
