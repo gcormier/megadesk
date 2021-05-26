@@ -8,7 +8,11 @@ If you want to create your own cable, the connector is AMP VAL-U-LOK by TE Conne
 
 Don't forget to set fuses on your board for the appropriate oscillator!
 
-ATTiny 841 - 8Mhz internal `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
+ATTiny 841 - 8Mhz internal
+`avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
+
+ATiny 841 - To preserve eeprom when reflashing the image.
+`./avrdude -c usbtiny -p t841 -U hfuse:w:0xd6:m`
 
 # Hacking and Contributing
 
@@ -19,8 +23,9 @@ ATTiny 841 - 8Mhz internal `avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
 
 ## Operation
 * Use up/down buttons as per factory module (long press/hold)
-* To store in a memory slot, push the up button a certain number of times, but long-hold the last press until you hear some beeps corresponding to the memory position that has been saved.
-* To recall a saved position N, push the up button N times.
+* To store in a memory slot, push the up/down button a certain number of times, but long-hold the last press until you hear some beeps corresponding to the memory position that has been saved.
+* To recall a saved position N, push the up/down button N times. Where N >= 2.
+* Up and down buttons have separate memory settings
 
 ## pio
 
