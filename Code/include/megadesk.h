@@ -12,6 +12,9 @@ enum class State : byte
   STOPPING2,
   STOPPING3,
   STOPPING4,
+  STARTING_RECAL,
+  RECAL,
+  END_RECAL
 };
 
 enum class Command : byte
