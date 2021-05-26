@@ -1,8 +1,8 @@
 // Uncomment this define if you want serial
-#define SERIALCOMMS
+//#define SERIALCOMMS
 
 // Uncomment this if you want to override minimum/maximum heights
-#define MINMAX
+//#define MINMAX
 
 // Uncomment to store/recall memories from both buttons
 #define BOTHBUTTONS
@@ -72,7 +72,7 @@
 // (on attiny841: 512byte eeprom means max 255 slots)
 #define MIN_HEIGHT_SLOT 20
 #define MAX_HEIGHT_SLOT 22
-#define RIGHT_SLOT_START 32
+#define RIGHT_SLOT_START 32 // 0x20 in hex
 
 // EEPROM magic signature to detect if eeprom is valid
 #define EEPROM_LOCATION_SIG 0
