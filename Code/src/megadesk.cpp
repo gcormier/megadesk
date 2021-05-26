@@ -78,7 +78,7 @@
 #define EEPROM_LOCATION_SIG 0
 #define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
 
-// memory button pressed?
+// is a memory button?
 #ifdef BOTHBUTTONS
 #define MEMORY_BUTTON(button) ((button == Button::UP) || (button == Button::DOWN))
 #else
@@ -87,16 +87,16 @@
 #define PRESSED(button) (button != Button::NONE)
 
 // Tracking multipress/longpress of buttons
-bool manualUp, manualDown; // manual-mode. when holding first press of up/down
-
 Button previous = Button::NONE; // previous state of buttons
 Button lastbutton = Button::NONE; // last button to be pressed
 uint8_t pushCount = 0; // tracks button pushes
 bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
+bool manualUp, manualDown; // manual-mode. when holding first press of up/down
+
 // timestamps
-unsigned long lastPush = 0;
-unsigned long time_ref = 0;
+unsigned long lastPushTime = 0;
+unsigned long refTime = 0;
 //////////////////
 
 Lin lin(Serial, PIN_SERIAL);
@@ -129,6 +129,7 @@ const char command_read = 'R';
 const char startMarker = '<'; 
 #endif
 
+// set/clear motor up command
 void motorUp(bool go)
 {
   if (go)
@@ -137,6 +138,7 @@ void motorUp(bool go)
     user_cmd = Command::NONE;
 }
 
+// set/clear motor down command
 void motorDown(bool go)
 {
   if (go)
@@ -149,7 +151,7 @@ void motorDown(bool go)
 void startFresh()
 {
   previous = Button::NONE;
-  lastPush = 0;
+  lastPushTime = 0;
   pushCount = 0;
   savePosition = false;
   memoryEvent = false;
@@ -255,13 +257,12 @@ void readButtons()
     if (buttons != lastbutton) startFresh();
 #endif
 
-    lastPush = currentMillis;
+    lastPushTime = currentMillis;
     lastbutton = buttons;
   }
-  else if ((previous == buttons) &&
-           MEMORY_BUTTON(buttons) ) // button being held
+  else if ((previous == buttons) && MEMORY_BUTTON(buttons) ) // button held
   {
-    unsigned long pushLength = currentMillis - lastPush;
+    unsigned long pushLength = currentMillis - lastPushTime;
 
     // long push?
     if (pushLength > CLICK_TIMEOUT) {
@@ -278,7 +279,7 @@ void readButtons()
       }
     }
   }
-  else if ( MEMORY_BUTTON(previous) && !PRESSED(buttons) ) // Just got released
+  else if ( MEMORY_BUTTON(previous) && !PRESSED(buttons) ) // just released
   {
     // moving?
     if ( !manualUp && !manualDown )
@@ -292,11 +293,12 @@ void readButtons()
       stop = true;
     }
   }
-  else // invalid transition, State has not changed, or is not being held
+  else // other states: both-buttons / idle etc.
   {
-    // check timeout on release
-    if ((lastPush != 0) && (currentMillis - lastPush > CLICK_TIMEOUT)) // Released
+    // check timeout on release - indicating last press
+    if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT)) // Released
     {
+      // last press
       if (pushCount > 1)
         memoryEvent = true; // either store or recall a setting
       else
@@ -358,15 +360,10 @@ void writeSerial(char command, uint16_t position, uint8_t push_addr)
   Serial1.write(push_addr);
 }
 
-int BitShiftCombine(byte x_high, byte x_low)
-{
-  return (( x_high << 8 ) | x_low );
-}
-
 void parseData()
 {
   char command = receivedBytes[0];
-  int position = BitShiftCombine(receivedBytes[1], receivedBytes[2]);
+  int position = makeWord(receivedBytes[1], receivedBytes[2]);
   uint8_t push_addr = receivedBytes[3];
 
   /*
@@ -523,7 +520,7 @@ void loop()
       else
         memoryMoving = true;
     }
-    startFresh(); // clears memoryEvent, pushCount, lastPush
+    startFresh(); // clears memoryEvent, pushCount, lastPushTime
   }
   else if (manualUp)
   {
@@ -575,7 +572,7 @@ void linBurst()
   State lastState = State::OFF;
 
   // ensure accurate timing from this point
-  time_ref = micros();
+  refTime = micros();
 
   // Send PID 17
   lin.send(17, empty, 3, 2);
@@ -729,6 +726,7 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
   if (memorySlot < 2 || value < 5 || value > 32700)
     return;
 
+  // save confirmation tone
   beep(1, NOTE_HIGH);
 
   eepromPut16(memorySlot, value);
@@ -760,14 +758,14 @@ uint16_t loadMemory(uint8_t memorySlot)
 // for precise periodic timing
 void delayUntil(unsigned long microSeconds)
 {
-  unsigned long target = time_ref + (1000 * microSeconds);
+  unsigned long target = refTime + (1000 * microSeconds);
   unsigned long micro_delay = target - micros();
 
   if (micro_delay > 1000000)
   {
     // crazy long delay - target time is in the past!
-    // reset time_ref and return
-    time_ref = micros();
+    // reset refTime and return
+    refTime = micros();
     return;
   }
 
@@ -780,7 +778,7 @@ void delayUntil(unsigned long microSeconds)
     micro_delay = target - micros();
   }
   delayMicroseconds(micro_delay);
-  time_ref = target;
+  refTime = target;
 }
 
 // simple tone generation - leaner than tone()
