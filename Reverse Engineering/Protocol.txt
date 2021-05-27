@@ -8,8 +8,9 @@ D3 = Command.
   135 = ? ?? fine move? 0x87
   132 = ? ?? not sure. last command before idle.  0x84
   196 = ?? BEFORE starting move.  0xC4
-
-
+  252 = interrupted during recalibration procedure
+  189 = recalibrate
+  188 = end of recalibrate
   191 = INITIALIZE??
 
 
@@ -35,3 +36,25 @@ D0 246
 D1 255
 D2 191
 
+recalibration
+(all in decimal)
+idle, then
+
+PID 18:120/3/196 (before move command)
+regular motor response
+
+18: 0/0/189
+motor response (8 and 9) : 0/255/4
+repeats over and over, then
+
+18:0/0/189
+response: 99/0/1
+18:99/0/188
+response:99/0/0
+18:99/0/252
+response:99/0/0
+
+
+IF interrupted
+18 sends 0/255/252
+motors respond 247/254/0

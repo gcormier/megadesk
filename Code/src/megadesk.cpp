@@ -41,7 +41,7 @@
 #define NOTE_HIGH NOTE_C8
 
 #define CLICK_TIMEOUT 400UL // Timeout in MS.
-#define CLICK_LONG 900UL    // Long/hold minimum time in MS.
+#define CLICK_LONG    900UL    // Long/hold minimum time in MS.
 
 #define FINE_MOVEMENT_VALUE 100 // Based on protocol decoding
 
@@ -52,7 +52,8 @@
 #define LIN_CMD_FINE 135
 #define LIN_CMD_FINISH 132
 #define LIN_CMD_PREMOVE 196
-
+#define LIN_CMD_RECALIBRATE 189
+#define LIN_CMD_RECALIBRATE_END 188
 #define LIN_MOTOR_BUSY 2
 #define LIN_MOTOR_BUSY_FINE 3
 
@@ -62,11 +63,9 @@
 #define LIN_MOTOR_IDLE3 96
 
 // Changing these might be a really bad idea. They are sourced from
-// decoding the OEM controller limits. If you really need a bit of extra travel
-// you can fiddle with SAFETY, it's an extra buffer of a few units.
-#define SAFETY 20
-#define DANGER_MAX_HEIGHT 6777 - HYSTERESIS - SAFETY
-#define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
+// decoding the OEM controller limits.
+#define DANGER_MAX_HEIGHT 6777 - HYSTERESIS
+#define DANGER_MIN_HEIGHT 162 + HYSTERESIS
 
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means max 255 slots)
@@ -445,6 +444,14 @@ void parseData()
 
 void loop()
 {
+  // If we are in recalibrate mode, don't respond to any inputs.
+  if (state == State::STARTING_RECAL || state == State::RECAL || state == State::END_RECAL)
+  {
+    linBurst();
+    delayUntil(25);
+    return;
+  }
+
   linBurst();
 
 #ifdef SERIALCOMMS
@@ -606,34 +613,49 @@ void linBurst()
   case State::OFF:
     cmd[2] = LIN_CMD_IDLE;
     break;
+
   case State::STARTING:
+  case State::STARTING_RECAL:
     cmd[2] = LIN_CMD_PREMOVE;
     break;
+
   case State::UP:
     enc_target = min(enc_a, enc_b);
     cmd[2] = LIN_CMD_RAISE;
     lastState = State::UP;
     break;
+
   case State::DOWN:
     enc_target = max(enc_a, enc_b);
     cmd[2] = LIN_CMD_LOWER;
     lastState = State::DOWN;
     break;
+
   case State::STOPPING1:
   case State::STOPPING2:
   case State::STOPPING3:
-
     if (lastState == State::UP)
       enc_target = min(enc_a, enc_b) + FINE_MOVEMENT_VALUE;
     else
       enc_target = min(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
 
     cmd[2] = LIN_CMD_FINE;
-
     break;
+
   case State::STOPPING4:
     enc_target = max(enc_a, enc_b);
     cmd[2] = LIN_CMD_FINISH;
+    break;
+
+  case State::RECAL:
+    // We want to send 0/0/189
+    cmd[2] = LIN_CMD_RECALIBRATE;
+    enc_target = 0; 
+    break;
+  case State::END_RECAL:
+    // We want to send 99/0/188
+    cmd[2] = LIN_CMD_RECALIBRATE_END;
+    enc_target = 99;
     break;
   }
 
@@ -699,6 +721,17 @@ void linBurst()
       }
     }
     break;
+  // recal stuff here
+  case State::STARTING_RECAL:
+    state = State::RECAL;
+    break;
+  case State::RECAL:
+    if (node_a[0] == 99 && node_a[1] == 0 && node_a[2] == 1 &&
+        node_b[0] == 99 && node_b[1] == 0 && node_b[2] == 1) // Are both motors reporting 99/0/1? We should be bottomed out at this point.
+        state = State::END_RECAL;
+    break;
+  case State::END_RECAL:
+    state = State::OFF;
   default:
     state = State::OFF;
     break;
