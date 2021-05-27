@@ -2,10 +2,10 @@
 //#define SERIALCOMMS
 
 // Uncomment this if you want to override minimum/maximum heights
-//#define MINMAX
+#define MINMAX
 
 // Uncomment to store/recall memories from both buttons
-#define BOTHBUTTONS
+//#define BOTHBUTTONS
 
 #include <EEPROM.h>
 #include "lin.h"
@@ -164,9 +164,20 @@ void setup()
 
   delay(LONG_PAUSE);
 
-  // Button Test Mode
+  // Unused UP power-on toggle
   if (!digitalRead(PIN_UP))
   {
+    ;
+  }
+
+  // Factory reset, then button test mode
+  if (!digitalRead(PIN_DOWN))
+  {
+    initAndReadEEPROM(true);
+    beep(NOTE_C7);
+    delay(SHORT_PAUSE);
+    beep(NOTE_C7);
+    delay(SHORT_PAUSE);
     while (true)
     {
       if (!digitalRead(PIN_DOWN))
@@ -188,17 +199,6 @@ void setup()
         delay(LONG_PAUSE);
       }
       delay(SHORT_PAUSE);
-    }
-  }
-
-  // factory reset
-  if (!digitalRead(PIN_DOWN))
-  {
-    initAndReadEEPROM(true);
-    while (true)
-    {
-      beep(NOTE_C7);
-      delay(ONE_SEC_PAUSE);
     }
   }
 
@@ -496,7 +496,9 @@ void loop()
       toggleMaxHeight();
     } else // else if continued next line
 #endif
-    if (savePosition)
+    if (pushCount == 11)
+      state = State::STARTING_RECAL;
+    else if (savePosition)
     {
 #ifdef BOTHBUTTONS
       if (lastbutton == Button::DOWN) pushCount += RIGHT_SLOT_START;
