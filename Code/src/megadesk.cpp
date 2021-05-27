@@ -444,15 +444,15 @@ void parseData()
 
 void loop()
 {
+
+  linBurst();
+
   // If we are in recalibrate mode, don't respond to any inputs.
   if (state == State::STARTING_RECAL || state == State::RECAL || state == State::END_RECAL)
   {
-    linBurst();
     delayUntil(25);
     return;
   }
-
-  linBurst();
 
 #ifdef SERIALCOMMS
   if (memoryMoving == false && oldHeight != currentHeight){
