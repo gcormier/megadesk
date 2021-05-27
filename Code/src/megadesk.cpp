@@ -162,7 +162,7 @@ void setup()
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
 
-  delay(LONG_PAUSE);
+  delay(SHORT_PAUSE);
 
   // Unused UP power-on toggle
   if (!digitalRead(PIN_UP))
