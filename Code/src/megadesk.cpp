@@ -26,7 +26,14 @@
 #define PITCH_ADJUST (48000000 / F_CPU) // digitalWrite takes ~6us at 8MHz
 
 // notes to beep
+#define NOTE_A4 440
+#define NOTE_C6 1046
+#define NOTE_CSHARP6 1109
+#define NOTE_D6 1175
+#define NOTE_DSHARP6 1245
+#define NOTE_E6 1319
 #define NOTE_G6 1568
+#define NOTE_A6 1760
 #define NOTE_B6 1976
 #define NOTE_C7 2093
 #define NOTE_CSHARP7 2217
@@ -36,9 +43,9 @@
 #define NOTE_F7 2794
 #define NOTE_G7 3136
 #define NOTE_C8 4186
-#define NOTE_LOW NOTE_C7
-#define NOTE_ACK NOTE_G7
-#define NOTE_HIGH NOTE_C8
+#define NOTE_LOW NOTE_C6
+#define NOTE_ACK NOTE_G6
+#define NOTE_HIGH NOTE_C7
 
 #define CLICK_TIMEOUT 400UL // Timeout in MS.
 #define CLICK_LONG    900UL    // Long/hold minimum time in MS.
@@ -207,14 +214,14 @@ void setup()
 #endif
 
   // init + arpeggio
-  beep(NOTE_C7);
+  beep(NOTE_C6);
   initAndReadEEPROM(false);
-  beep(NOTE_E7);
+  beep(NOTE_E6);
   lin.begin(19200);
-  beep(NOTE_G7);
+  beep(NOTE_G6);
 
   linInit();
-  beep(NOTE_C8);
+  beep(NOTE_C7);
 }
 
 // track button presses - short and long
@@ -775,10 +782,10 @@ uint16_t loadMemory(uint8_t memorySlot)
     // empty
     delay(LONG_PAUSE);
     // sad trombone
-    beep(NOTE_DSHARP7);
-    beep(NOTE_D7);
-    beep(NOTE_CSHARP7);
-    beep(NOTE_C7);
+    beep(NOTE_DSHARP6);
+    beep(NOTE_D6);
+    beep(NOTE_CSHARP6);
+    beep(NOTE_C6);
   }
 
   return memHeight;
@@ -816,7 +823,7 @@ void delayUntil(unsigned long microSeconds)
 // but sound will break up if servicing interrupts.
 // freq is in Hz. duration is in ms. (max 524ms)
 void playTone(uint16_t freq, uint16_t duration) {
-  uint16_t halfperiod = 1000000L / freq; // in us.
+  uint16_t halfperiod = 500000L / freq; // in us.
   // mostly equivalent to:
   // for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
   for ( duration = (125 * duration) / (halfperiod / 4); duration > 0; duration -= 1 ) {
