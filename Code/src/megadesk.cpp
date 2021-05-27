@@ -54,11 +54,9 @@
 #define LIN_MOTOR_BUSY_FINE 3
 
 // Changing these might be a really bad idea. They are sourced from
-// decoding the OEM controller limits. If you really need a bit of extra travel
-// you can fiddle with SAFETY, it's an extra buffer of a few units.
-#define SAFETY 0
-#define DANGER_MAX_HEIGHT 6777 - HYSTERESIS - SAFETY
-#define DANGER_MIN_HEIGHT 162 + HYSTERESIS + SAFETY
+// decoding the OEM controller limits.
+#define DANGER_MAX_HEIGHT 6777 - HYSTERESIS
+#define DANGER_MIN_HEIGHT 162 + HYSTERESIS
 
 // Related to multi-touch
 bool button_pin_up;
