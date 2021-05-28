@@ -2,10 +2,7 @@
 //#define SERIALCOMMS
 
 // Uncomment this if you want to override minimum/maximum heights
-//#define MINMAX
-
-// Uncomment to store/recall memories from both buttons
-#define BOTHBUTTONS
+#define MINMAX
 
 #include <EEPROM.h>
 #include "lin.h"
@@ -76,26 +73,30 @@
 
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means max 255 slots)
-#define MIN_HEIGHT_SLOT 20
-#define MAX_HEIGHT_SLOT 22
-#define RIGHT_SLOT_START 32 // 0x20 in hex
-
 // EEPROM magic signature to detect if eeprom is valid
 #define EEPROM_LOCATION_SIG 0
 #define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
 
-// is a memory button?
-#ifdef BOTHBUTTONS
-#define MEMORY_BUTTON(button) ((button == Button::UP) || (button == Button::DOWN))
-#else
-#define MEMORY_BUTTON(button) (button == Button::UP)
+#ifdef MINMAX
+#define MIN_HEIGHT_SLOT 11
+#define MAX_HEIGHT_SLOT 12
 #endif
-#define PRESSED(button) (button != Button::NONE)
+#define RECALIBRATE     14 // nothing is stored there
+#define VARIANTS        16 // reserved - deliberately empty
+#define BOTHBUTTON_SLOT 18 // store whether bothbuttons is enabled
+#define DOWN_SLOT_START 32 // 0x20 in hex offset for down button slots
+
+
+#define PRESSED(b) (b != Button::NONE)
+// is a memory button?
+#define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothmode && (b == Button::DOWN)))
+#define LAST_DOWN (bothmode) && (lastbutton == Button::DOWN)
 
 // Tracking multipress/longpress of buttons
 Button previous = Button::NONE; // previous state of buttons
 Button lastbutton = Button::NONE; // last button to be pressed
 uint8_t pushCount = 0; // tracks button pushes
+uint8_t bothmode; // both button mode
 bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
 bool manualUp, manualDown; // manual-mode. when holding first press of up/down
@@ -171,9 +172,11 @@ void setup()
 
   delay(LONG_PAUSE);
 
-  // Button Test Mode
-  if (!digitalRead(PIN_UP))
+  // hold down button during reset to factory reset
+  if (!digitalRead(PIN_DOWN))
   {
+    initAndReadEEPROM(true);
+    beep(NOTE_C8, 5);
     while (true)
     {
       if (!digitalRead(PIN_DOWN))
@@ -196,17 +199,7 @@ void setup()
       }
       delay(SHORT_PAUSE);
     }
-  }
 
-  // factory reset
-  if (!digitalRead(PIN_DOWN))
-  {
-    initAndReadEEPROM(true);
-    while (true)
-    {
-      beep(NOTE_C7);
-      delay(ONE_SEC_PAUSE);
-    }
   }
 
 #ifdef SERIALCOMMS
@@ -215,13 +208,20 @@ void setup()
 
   // init + arpeggio
   beep(NOTE_C6);
+
   initAndReadEEPROM(false);
   beep(NOTE_E6);
+
   lin.begin(19200);
   beep(NOTE_G6);
 
   linInit();
-  beep(NOTE_C7);
+  // hold up button on boot to toggle both/single Button Mode
+  if (!digitalRead(PIN_UP))
+  {
+    toggleBothMode();
+  } else
+    beep(NOTE_C7, bothmode+1);
 }
 
 // track button presses - short and long
@@ -234,7 +234,6 @@ void readButtons()
 
   if (!digitalRead(PIN_UP)) {
     if (!digitalRead(PIN_DOWN)) {
-      // invalid state
       buttons = Button::BOTH;
       stop = true;
     } else {
@@ -242,31 +241,24 @@ void readButtons()
     }
   } else if (!digitalRead(PIN_DOWN)) {
     buttons = Button::DOWN;
-#ifndef BOTHBUTTONS
-    manualDown = true;
-#endif
   } else {
     buttons = Button::NONE;
-#ifndef BOTHBUTTONS
-    manualDown = false;
-#endif
   }
 
   // If already moving and any button is pressed - stop
   if ( memoryMoving && PRESSED(buttons))
     targetHeight = currentHeight;
 
-  if ( !PRESSED(previous) && MEMORY_BUTTON(buttons) ) // Just pushed
+
+  if ( !PRESSED(previous) && PRESSED(buttons) ) // Just pushed
   {
-#ifdef BOTHBUTTONS
     // clear pushCount if pushing a different button from last
     if (buttons != lastbutton) startFresh();
-#endif
 
     lastPushTime = currentMillis;
     lastbutton = buttons;
   }
-  else if ((previous == buttons) && MEMORY_BUTTON(buttons) ) // button held
+  else if ((previous == buttons) && PRESSED(buttons) ) // button held
   {
     unsigned long pushLength = currentMillis - lastPushTime;
 
@@ -276,8 +268,20 @@ void readButtons()
       if (pushCount == 0) {
         if (buttons == Button::UP) manualUp = true;
         if (buttons == Button::DOWN) manualDown = true;
+        if ((buttons == Button::BOTH) && (pushLength > CLICK_TIMEOUT*25)) {
+          // 10s hold. unused trigger, play the easter-egg
+          beep(NOTE_E7);
+          beep(NOTE_DSHARP7);
+          beep(NOTE_E7);
+          beep(NOTE_DSHARP7);
+          beep(NOTE_E7);
+          beep(NOTE_B6);
+          beep(NOTE_D7);
+          beep(NOTE_C7);
+          beep(NOTE_A6);
+        }
       }
-      else if (!savePosition)
+      else if ( MEMORY_BUTTON(buttons) && (!savePosition) )
       {
         // longpress after previous pushes - save this position
         beep(NOTE_ACK, pushCount + 1); // first provide feedback to release...
@@ -285,30 +289,29 @@ void readButtons()
       }
     }
   }
-  else if ( MEMORY_BUTTON(previous) && !PRESSED(buttons) ) // just released
+  else if ( PRESSED(previous) && !PRESSED(buttons) ) // just released
   {
     // moving?
-    if ( !manualUp && !manualDown )
-    {
-      // not moving manually
-      pushCount++; // short press increase the count
-    }
     if ( manualUp || manualDown )
     {
       // we were under manual control before, stop now
       stop = true;
+    } else {
+      // not moving manually
+      pushCount++; // short press increase the count
     }
+
   }
-  else // other states: both-buttons / idle etc.
+  else if ( !PRESSED(previous) && !PRESSED(buttons) ) // released and idle
   {
     // check timeout on release - indicating last press
-    if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT)) // Released
+    if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT))
     {
       // last press
-      if (pushCount > 1)
+      if ((pushCount > 1) && MEMORY_BUTTON(lastbutton))
         memoryEvent = true; // either store or recall a setting
       else
-        stop = true; // or start fresh
+        startFresh();
     }
   }
 
@@ -493,21 +496,32 @@ void loop()
 
   if (memoryEvent)
   {
+    if (pushCount == RECALIBRATE)
+    {
+      // do calibration
+      state = State::STARTING_RECAL;
+    }
 #ifdef MINMAX
-    if (pushCount == MIN_HEIGHT_SLOT)
+    else if (pushCount == MIN_HEIGHT_SLOT)
     {
       toggleMinHeight();
     }
     else if (pushCount == MAX_HEIGHT_SLOT)
     {
-      toggleMaxHeight();
-    } else // else if continued next line
+      if (LAST_DOWN)
+        toggleMinHeight();
+      else
+        toggleMaxHeight();
+    }
 #endif
-    if (savePosition)
+    else if (pushCount == BOTHBUTTON_SLOT)
     {
-#ifdef BOTHBUTTONS
-      if (lastbutton == Button::DOWN) pushCount += RIGHT_SLOT_START;
-#endif
+      toggleBothMode();
+    }
+    else if (savePosition)
+    {
+      if (LAST_DOWN)
+        pushCount += DOWN_SLOT_START;
       saveMemory(pushCount, currentHeight);
 #ifdef SERIALCOMMS
       writeSerial(command_write, currentHeight, pushCount);
@@ -517,9 +531,8 @@ void loop()
     {
       // load position
       beep(NOTE_LOW, pushCount);
-#ifdef BOTHBUTTONS
-      if (lastbutton == Button::DOWN) pushCount += RIGHT_SLOT_START;
-#endif
+      if (LAST_DOWN)
+        pushCount += DOWN_SLOT_START;
       targetHeight = loadMemory(pushCount);
 #ifdef SERIALCOMMS
       writeSerial(command_load, targetHeight, pushCount);
@@ -739,6 +752,7 @@ void linBurst()
     break;
   case State::END_RECAL:
     state = State::OFF;
+    break;
   default:
     state = State::OFF;
     break;
@@ -970,16 +984,18 @@ void initAndReadEEPROM(bool force)
     // Store signature value
     eepromPut16(EEPROM_LOCATION_SIG, MAGIC_SIG);
 
-    #ifdef MINMAX
-    // reset max/min height
-    eepromPut16(MIN_HEIGHT_SLOT, DANGER_MIN_HEIGHT);
-    eepromPut16(MAX_HEIGHT_SLOT, DANGER_MAX_HEIGHT);
-    #endif
   }
   #ifdef MINMAX
+  // reset max/min height
   minHeight = eepromGet16(MIN_HEIGHT_SLOT);
   maxHeight = eepromGet16(MAX_HEIGHT_SLOT);
+  // check if 0 and fix/beep ...
+  if (minHeight == 0) toggleMinHeight();
+  if (maxHeight == 0) toggleMaxHeight();
   #endif
+  bothmode = eepromGet16(BOTHBUTTON_SLOT);
+
+  // could also increment slot 1 every time to keep track of resets/power-cycles.
 }
 
 
@@ -991,15 +1007,16 @@ void toggleMinHeight()
   if (minHeight == DANGER_MIN_HEIGHT)
   {
     minHeight = currentHeight;
+    // provide more feedback when setting than clearing
+    beep(minHeight, 4);
   }
   else
   {
     minHeight = DANGER_MIN_HEIGHT;
+    // default-limits sound
+    beep(minHeight, 1);
   }
   
-  //Min height change sound
-  beep(minHeight, 4); // tone based upon new minHeight
-
   eepromPut16(MIN_HEIGHT_SLOT, minHeight);
 }
 
@@ -1010,15 +1027,23 @@ void toggleMaxHeight()
   if (maxHeight == DANGER_MAX_HEIGHT)
   {
     maxHeight = currentHeight;
+    // provide more feedback when setting than clearing
+    beep(maxHeight, 4);
   }
   else
   {
     maxHeight = DANGER_MAX_HEIGHT;
+    // default-limits sound
+    beep(maxHeight, 1);
   }
-
-  //Max height change sound
-  beep(maxHeight, 4); // tone based upon new maxHeight
 
   eepromPut16(MAX_HEIGHT_SLOT, maxHeight);
 }
 #endif
+
+void toggleBothMode()
+{
+  bothmode = !bothmode;
+  eepromPut16(BOTHBUTTON_SLOT, bothmode);
+  beep(NOTE_C7, bothmode+1);
+}

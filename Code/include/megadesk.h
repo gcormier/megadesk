@@ -51,6 +51,7 @@ byte recvInitPacket(byte array[]);
 void toggleMinHeight();
 void toggleMaxHeight();
 #endif
+void toggleBothMode();
 
 uint16_t eepromGet16( int idx );
 void eepromPut16( int idx, uint16_t val );
