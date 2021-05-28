@@ -605,7 +605,7 @@ void linBurst()
   byte node_a[4] = {0, 0, 0, 0};
   byte node_b[4] = {0, 0, 0, 0};
   byte cmd[3] = {0, 0, 0};
-  State lastState = State::OFF;
+  static State lastState = State::OFF;
 
   // ensure accurate timing from this point
   refTime = micros();
