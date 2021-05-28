@@ -170,13 +170,16 @@ void setup()
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
 
-  delay(LONG_PAUSE);
+  delay(SHORT_PAUSE);
 
   // hold down button during reset to factory reset
   if (!digitalRead(PIN_DOWN))
   {
     initAndReadEEPROM(true);
-    beep(NOTE_C8, 5);
+    beep(NOTE_C7);
+    delay(SHORT_PAUSE);
+    beep(NOTE_C7);
+    delay(SHORT_PAUSE);
     while (true)
     {
       if (!digitalRead(PIN_DOWN))
