@@ -32,6 +32,7 @@ enum class Button : byte
   BOTH,
 };
 
+void playTone(uint16_t freq, uint16_t duration);
 void beep(uint16_t freq, byte count=1);
 void initAndReadEEPROM(bool force);
 void linInit();
@@ -51,6 +52,7 @@ byte recvInitPacket(byte array[]);
 void toggleMinHeight();
 void toggleMaxHeight();
 #endif
+void toggleBothMode();
 
 uint16_t eepromGet16( int idx );
 void eepromPut16( int idx, uint16_t val );
