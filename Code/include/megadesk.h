@@ -32,6 +32,7 @@ enum class Button : byte
   BOTH,
 };
 
+void playTone(uint16_t freq, uint16_t duration);
 void beep(uint16_t freq, byte count=1);
 void initAndReadEEPROM(bool force);
 void linInit();

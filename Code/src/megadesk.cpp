@@ -29,6 +29,7 @@
 #define NOTE_D6 1175
 #define NOTE_DSHARP6 1245
 #define NOTE_E6 1319
+#define NOTE_F6 1397
 #define NOTE_G6 1568
 #define NOTE_A6 1760
 #define NOTE_B6 1976
@@ -74,17 +75,16 @@
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means max 255 slots)
 // EEPROM magic signature to detect if eeprom is valid
-#define EEPROM_LOCATION_SIG 0
+#define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
-
 #ifdef MINMAX
-#define MIN_HEIGHT_SLOT 11
-#define MAX_HEIGHT_SLOT 12
+#define MIN_HEIGHT_SLOT  11
+#define MAX_HEIGHT_SLOT  12
 #endif
-#define RECALIBRATE     14 // nothing is stored there
-#define VARIANTS        16 // reserved - deliberately empty
-#define BOTHBUTTON_SLOT 18 // store whether bothbuttons is enabled
-#define DOWN_SLOT_START 32 // 0x20 in hex offset for down button slots
+#define RECALIBRATE      14 // nothing is stored there
+#define RESERVED_VARIANT 16 // reserved - deliberately empty
+#define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
+#define DOWN_SLOT_START  32 // 0x20 in hex offset for down button slots
 
 
 #define PRESSED(b) (b != Button::NONE)
@@ -154,7 +154,7 @@ void motorDown(bool go)
     user_cmd = Command::NONE;
 }
 
-// clean slate for button presses
+// clean the slate for button presses
 void startFresh()
 {
   previous = Button::NONE;
@@ -228,14 +228,13 @@ void setup()
 void readButtons()
 {
   Button buttons;
-  bool stop = false;
-
   unsigned long currentMillis = millis();
 
   if (!digitalRead(PIN_UP)) {
     if (!digitalRead(PIN_DOWN)) {
       buttons = Button::BOTH;
-      stop = true;
+      manualUp = false;
+      manualDown = false;
     } else {
       buttons = Button::UP;
     }
@@ -250,7 +249,7 @@ void readButtons()
     targetHeight = currentHeight;
 
 
-  if ( !PRESSED(previous) && PRESSED(buttons) ) // Just pushed
+  if ( (previous != buttons) && PRESSED(buttons) ) // new push
   {
     // clear pushCount if pushing a different button from last
     if (buttons != lastbutton) startFresh();
@@ -268,17 +267,27 @@ void readButtons()
       if (pushCount == 0) {
         if (buttons == Button::UP) manualUp = true;
         if (buttons == Button::DOWN) manualDown = true;
-        if ((buttons == Button::BOTH) && (pushLength > CLICK_TIMEOUT*25)) {
+        if ((buttons == Button::BOTH) && (pushLength > 25*CLICK_TIMEOUT)) {
           // 10s hold. unused trigger, play the easter-egg
-          beep(NOTE_E7);
-          beep(NOTE_DSHARP7);
-          beep(NOTE_E7);
-          beep(NOTE_DSHARP7);
-          beep(NOTE_E7);
-          beep(NOTE_B6);
-          beep(NOTE_D7);
-          beep(NOTE_C7);
-          beep(NOTE_A6);
+          #define QUARTER 262
+          playTone(NOTE_C6, QUARTER);
+          playTone(NOTE_C7, QUARTER*2);
+          playTone(NOTE_C7, QUARTER*2);
+          playTone(NOTE_B6, QUARTER/2);
+          playTone(NOTE_C7, QUARTER/2);
+          playTone(NOTE_B6, QUARTER/2);
+          playTone(NOTE_G6, QUARTER/2);
+          playTone(NOTE_A6, QUARTER*2);
+          playTone(NOTE_A6, QUARTER*2);
+          playTone(NOTE_F6, QUARTER/2);
+          delay(QUARTER/2);
+          playTone(NOTE_F6, QUARTER);
+          playTone(NOTE_F6, QUARTER/2);
+          playTone(NOTE_E6, QUARTER/2);
+          playTone(NOTE_D6, QUARTER/2);
+          playTone(NOTE_E6, QUARTER/2);
+          playTone(NOTE_C6, QUARTER/2);
+          delay(QUARTER/2);
         }
       }
       else if ( MEMORY_BUTTON(buttons) && (!savePosition) )
@@ -295,7 +304,8 @@ void readButtons()
     if ( manualUp || manualDown )
     {
       // we were under manual control before, stop now
-      stop = true;
+      manualUp = false;
+      manualDown = false;
     } else {
       // not moving manually
       pushCount++; // short press increase the count
@@ -310,16 +320,14 @@ void readButtons()
       // last press
       if ((pushCount > 1) && MEMORY_BUTTON(lastbutton))
         memoryEvent = true; // either store or recall a setting
-      else
+      else // single push or not a memory button
         startFresh();
     }
+  } else {
+    // not sure how we get here but its time to...
+    startFresh();
   }
 
-  if (stop) {
-    startFresh();
-    manualUp = false;
-    manualDown = false;
-  }
   previous = buttons;
 }
 
@@ -975,14 +983,14 @@ byte recvInitPacket(byte array[])
 
 void initAndReadEEPROM(bool force)
 {
-  int signature = eepromGet16(EEPROM_LOCATION_SIG);
+  int signature = eepromGet16(EEPROM_SIG_SLOT);
 
   if ((signature != MAGIC_SIG) || force)
   {
     for (unsigned int index = 0; index < EEPROM.length(); index++)
       EEPROM.write(index, 0);
     // Store signature value
-    eepromPut16(EEPROM_LOCATION_SIG, MAGIC_SIG);
+    eepromPut16(EEPROM_SIG_SLOT, MAGIC_SIG);
 
   }
   #ifdef MINMAX
