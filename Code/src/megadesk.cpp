@@ -89,14 +89,15 @@
 
 #define PRESSED(b) (b != Button::NONE)
 // is a memory button?
-#define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothmode && (b == Button::DOWN)))
-#define LAST_DOWN (bothmode) && (lastbutton == Button::DOWN)
+#define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothbuttons && (b == Button::DOWN)))
+// is bothbuttons and down button was used?
+#define ADJUST_DOWN ((bothbuttons) && (lastbutton == Button::DOWN))
 
 // Tracking multipress/longpress of buttons
 Button previous = Button::NONE; // previous state of buttons
 Button lastbutton = Button::NONE; // last button to be pressed
 uint8_t pushCount = 0; // tracks button pushes
-uint8_t bothmode; // both button mode
+uint8_t bothbuttons; // both button mode
 bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
 bool manualUp, manualDown; // manual-mode. when holding first press of up/down
@@ -224,7 +225,7 @@ void setup()
   {
     toggleBothMode();
   } else
-    beep(NOTE_C7, bothmode+1);
+    beep(NOTE_C7, bothbuttons+1);
 }
 
 // track button presses - short and long
@@ -274,14 +275,12 @@ void readButtons()
           // 10s hold. unused trigger, play the easter-egg
           #define QUARTER 262
           playTone(NOTE_C6, QUARTER);
-          playTone(NOTE_C7, QUARTER*2);
-          playTone(NOTE_C7, QUARTER*2);
+          playTone(NOTE_C7, QUARTER*4);
           playTone(NOTE_B6, QUARTER/2);
           playTone(NOTE_C7, QUARTER/2);
           playTone(NOTE_B6, QUARTER/2);
           playTone(NOTE_G6, QUARTER/2);
-          playTone(NOTE_A6, QUARTER*2);
-          playTone(NOTE_A6, QUARTER*2);
+          playTone(NOTE_A6, QUARTER*4);
           playTone(NOTE_F6, QUARTER/2);
           delay(QUARTER/2);
           playTone(NOTE_F6, QUARTER);
@@ -519,7 +518,7 @@ void loop()
     }
     else if (pushCount == MAX_HEIGHT_SLOT)
     {
-      if (LAST_DOWN)
+      if (ADJUST_DOWN)
         toggleMinHeight();
       else
         toggleMaxHeight();
@@ -531,7 +530,7 @@ void loop()
     }
     else if (savePosition)
     {
-      if (LAST_DOWN)
+      if (ADJUST_DOWN)
         pushCount += DOWN_SLOT_START;
       saveMemory(pushCount, currentHeight);
 #ifdef SERIALCOMMS
@@ -542,7 +541,7 @@ void loop()
     {
       // load position
       beep(NOTE_LOW, pushCount);
-      if (LAST_DOWN)
+      if (ADJUST_DOWN)
         pushCount += DOWN_SLOT_START;
       targetHeight = loadMemory(pushCount);
 #ifdef SERIALCOMMS
@@ -846,12 +845,12 @@ void delayUntil(unsigned long microSeconds)
 
 // simple, limited tone generation - leaner than tone()
 // but sound will break up if servicing interrupts.
-// freq is in Hz. duration is in ms. (max 524ms)
+// freq is in Hz. duration is in ms. (max 1048ms)
 void playTone(uint16_t freq, uint16_t duration) {
   uint16_t halfperiod = 500000L / freq; // in us.
   // mostly equivalent to:
   // for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
-  for ( duration = (125 * duration) / (halfperiod / 4); duration > 0; duration -= 1 ) {
+  for ( duration = (62 * duration) / (halfperiod / 8); duration > 0; duration -= 1 ) {
     digitalWrite(PIN_BEEP, HIGH);
     delayMicroseconds(halfperiod - PITCH_ADJUST);
     digitalWrite(PIN_BEEP, LOW);
@@ -1004,7 +1003,7 @@ void initAndReadEEPROM(bool force)
   if (minHeight == 0) toggleMinHeight();
   if (maxHeight == 0) toggleMaxHeight();
   #endif
-  bothmode = eepromGet16(BOTHBUTTON_SLOT);
+  bothbuttons = eepromGet16(BOTHBUTTON_SLOT);
 
   // could also increment slot 1 every time to keep track of resets/power-cycles.
 }
@@ -1054,7 +1053,7 @@ void toggleMaxHeight()
 
 void toggleBothMode()
 {
-  bothmode = !bothmode;
-  eepromPut16(BOTHBUTTON_SLOT, bothmode);
-  beep(NOTE_C7, bothmode+1);
+  bothbuttons = !bothbuttons;
+  eepromPut16(BOTHBUTTON_SLOT, bothbuttons);
+  beep(NOTE_C7, bothbuttons+1);
 }
