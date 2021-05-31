@@ -35,7 +35,7 @@ As the megadesk does not have any USB connectivity, you will need a programmer t
 My go-to programmer is the <a href="https://www.sparkfun.com/products/9825">Sparkfun Pocket AVR Programmer</a>. It has a small switch which will either power the device, or not. Having power available is nice for one-off flashing, but if you plan on developing on an AVR, it can be useful to use serial logging. As the megadesk would already be powered up by the desk itself, you do not want to have the programmer supplying power as well.
 
 ## programming header
-The header is a standard 6 pin 2.54mm pitch connector (eg. https://www.digikey.ca/en/products/detail/amphenol-icc-fci/68602-406HLF/1657836 )
+The header is a standard 6 pin 2.54mm pitch connector (eg. https://www.digikey.ca/en/products/detail/amphenol-icc-fci/68602-406HLF/1657836 ). If you'd like to permanent attach it and have a cable running out for serial IO or development, a right angle header such as a 68459-406HLF-ND can be used as an alternative.
 
 On board versions v1,v2 and v5, this is a standard connector which will accept a typical AVR programming cable on the **top** of the board. 
 
