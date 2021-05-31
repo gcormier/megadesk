@@ -40,6 +40,8 @@
 #define NOTE_E7 2637
 #define NOTE_F7 2794
 #define NOTE_G7 3136
+#define NOTE_A7 3520
+#define NOTE_B7 3951
 #define NOTE_C8 4186
 #define NOTE_LOW NOTE_C6
 #define NOTE_ACK NOTE_G6
@@ -103,9 +105,9 @@ bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
 bool manualUp, manualDown; // manual-mode. when holding first press of up/down
 
-// feedback beeps
+// feedback pips
 bool feedback;
-uint16_t scale[] = { NOTE_C6, NOTE_D6, NOTE_E6, NOTE_F6, NOTE_G6, NOTE_A6, NOTE_B6, NOTE_C7 };
+uint16_t scale[] = { NOTE_C6, NOTE_D6, NOTE_E6, NOTE_F6, NOTE_G6, NOTE_A6, NOTE_B6, NOTE_C7, };
 
 // timestamps
 unsigned long lastPushTime = 0;
@@ -271,7 +273,8 @@ void readButtons()
 
     lastPushTime = currentMillis;
     lastbutton = buttons;
-    if (feedback) playTone(scale[pushCount%8], 20); // musical feedback
+    if (feedback)
+      playTone(scale[pushCount % sizeof(scale)], 20); // musical feedback
   }
   else if ((previous == buttons) && PRESSED(buttons) ) // button held
   {
@@ -334,8 +337,9 @@ void readButtons()
       // last press
       if ((pushCount > 1) && MEMORY_BUTTON(lastbutton))
         memoryEvent = true; // either store or recall a setting
-      else { // single push or not a memory button
+      else { // single push or not a memory button.
         startFresh();
+        // could still be a trigger for something. For now just...
         // play short dull buzz, indicating this is a no-op.
         if (feedback) playTone(NOTE_A4, 20);
       }
