@@ -83,6 +83,7 @@
 #endif
 #define RECALIBRATE      14 // nothing is stored there
 #define RESERVED_VARIANT 16 // reserved - deliberately empty
+#define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
 #define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
 #define DOWN_SLOT_START  32 // 0x20 in hex offset for down button slots
 
@@ -101,6 +102,10 @@ uint8_t bothbuttons; // both button mode
 bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
 bool manualUp, manualDown; // manual-mode. when holding first press of up/down
+
+// feedback beeps
+bool feedback;
+uint16_t scale[] = { NOTE_C6, NOTE_D6, NOTE_E6, NOTE_F6, NOTE_G6, NOTE_A6, NOTE_B6, NOTE_C7 };
 
 // timestamps
 unsigned long lastPushTime = 0;
@@ -167,11 +172,16 @@ void startFresh()
 
 void setup()
 {
+  bool up_press = false;
   pinMode(PIN_UP, INPUT_PULLUP);
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
 
   delay(SHORT_PAUSE);
+
+  // hold up button on boot to toggle both/single Button Mode
+  if (!digitalRead(PIN_UP))
+    up_press = true;
 
   // hold down button during reset to factory reset
   if (!digitalRead(PIN_DOWN))
@@ -220,11 +230,11 @@ void setup()
   beep(NOTE_G6);
 
   linInit();
-  // hold up button on boot to toggle both/single Button Mode
-  if (!digitalRead(PIN_UP))
-  {
+
+  // final note played once for single button mode, twice for bothbutton mode
+  if (up_press)
     toggleBothMode();
-  } else
+  else
     beep(NOTE_C7, bothbuttons+1);
 }
 
@@ -256,10 +266,12 @@ void readButtons()
   if ( (previous != buttons) && PRESSED(buttons) ) // new push
   {
     // clear pushCount if pushing a different button from last
-    if (buttons != lastbutton) startFresh();
+    if (buttons != lastbutton)
+      startFresh();
 
     lastPushTime = currentMillis;
     lastbutton = buttons;
+    if (feedback) playTone(scale[pushCount%8], 20); // musical feedback
   }
   else if ((previous == buttons) && PRESSED(buttons) ) // button held
   {
@@ -322,12 +334,12 @@ void readButtons()
       // last press
       if ((pushCount > 1) && MEMORY_BUTTON(lastbutton))
         memoryEvent = true; // either store or recall a setting
-      else // single push or not a memory button
+      else { // single push or not a memory button
         startFresh();
+        // play short dull buzz, indicating this is a no-op.
+        if (feedback) playTone(NOTE_A4, 20);
+      }
     }
-  } else {
-    // not sure how we get here but its time to...
-    startFresh();
   }
 
   previous = buttons;
@@ -527,6 +539,10 @@ void loop()
     else if (pushCount == BOTHBUTTON_SLOT)
     {
       toggleBothMode();
+    }
+    else if (pushCount == FEEDBACK_SLOT)
+    {
+      toggleFeedback();
     }
     else if (savePosition)
     {
@@ -1004,6 +1020,7 @@ void initAndReadEEPROM(bool force)
   if (maxHeight == 0) toggleMaxHeight();
   #endif
   bothbuttons = eepromGet16(BOTHBUTTON_SLOT);
+  feedback = eepromGet16(FEEDBACK_SLOT);
 
   // could also increment slot 1 every time to keep track of resets/power-cycles.
 }
@@ -1056,4 +1073,11 @@ void toggleBothMode()
   bothbuttons = !bothbuttons;
   eepromPut16(BOTHBUTTON_SLOT, bothbuttons);
   beep(NOTE_C7, bothbuttons+1);
+}
+
+void toggleFeedback()
+{
+  feedback = !feedback;
+  eepromPut16(FEEDBACK_SLOT, feedback);
+  beep(NOTE_C6, feedback+1);
 }
