@@ -4,6 +4,9 @@
 // Uncomment this if you want to override minimum/maximum heights
 #define MINMAX
 
+// option to turn on immediate user feedback pips
+#define FEEDBACK
+
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
@@ -79,10 +82,8 @@
 // EEPROM magic signature to detect if eeprom is valid
 #define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
-#ifdef MINMAX
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
-#endif
 #define RECALIBRATE      14 // nothing is stored there
 #define RESERVED_VARIANT 16 // reserved - deliberately empty
 #define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
@@ -106,8 +107,10 @@ bool memoryEvent = false; // flag to load/save a pushCount slot
 bool manualUp, manualDown; // manual-mode. when holding first press of up/down
 
 // feedback pips
+#ifdef FEEDBACK
 bool feedback;
 uint16_t scale[] = { NOTE_C6, NOTE_D6, NOTE_E6, NOTE_F6, NOTE_G6, NOTE_A6, NOTE_B6, NOTE_C7, };
+#endif
 
 // timestamps
 unsigned long lastPushTime = 0;
@@ -273,8 +276,10 @@ void readButtons()
 
     lastPushTime = currentMillis;
     lastbutton = buttons;
+#ifdef FEEDBACK
     if (feedback)
       playTone(scale[pushCount % sizeof(scale)], 20); // musical feedback
+#endif
   }
   else if ((previous == buttons) && PRESSED(buttons) ) // button held
   {
@@ -340,8 +345,10 @@ void readButtons()
       else { // single push or not a memory button.
         startFresh();
         // could still be a trigger for something. For now just...
+#ifdef FEEDBACK
         // play short dull buzz, indicating this is a no-op.
         if (feedback) playTone(NOTE_A4, 20);
+#endif
       }
     }
   }
@@ -544,10 +551,12 @@ void loop()
     {
       toggleBothMode();
     }
+#ifdef FEEDBACK
     else if (pushCount == FEEDBACK_SLOT)
     {
       toggleFeedback();
     }
+#endif
     else if (savePosition)
     {
       if (ADJUST_DOWN)
@@ -1024,7 +1033,9 @@ void initAndReadEEPROM(bool force)
   if (maxHeight == 0) toggleMaxHeight();
   #endif
   bothbuttons = eepromGet16(BOTHBUTTON_SLOT);
+#ifdef FEEDBACK
   feedback = eepromGet16(FEEDBACK_SLOT);
+#endif
 
   // could also increment slot 1 every time to keep track of resets/power-cycles.
 }
@@ -1079,9 +1090,11 @@ void toggleBothMode()
   beep(NOTE_C7, bothbuttons+1);
 }
 
+#ifdef FEEDBACK
 void toggleFeedback()
 {
   feedback = !feedback;
   eepromPut16(FEEDBACK_SLOT, feedback);
   beep(NOTE_C6, feedback+1);
 }
+#endif
