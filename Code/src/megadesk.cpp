@@ -1,11 +1,14 @@
 // Uncomment this define if you want serial
-//#define SERIALCOMMS
+#define SERIALCOMMS
 
 // Uncomment this if you want to override minimum/maximum heights
 #define MINMAX
 
 // option to turn on immediate user feedback pips
 #define FEEDBACK
+
+// Tx ascii values over serial for human-readable output
+//#define HUMANSERIAL
 
 // easter egg
 #define EASTER
@@ -134,12 +137,8 @@ Command user_cmd = Command::NONE;
 State state = State::OFF;
 
 #ifdef SERIALCOMMS
-uint16_t oldHeight = 0;
-
-const int numBytes = 4;
-byte receivedBytes[numBytes];
-byte newData = false;
-
+uint16_t oldHeight = 0; // previously reported height
+const char startMarker = '<';
 const char command_increase = '+';
 const char command_decrease = '-';
 const char command_absolute = '=';
@@ -147,8 +146,6 @@ const char command_write = 'W';
 const char command_load = 'L';
 const char command_current = 'C';
 const char command_read = 'R';
-
-const char startMarker = '<'; 
 #endif
 
 // set/clear motor up command
@@ -342,56 +339,54 @@ void readButtons()
 
 // modified from https://forum.arduino.cc/index.php?topic=396450.0
 #ifdef SERIALCOMMS
+// read/process 5 bytes at a time or exit if no serial data available.
 void recvData()
 {
+  const int numBytes = 5; // read/store all 5 bytes for simplicity, use only the last 4.
+  // static variables allows segmented/char-at-a-time decodes
+  static uint8_t ndx = 0;
+  static byte receivedBytes[numBytes];
+  int r; // read char
 
-  uint8_t recvInProgress = false;
-  uint8_t ndx = 0;
-
-  while (Serial1.available() > 0 && newData == false)
+  while ((r = Serial1.read()) != -1)
   {
-    char rc = Serial1.read();
-
-    if (recvInProgress == true)
+    if ((ndx == 0) && (r != startMarker))
     {
-      if (ndx < numBytes - 1)
-      {
-        receivedBytes[ndx] = rc;
-        ndx++;
-      }
-      else
-      {
-        receivedBytes[ndx] = rc;
-        recvInProgress = false;
-        ndx = 0;
-        newData = true;
-      }
+      // first char is not the startMarker, keep reading...
+      continue;
     }
-    else if (rc == startMarker)
-    {
-      recvInProgress = true;
+    receivedBytes[ndx] = r;
+    if (++ndx == numBytes)
+    { // thats 5 now bytes, parse/process them now and break-out.
+      parseData(receivedBytes[1],
+                makeWord( receivedBytes[2], receivedBytes[3]),
+                receivedBytes[4]);
+      ndx = 0;
+      return;
     }
   }
 }
 
-void writeSerial(char command, uint16_t position, uint8_t push_addr)
+void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
 {
-  byte tmp[2];
-  Serial1.write(startMarker);
-  Serial1.write(command);
-  tmp[1] = (position >> 8);
-  tmp[0] = position & 0xff;
-  Serial1.write(tmp[1]);
-  Serial1.write(tmp[0]);
+  // note. serial.write only ever writes bytes. ints/longs get truncated!
+  Serial1.write((byte) startMarker);
+  Serial1.write(operation);
+#ifdef HUMANSERIAL
+  Serial1.print(position); // Tx human-readable output option
+  Serial1.print(',');
+  Serial1.print(push_addr);
+  Serial1.print('.');
+#else
+  Serial1.write(position >> 8); // high byte
+  Serial1.write(position & 0xff); // low byte
   Serial1.write(push_addr);
+#endif
 }
 
-void parseData()
+void parseData(byte command, uint16_t position, uint8_t push_addr)
 {
-  char command = receivedBytes[0];
-  int position = makeWord(receivedBytes[1], receivedBytes[2]);
-  uint8_t push_addr = receivedBytes[3];
-
+  //writeSerial(command, position, push_addr); // echo command back for debugging
   /*
   data start (first byte)
     <    start data sentence
@@ -490,19 +485,11 @@ void loop()
       writeSerial(command_decrease, oldHeight-currentHeight, pushCount);
     }
   }
+
+  recvData();
 #endif
 
   readButtons();
-
-#ifdef SERIALCOMMS
-  recvData();
-
-  if (newData == true)
-  {
-    parseData();
-    newData = false;
-  }
-#endif
 
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.

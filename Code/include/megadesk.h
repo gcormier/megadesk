@@ -39,9 +39,8 @@ void linInit();
 void linBurst();
 
 void recvWithStartEndMarkers();
-void writeSerial(char operation, uint16_t position, uint8_t push_addr = 0);
-int BitShiftCombine(uint8_t x_high, uint8_t x_low);
-void parseData();
+void writeSerial(byte operation, uint16_t position, uint8_t push_addr = 0);
+void parseData(byte command, uint16_t position, uint8_t push_addr);
 
 void delayUntil(unsigned long microSeconds);
 
