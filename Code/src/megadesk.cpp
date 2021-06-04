@@ -146,6 +146,7 @@ const char command_write = 'W';
 const char command_load = 'L';
 const char command_current = 'C';
 const char command_read = 'R';
+const char command_tone = 'T';
 #endif
 
 // set/clear motor up command
@@ -396,17 +397,20 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
     -    decrease
     =    absolute
     C    Ask for current location
-    W    Write EEPROM
+    W    Write EEPROM location
     R    Read EEPROM location
     L    Load EEPROM location
+    T    play tone
 
   position (third/fourth bytes)
-    +-   relitave to current
+    +-   relative to current
     =W   absolute
+    T    tone frequency
     CRL  (ignore)
 
   push_addr (fifth byte)
     WRL   EEPROM pushCount number
+    T     tone duration/4 ms. (250 == 1s)
     *     (ignore)
   */
 
@@ -460,6 +464,10 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
   else if (command == command_read)
   {
     writeSerial(command_read, eepromGet16(push_addr), push_addr);
+  }
+  else if (command == command_tone)
+  {
+    playTone(position, push_addr*4); // 256*4 ~ 1048ms max
   }
 }
 #endif
