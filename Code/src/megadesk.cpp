@@ -7,6 +7,9 @@
 // option to turn on immediate user feedback pips
 #define FEEDBACK
 
+// easter egg
+#define EASTER
+
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
@@ -19,6 +22,7 @@
 
 // beeps
 #define BEEP_DURATION 150
+#define PIP_DURATION 20
 #define SHORT_PAUSE 50
 #define PAUSE BEEP_DURATION
 #define LONG_PAUSE 500
@@ -193,26 +197,21 @@ void setup()
   {
     initAndReadEEPROM(true);
     beep(NOTE_C7);
-    delay(SHORT_PAUSE);
     beep(NOTE_C7);
-    delay(SHORT_PAUSE);
+    delay(LONG_PAUSE);
     while (true)
     {
       if (!digitalRead(PIN_DOWN))
       {
         beep(NOTE_E7);
-        delay(PAUSE);
         beep(NOTE_D7);
-        delay(PAUSE);
         beep(NOTE_C7);
         delay(LONG_PAUSE);
       }
       if (!digitalRead(PIN_UP))
       {
         beep(NOTE_C7);
-        delay(PAUSE);
         beep(NOTE_D7);
-        delay(PAUSE);
         beep(NOTE_E7);
         delay(LONG_PAUSE);
       }
@@ -263,7 +262,7 @@ void readButtons()
     buttons = Button::NONE;
   }
 
-  // If already moving and any button is pressed - stop
+  // If already moving and any button is pressed - stop!
   if ( memoryMoving && PRESSED(buttons))
     targetHeight = currentHeight;
 
@@ -278,7 +277,8 @@ void readButtons()
     lastbutton = buttons;
 #ifdef FEEDBACK
     if (feedback)
-      playTone(scale[pushCount % sizeof(scale)], 20); // musical feedback
+      playTone(scale[pushCount % (sizeof(scale)/sizeof(int))],
+              PIP_DURATION); // musical feedback
 #endif
   }
   else if ((previous == buttons) && PRESSED(buttons) ) // button held
@@ -291,26 +291,25 @@ void readButtons()
       if (pushCount == 0) {
         if (buttons == Button::UP) manualUp = true;
         if (buttons == Button::DOWN) manualDown = true;
+#ifdef EASTER
         if ((buttons == Button::BOTH) && (pushLength > 25*CLICK_TIMEOUT)) {
           // 10s hold. unused trigger, play the easter-egg
-          #define QUARTER 262
-          playTone(NOTE_C6, QUARTER);
-          playTone(NOTE_C7, QUARTER*4);
-          playTone(NOTE_B6, QUARTER/2);
-          playTone(NOTE_C7, QUARTER/2);
-          playTone(NOTE_B6, QUARTER/2);
-          playTone(NOTE_G6, QUARTER/2);
-          playTone(NOTE_A6, QUARTER*4);
-          playTone(NOTE_F6, QUARTER/2);
-          delay(QUARTER/2);
-          playTone(NOTE_F6, QUARTER);
-          playTone(NOTE_F6, QUARTER/2);
-          playTone(NOTE_E6, QUARTER/2);
-          playTone(NOTE_D6, QUARTER/2);
-          playTone(NOTE_E6, QUARTER/2);
-          playTone(NOTE_C6, QUARTER/2);
-          delay(QUARTER/2);
+         #define EIGHTH 131
+          uint16_t tones[] = {
+            NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
+            NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
+            NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
+            NOTE_A6, EIGHTH*8,
+            NOTE_F6, EIGHTH, 20, EIGHTH,
+            NOTE_F6, EIGHTH*2,
+            NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
+            NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
+            NOTE_C6, EIGHTH, 20, EIGHTH, };
+          for (uint16_t i=0; i < sizeof(tones)/2; i+=2) {
+            playTone(tones[i], tones[i+1]);
+          }
         }
+#endif
       }
       else if ( MEMORY_BUTTON(buttons) && (!savePosition) )
       {
@@ -347,7 +346,7 @@ void readButtons()
         // could still be a trigger for something. For now just...
 #ifdef FEEDBACK
         // play short dull buzz, indicating this is a no-op.
-        if (feedback) playTone(NOTE_A4, 20);
+        if (feedback) playTone(NOTE_A4, PIP_DURATION);
 #endif
       }
     }
