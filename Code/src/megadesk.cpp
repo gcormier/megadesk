@@ -7,7 +7,7 @@
 // option to turn on immediate user feedback pips
 #define FEEDBACK
 
-// Tx ascii values over serial for human-readable output
+// Transmit ascii values over serial for human-readable output
 //#define HUMANSERIAL
 
 // easter egg
@@ -146,6 +146,7 @@ const char command_write = 'W';
 const char command_load = 'L';
 const char command_current = 'C';
 const char command_read = 'R';
+const char command_tone = 'T';
 #endif
 
 // set/clear motor up command
@@ -344,8 +345,8 @@ void recvData()
 {
   const int numBytes = 5; // read/store all 5 bytes for simplicity, use only the last 4.
   // static variables allows segmented/char-at-a-time decodes
-  static uint8_t ndx = 0;
   static byte receivedBytes[numBytes];
+  static uint8_t ndx = 0;
   int r; // read char
 
   while ((r = Serial1.read()) != -1)
@@ -359,7 +360,7 @@ void recvData()
     if (++ndx == numBytes)
     { // thats 5 now bytes, parse/process them now and break-out.
       parseData(receivedBytes[1],
-                makeWord( receivedBytes[2], receivedBytes[3]),
+                makeWord(receivedBytes[2], receivedBytes[3]),
                 receivedBytes[4]);
       ndx = 0;
       return;
@@ -376,7 +377,7 @@ void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
   Serial1.print(position); // Tx human-readable output option
   Serial1.print(',');
   Serial1.print(push_addr);
-  Serial1.print('.');
+  Serial1.print('\n');
 #else
   Serial1.write(position >> 8); // high byte
   Serial1.write(position & 0xff); // low byte
@@ -396,17 +397,20 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
     -    decrease
     =    absolute
     C    Ask for current location
-    W    Write EEPROM
+    W    Write EEPROM location
     R    Read EEPROM location
     L    Load EEPROM location
+    T    play tone
 
   position (third/fourth bytes)
-    +-   relitave to current
+    +-   relative to current
     =W   absolute
+    T    tone frequency
     CRL  (ignore)
 
   push_addr (fifth byte)
     WRL   EEPROM pushCount number
+    T     tone duration/4 ms. (250 == 1s)
     *     (ignore)
   */
 
@@ -431,6 +435,8 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
   }
   else if (command == command_write)
   {
+    // note. saving against down-button requires adding 32 to push_addr...
+
     // if position not set, then set to currentHeight
     if (position == 0)
     {
@@ -454,12 +460,18 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
   }
   else if (command == command_load)
   {
+    // note. loading down-button slots requires adding 32 to push_addr...
+
     pushCount = push_addr;
     memoryEvent = true;
   }
   else if (command == command_read)
   {
     writeSerial(command_read, eepromGet16(push_addr), push_addr);
+  }
+  else if (command == command_tone)
+  {
+    playTone(position, push_addr*4); // 256*4 ~ 1048ms max
   }
 }
 #endif
