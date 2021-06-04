@@ -94,21 +94,21 @@
 #define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
 #define DOWN_SLOT_START  32 // 0x20 in hex offset for down button slots
 
-
+// any button pressed
 #define PRESSED(b) (b != Button::NONE)
 // is a memory button?
 #define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothbuttons && (b == Button::DOWN)))
-// is bothbuttons and down button was used?
+// is bothbuttons and the down button was used?
 #define ADJUST_DOWN ((bothbuttons) && (lastbutton == Button::DOWN))
 
 // Tracking multipress/longpress of buttons
 Button previous = Button::NONE; // previous state of buttons
 Button lastbutton = Button::NONE; // last button to be pressed
-uint8_t pushCount = 0; // tracks button pushes
+uint8_t pushCount = 0; // tracks number of button pushes
 uint8_t bothbuttons; // both button mode
 bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
-bool manualUp, manualDown; // manual-mode. when holding first press of up/down
+Command manualMove; // press and hold up/down?
 
 // feedback pips
 #ifdef FEEDBACK
@@ -152,22 +152,9 @@ const char startMarker = '<';
 #endif
 
 // set/clear motor up command
-void motorUp(bool go)
-{
-  if (go)
-    user_cmd = Command::UP;
-  else
-    user_cmd = Command::NONE;
-}
-
-// set/clear motor down command
-void motorDown(bool go)
-{
-  if (go)
-    user_cmd = Command::DOWN;
-  else
-    user_cmd = Command::NONE;
-}
+#define MOTOR_UP user_cmd = Command::UP
+#define MOTOR_DOWN user_cmd = Command::DOWN
+#define MOTOR_OFF user_cmd = Command::NONE
 
 // clean the slate for button presses
 void startFresh()
@@ -251,8 +238,7 @@ void readButtons()
   if (!digitalRead(PIN_UP)) {
     if (!digitalRead(PIN_DOWN)) {
       buttons = Button::BOTH;
-      manualUp = false;
-      manualDown = false;
+      manualMove = Command::NONE;
     } else {
       buttons = Button::UP;
     }
@@ -289,8 +275,8 @@ void readButtons()
     if (pushLength > CLICK_TIMEOUT) {
       // first long push? then move!
       if (pushCount == 0) {
-        if (buttons == Button::UP) manualUp = true;
-        if (buttons == Button::DOWN) manualDown = true;
+        if (buttons == Button::UP) manualMove = Command::UP;
+        if (buttons == Button::DOWN) manualMove = Command::DOWN;
 #ifdef EASTER
         if ((buttons == Button::BOTH) && (pushLength > 25*CLICK_TIMEOUT)) {
           // 10s hold. unused trigger, play the easter-egg
@@ -322,11 +308,10 @@ void readButtons()
   else if ( PRESSED(previous) && !PRESSED(buttons) ) // just released
   {
     // moving?
-    if ( manualUp || manualDown )
+    if (manualMove != Command::NONE)
     {
       // we were under manual control before, stop now
-      manualUp = false;
-      manualDown = false;
+      manualMove = Command::NONE;
     } else {
       // not moving manually
       pushCount++; // short press increase the count
@@ -585,12 +570,12 @@ void loop()
     }
     startFresh(); // clears memoryEvent, pushCount, lastPushTime
   }
-  else if (manualUp)
+  else if (manualMove == Command::UP)
   {
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
   }
-  else if (manualDown)
+  else if (manualMove == Command::DOWN)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
@@ -605,19 +590,19 @@ void loop()
   }
 
   if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < maxHeight)
-    motorUp(true);
+    MOTOR_UP;
   else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > minHeight)
-    motorDown(true);
+    MOTOR_DOWN;
   else
   {
-    motorUp(false);
+    MOTOR_OFF;
     targetHeight = currentHeight;
     memoryMoving = false;
   }
 
   // Override all logic above and disable if we aren't initialized yet.
   if (targetHeight < 5)
-    motorUp(false);
+    MOTOR_OFF;
 
 #ifdef SERIALCOMMS
   oldHeight = currentHeight;
