@@ -5,10 +5,13 @@
 #define FEEDBACK
 
 // Uncomment this define if you want serial control/telemetry
-//#define SERIALCOMMS
+#define SERIALCOMMS
 
-// Transmit ascii values over serial for human-readable output
-//#define HUMANSERIAL
+// Transmit ascii values over serial for human interface/control. just putty/serial-monitor etc.
+#define HUMANSERIAL
+
+// Echo back the interpreted command before acting on it.
+#define SERIALECHO
 
 // easter egg
 #define EASTER
@@ -138,12 +141,14 @@ State state = State::OFF;
 
 #ifdef SERIALCOMMS
 uint16_t oldHeight = 0; // previously reported height
-const char startMarker = '<';
+const char rxMarker = '<';
+const char txMarker = '>';
 const char command_increase = '+';
 const char command_decrease = '-';
 const char command_absolute = '=';
 const char command_write = 'W';
 const char command_load = 'L';
+const char command_loaddown = 'l';
 const char command_current = 'C';
 const char command_read = 'R';
 const char command_tone = 'T';
@@ -337,9 +342,69 @@ void readButtons()
   previous = buttons;
 }
 
-// modified from https://forum.arduino.cc/index.php?topic=396450.0
 #ifdef SERIALCOMMS
-// read/process 5 bytes at a time or exit if no serial data available.
+
+#ifdef HUMANSERIAL
+int digits=0;
+
+// interpret bytes as ascii digits, report when any non-digit is recieved
+// preserve any partially decoded digits.
+int readdigits()
+{
+  int r;
+  while ((r = Serial1.read()) != -1) {
+    if ((r < 0x30) || (r > 0x39)) {
+      // non-digit we're done, return what we have
+      return digits;
+    }
+    // it's a digit, "append"
+    digits = 10*digits + (r-0x30);
+    // keep reading...
+  }
+  return -1;
+}
+
+// human/ascii commands over serial.
+// accepts commands like: <T2000,255\n  <=3000,. <C0.0.  <+200,0.  <L.2. <C.. <R,0 <R.34
+// can safely paste 16 chars at a time or so before some buffer overflow and loss.
+// (the 2 numeric fields are terminated by any non-numberic character)
+void recvData()
+{
+  const int numChars = 2;
+  const int numFields = 4; // read/store all 4 fields for simplicity, use only the last 3.
+  // static variables allows segmented/char-at-a-time decodes
+  static uint16_t receivedBytes[numFields];
+  static uint8_t ndx = 0;
+  int r; // read char/digit
+
+  // read 2 chars
+  while ((ndx < numChars) && ((r = Serial1.read()) != -1))
+  {
+    if ((ndx == 0) && (r != rxMarker))
+    {
+      // first char is not Rx, keep reading...
+      continue;
+    }
+    receivedBytes[ndx] = r;
+    ++ndx;
+  }
+  // read ascii digits
+  while ((ndx >= numChars) && ((r = readdigits()) != -1)) {
+    receivedBytes[ndx] = r;
+    digits = 0; // clear
+    if (++ndx == numFields) {
+      // thats all 4 fields. parse/process them now and break-out.
+      parseData(receivedBytes[1],
+                receivedBytes[2],
+                receivedBytes[3]);
+      ndx = 0;
+      return;
+    }
+  }
+}
+#else
+// modified from https://forum.arduino.cc/index.php?topic=396450.0
+// read/process 5 raw bytes at a time or exit if no serial data available.
 void recvData()
 {
   const int numBytes = 5; // read/store all 5 bytes for simplicity, use only the last 4.
@@ -350,9 +415,9 @@ void recvData()
 
   while ((r = Serial1.read()) != -1)
   {
-    if ((ndx == 0) && (r != startMarker))
+    if ((ndx == 0) && (r != rxMarker))
     {
-      // first char is not the startMarker, keep reading...
+      // first char is not rxMarker, keep reading...
       continue;
     }
     receivedBytes[ndx] = r;
@@ -366,11 +431,12 @@ void recvData()
     }
   }
 }
+#endif
 
 void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
 {
   // note. serial.write only ever writes bytes. ints/longs get truncated!
-  Serial1.write((byte) startMarker);
+  Serial1.write((byte) txMarker);
   Serial1.write(operation);
 #ifdef HUMANSERIAL
   Serial1.print(position); // Tx human-readable output option
@@ -386,7 +452,9 @@ void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
 
 void parseData(byte command, uint16_t position, uint8_t push_addr)
 {
-  //writeSerial(command, position, push_addr); // echo command back for debugging
+#ifdef SERIALECHO
+  writeSerial(command, position, push_addr); // echo command back for debugging
+#endif
   /*
   data start (first byte)
     <    start data sentence
@@ -399,6 +467,7 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
     W    Write EEPROM location
     R    Read EEPROM location
     L    Load EEPROM location
+    l    load (Downbutton) EEPROM location
     T    play tone
 
   position (third/fourth bytes)
@@ -407,7 +476,7 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
     T    tone frequency
     CRL  (ignore)
 
-  push_addr (fifth byte)
+  push_addr (fifth byte) max 255
     WRL   EEPROM pushCount number
     T     tone duration/4 ms. (250 == 1s)
     *     (ignore)
@@ -460,7 +529,17 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
   else if (command == command_load)
   {
     // note. loading down-button slots requires adding 32 to push_addr...
-
+    if ((bothbuttons) && (push_addr > DOWN_SLOT_START)) {
+      push_addr -= DOWN_SLOT_START;
+      lastbutton = Button::DOWN;
+    } else
+      lastbutton = Button::UP;
+    pushCount = push_addr;
+    memoryEvent = true;
+  }
+  else if ((bothbuttons) && (command == command_loaddown))
+  {
+    lastbutton = Button::DOWN;
     pushCount = push_addr;
     memoryEvent = true;
   }
