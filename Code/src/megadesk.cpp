@@ -1,11 +1,11 @@
-// Uncomment this define if you want serial
-#define SERIALCOMMS
-
-// Uncomment this if you want to override minimum/maximum heights
+// want to override minimum/maximum heights?
 #define MINMAX
 
-// option to turn on immediate user feedback pips
+// option to include immediate user-feedback pips
 #define FEEDBACK
+
+// Uncomment this define if you want serial control/telemetry
+//#define SERIALCOMMS
 
 // Transmit ascii values over serial for human-readable output
 //#define HUMANSERIAL
@@ -481,8 +481,8 @@ void loop()
 
   linBurst();
 
-  // If we are in recalibrate mode, don't respond to any inputs.
-  if (state == State::STARTING_RECAL || state == State::RECAL || state == State::END_RECAL)
+  // If we are in recalibrate mode, or have a bad currentHeight, don't respond to any inputs.
+  if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
     delayUntil(25);
     return;
@@ -505,7 +505,7 @@ void loop()
 
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
-  if (currentHeight > 5 && targetHeight == 0)
+  if (targetHeight == 0)
   {
     targetHeight = currentHeight;
   }
@@ -559,13 +559,7 @@ void loop()
 #ifdef SERIALCOMMS
       writeSerial(command_load, targetHeight, pushCount);
 #endif
-
-      if (targetHeight == 0)
-      {
-        targetHeight = currentHeight;
-      }
-      else
-        memoryMoving = true;
+      memoryMoving = true;
     }
     startFresh(); // clears memoryEvent, pushCount, lastPushTime
   }
@@ -594,13 +588,14 @@ void loop()
     MOTOR_DOWN;
   else
   {
+    // close enough... still coasting however
     MOTOR_OFF;
     targetHeight = currentHeight;
     memoryMoving = false;
   }
 
-  // Override all logic above and disable if we aren't initialized yet.
-  if (targetHeight < 5)
+  // Override all logic above and disable if we loaded an invalid height.
+  if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT))
     MOTOR_OFF;
 
 #ifdef SERIALCOMMS
@@ -822,6 +817,7 @@ uint16_t loadMemory(uint8_t memorySlot)
     beep(NOTE_D6);
     beep(NOTE_CSHARP6);
     beep(NOTE_C6);
+    return currentHeight;
   }
 
   return memHeight;
