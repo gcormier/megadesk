@@ -97,7 +97,7 @@
 #define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
 #define DOWN_SLOT_START  32 // 0x20 in hex offset for down button slots
 
-// any button pressed
+// any button pressed?
 #define PRESSED(b) (b != Button::NONE)
 // is a memory button?
 #define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothbuttons && (b == Button::DOWN)))
@@ -181,8 +181,7 @@ void setup()
   if (!digitalRead(PIN_DOWN))
   {
     initAndReadEEPROM(true);
-    beep(NOTE_C7);
-    beep(NOTE_C7);
+    beep(NOTE_C7, 2);
     delay(LONG_PAUSE);
     while (true)
     {
