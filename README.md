@@ -30,6 +30,17 @@ Pressing the UP button 16 times will play a 2-note "beep-boop" tone.
 
 Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode. Units from shipped prior will need to be flashed with the new firmware.
 
+# Quick Commands
+| UP pushes | Function | Audio Feedback
+| --------- | -------- | --------
+| 2-10      | Memory positions | # of beeps + high tone (saving), # of beeps (recall), # of beeps + sad tone (recall, no memory saved at that location)
+| 11        | Set the lowest/minimum height to current position, or, reset back to default (toggles) | Single low beep
+| 12        | Set the highest/maximum height to current position, or, reset back to default (toggles) | Single low beep
+| 14        | Recalibration procedure, desk will lower down to the lowest limits | (Will begin moving)
+| 16        | Units before Feb 2021 - toggle different variants. Newer units, no operation
+| 18        | Toggle both-button mode
+
+
 # Setting and Recalling memory slots
 
 Note. Recent software allows either button to store and recall memory.
