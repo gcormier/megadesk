@@ -1,11 +1,20 @@
-// Uncomment this define if you want serial
-//#define SERIALCOMMS
-
-// Uncomment this if you want to override minimum/maximum heights
+// want to override minimum/maximum heights?
 #define MINMAX
 
-// option to turn on immediate user feedback pips
+// option to include immediate user-feedback pips
 #define FEEDBACK
+
+// Uncomment this define if you want serial control/telemetry
+#define SERIALCOMMS
+
+// Transmit ascii values over serial for human interface/control. just putty/serial-monitor etc.
+#define HUMANSERIAL
+
+// Echo back the interpreted command before acting on it.
+#define SERIALECHO
+
+// easter egg
+#define EASTER
 
 #include <EEPROM.h>
 #include "lin.h"
@@ -19,6 +28,7 @@
 
 // beeps
 #define BEEP_DURATION 150
+#define PIP_DURATION 20
 #define SHORT_PAUSE 50
 #define PAUSE BEEP_DURATION
 #define LONG_PAUSE 500
@@ -90,21 +100,21 @@
 #define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
 #define DOWN_SLOT_START  32 // 0x20 in hex offset for down button slots
 
-
+// any button pressed?
 #define PRESSED(b) (b != Button::NONE)
 // is a memory button?
 #define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothbuttons && (b == Button::DOWN)))
-// is bothbuttons and down button was used?
+// is bothbuttons and the down button was used?
 #define ADJUST_DOWN ((bothbuttons) && (lastbutton == Button::DOWN))
 
 // Tracking multipress/longpress of buttons
 Button previous = Button::NONE; // previous state of buttons
 Button lastbutton = Button::NONE; // last button to be pressed
-uint8_t pushCount = 0; // tracks button pushes
+uint8_t pushCount = 0; // tracks number of button pushes
 uint8_t bothbuttons; // both button mode
 bool savePosition = false; // flag to save currentHeight to pushCount slot
 bool memoryEvent = false; // flag to load/save a pushCount slot
-bool manualUp, manualDown; // manual-mode. when holding first press of up/down
+Command manualMove; // press and hold up/down?
 
 // feedback pips
 #ifdef FEEDBACK
@@ -130,40 +140,24 @@ Command user_cmd = Command::NONE;
 State state = State::OFF;
 
 #ifdef SERIALCOMMS
-uint16_t oldHeight = 0;
-
-const int numBytes = 4;
-byte receivedBytes[numBytes];
-byte newData = false;
-
+uint16_t oldHeight = 0; // previously reported height
+const char rxMarker = '<';
+const char txMarker = '>';
 const char command_increase = '+';
 const char command_decrease = '-';
 const char command_absolute = '=';
 const char command_write = 'W';
 const char command_load = 'L';
+const char command_loaddown = 'l';
 const char command_current = 'C';
 const char command_read = 'R';
-
-const char startMarker = '<'; 
+const char command_tone = 'T';
 #endif
 
 // set/clear motor up command
-void motorUp(bool go)
-{
-  if (go)
-    user_cmd = Command::UP;
-  else
-    user_cmd = Command::NONE;
-}
-
-// set/clear motor down command
-void motorDown(bool go)
-{
-  if (go)
-    user_cmd = Command::DOWN;
-  else
-    user_cmd = Command::NONE;
-}
+#define MOTOR_UP user_cmd = Command::UP
+#define MOTOR_DOWN user_cmd = Command::DOWN
+#define MOTOR_OFF user_cmd = Command::NONE
 
 // clean the slate for button presses
 void startFresh()
@@ -192,27 +186,21 @@ void setup()
   if (!digitalRead(PIN_DOWN))
   {
     initAndReadEEPROM(true);
-    beep(NOTE_C7);
-    delay(SHORT_PAUSE);
-    beep(NOTE_C7);
-    delay(SHORT_PAUSE);
+    beep(NOTE_C7, 2);
+    delay(LONG_PAUSE);
     while (true)
     {
       if (!digitalRead(PIN_DOWN))
       {
         beep(NOTE_E7);
-        delay(PAUSE);
         beep(NOTE_D7);
-        delay(PAUSE);
         beep(NOTE_C7);
         delay(LONG_PAUSE);
       }
       if (!digitalRead(PIN_UP))
       {
         beep(NOTE_C7);
-        delay(PAUSE);
         beep(NOTE_D7);
-        delay(PAUSE);
         beep(NOTE_E7);
         delay(LONG_PAUSE);
       }
@@ -252,8 +240,7 @@ void readButtons()
   if (!digitalRead(PIN_UP)) {
     if (!digitalRead(PIN_DOWN)) {
       buttons = Button::BOTH;
-      manualUp = false;
-      manualDown = false;
+      manualMove = Command::NONE;
     } else {
       buttons = Button::UP;
     }
@@ -263,7 +250,7 @@ void readButtons()
     buttons = Button::NONE;
   }
 
-  // If already moving and any button is pressed - stop
+  // If already moving and any button is pressed - stop!
   if ( memoryMoving && PRESSED(buttons))
     targetHeight = currentHeight;
 
@@ -278,7 +265,8 @@ void readButtons()
     lastbutton = buttons;
 #ifdef FEEDBACK
     if (feedback)
-      playTone(scale[pushCount % sizeof(scale)], 20); // musical feedback
+      playTone(scale[pushCount % (sizeof(scale)/sizeof(int))],
+              PIP_DURATION); // musical feedback
 #endif
   }
   else if ((previous == buttons) && PRESSED(buttons) ) // button held
@@ -289,28 +277,27 @@ void readButtons()
     if (pushLength > CLICK_TIMEOUT) {
       // first long push? then move!
       if (pushCount == 0) {
-        if (buttons == Button::UP) manualUp = true;
-        if (buttons == Button::DOWN) manualDown = true;
+        if (buttons == Button::UP) manualMove = Command::UP;
+        if (buttons == Button::DOWN) manualMove = Command::DOWN;
+#ifdef EASTER
         if ((buttons == Button::BOTH) && (pushLength > 25*CLICK_TIMEOUT)) {
           // 10s hold. unused trigger, play the easter-egg
-          #define QUARTER 262
-          playTone(NOTE_C6, QUARTER);
-          playTone(NOTE_C7, QUARTER*4);
-          playTone(NOTE_B6, QUARTER/2);
-          playTone(NOTE_C7, QUARTER/2);
-          playTone(NOTE_B6, QUARTER/2);
-          playTone(NOTE_G6, QUARTER/2);
-          playTone(NOTE_A6, QUARTER*4);
-          playTone(NOTE_F6, QUARTER/2);
-          delay(QUARTER/2);
-          playTone(NOTE_F6, QUARTER);
-          playTone(NOTE_F6, QUARTER/2);
-          playTone(NOTE_E6, QUARTER/2);
-          playTone(NOTE_D6, QUARTER/2);
-          playTone(NOTE_E6, QUARTER/2);
-          playTone(NOTE_C6, QUARTER/2);
-          delay(QUARTER/2);
+         #define EIGHTH 131
+          uint16_t tones[] = {
+            NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
+            NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
+            NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
+            NOTE_A6, EIGHTH*8,
+            NOTE_F6, EIGHTH, 20, EIGHTH,
+            NOTE_F6, EIGHTH*2,
+            NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
+            NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
+            NOTE_C6, EIGHTH, 20, EIGHTH, };
+          for (uint16_t i=0; i < sizeof(tones)/2; i+=2) {
+            playTone(tones[i], tones[i+1]);
+          }
         }
+#endif
       }
       else if ( MEMORY_BUTTON(buttons) && (!savePosition) )
       {
@@ -323,11 +310,10 @@ void readButtons()
   else if ( PRESSED(previous) && !PRESSED(buttons) ) // just released
   {
     // moving?
-    if ( manualUp || manualDown )
+    if (manualMove != Command::NONE)
     {
       // we were under manual control before, stop now
-      manualUp = false;
-      manualDown = false;
+      manualMove = Command::NONE;
     } else {
       // not moving manually
       pushCount++; // short press increase the count
@@ -347,7 +333,7 @@ void readButtons()
         // could still be a trigger for something. For now just...
 #ifdef FEEDBACK
         // play short dull buzz, indicating this is a no-op.
-        if (feedback) playTone(NOTE_A4, 20);
+        if (feedback) playTone(NOTE_A4, PIP_DURATION);
 #endif
       }
     }
@@ -356,58 +342,119 @@ void readButtons()
   previous = buttons;
 }
 
-// modified from https://forum.arduino.cc/index.php?topic=396450.0
 #ifdef SERIALCOMMS
+
+#ifdef HUMANSERIAL
+int digits=0;
+
+// interpret bytes as ascii digits, report when any non-digit is recieved
+// preserve any partially decoded digits.
+int readdigits()
+{
+  int r;
+  while ((r = Serial1.read()) != -1) {
+    if ((r < 0x30) || (r > 0x39)) {
+      // non-digit we're done, return what we have
+      return digits;
+    }
+    // it's a digit, "append"
+    digits = 10*digits + (r-0x30);
+    // keep reading...
+  }
+  return -1;
+}
+
+// human/ascii commands over serial.
+// accepts commands like: <T2000,255\n  <=3000,. <C0.0.  <+200,0.  <L.2. <C.. <R,0 <R.34
+// can safely paste 16 chars at a time or so before some buffer overflow and loss.
+// (the 2 numeric fields are terminated by any non-numberic character)
 void recvData()
 {
+  const int numChars = 2;
+  const int numFields = 4; // read/store all 4 fields for simplicity, use only the last 3.
+  // static variables allows segmented/char-at-a-time decodes
+  static uint16_t receivedBytes[numFields];
+  static uint8_t ndx = 0;
+  int r; // read char/digit
 
-  uint8_t recvInProgress = false;
-  uint8_t ndx = 0;
-
-  while (Serial1.available() > 0 && newData == false)
+  // read 2 chars
+  while ((ndx < numChars) && ((r = Serial1.read()) != -1))
   {
-    char rc = Serial1.read();
-
-    if (recvInProgress == true)
+    if ((ndx == 0) && (r != rxMarker))
     {
-      if (ndx < numBytes - 1)
-      {
-        receivedBytes[ndx] = rc;
-        ndx++;
-      }
-      else
-      {
-        receivedBytes[ndx] = rc;
-        recvInProgress = false;
-        ndx = 0;
-        newData = true;
-      }
+      // first char is not Rx, keep reading...
+      continue;
     }
-    else if (rc == startMarker)
-    {
-      recvInProgress = true;
+    receivedBytes[ndx] = r;
+    ++ndx;
+  }
+  // read ascii digits
+  while ((ndx >= numChars) && ((r = readdigits()) != -1)) {
+    receivedBytes[ndx] = r;
+    digits = 0; // clear
+    if (++ndx == numFields) {
+      // thats all 4 fields. parse/process them now and break-out.
+      parseData(receivedBytes[1],
+                receivedBytes[2],
+                receivedBytes[3]);
+      ndx = 0;
+      return;
     }
   }
 }
-
-void writeSerial(char command, uint16_t position, uint8_t push_addr)
+#else
+// modified from https://forum.arduino.cc/index.php?topic=396450.0
+// read/process 5 raw bytes at a time or exit if no serial data available.
+void recvData()
 {
-  byte tmp[2];
-  Serial1.write(startMarker);
-  Serial1.write(command);
-  tmp[1] = (position >> 8);
-  tmp[0] = position & 0xff;
-  Serial1.write(tmp[1]);
-  Serial1.write(tmp[0]);
+  const int numBytes = 5; // read/store all 5 bytes for simplicity, use only the last 4.
+  // static variables allows segmented/char-at-a-time decodes
+  static byte receivedBytes[numBytes];
+  static uint8_t ndx = 0;
+  int r; // read char
+
+  while ((r = Serial1.read()) != -1)
+  {
+    if ((ndx == 0) && (r != rxMarker))
+    {
+      // first char is not rxMarker, keep reading...
+      continue;
+    }
+    receivedBytes[ndx] = r;
+    if (++ndx == numBytes)
+    { // thats 5 now bytes, parse/process them now and break-out.
+      parseData(receivedBytes[1],
+                makeWord(receivedBytes[2], receivedBytes[3]),
+                receivedBytes[4]);
+      ndx = 0;
+      return;
+    }
+  }
+}
+#endif
+
+void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
+{
+  // note. serial.write only ever writes bytes. ints/longs get truncated!
+  Serial1.write((byte) txMarker);
+  Serial1.write(operation);
+#ifdef HUMANSERIAL
+  Serial1.print(position); // Tx human-readable output option
+  Serial1.print(',');
+  Serial1.print(push_addr);
+  Serial1.print('\n');
+#else
+  Serial1.write(position >> 8); // high byte
+  Serial1.write(position & 0xff); // low byte
   Serial1.write(push_addr);
+#endif
 }
 
-void parseData()
+void parseData(byte command, uint16_t position, uint8_t push_addr)
 {
-  char command = receivedBytes[0];
-  int position = makeWord(receivedBytes[1], receivedBytes[2]);
-  uint8_t push_addr = receivedBytes[3];
-
+#ifdef SERIALECHO
+  writeSerial(command, position, push_addr); // echo command back for debugging
+#endif
   /*
   data start (first byte)
     <    start data sentence
@@ -417,17 +464,21 @@ void parseData()
     -    decrease
     =    absolute
     C    Ask for current location
-    W    Write EEPROM
+    W    Write EEPROM location
     R    Read EEPROM location
     L    Load EEPROM location
+    l    load (Downbutton) EEPROM location
+    T    play tone
 
   position (third/fourth bytes)
-    +-   relitave to current
+    +-   relative to current
     =W   absolute
+    T    tone frequency
     CRL  (ignore)
 
-  push_addr (fifth byte)
+  push_addr (fifth byte) max 255
     WRL   EEPROM pushCount number
+    T     tone duration/4 ms. (250 == 1s)
     *     (ignore)
   */
 
@@ -452,6 +503,8 @@ void parseData()
   }
   else if (command == command_write)
   {
+    // note. saving against down-button requires adding 32 to push_addr...
+
     // if position not set, then set to currentHeight
     if (position == 0)
     {
@@ -475,12 +528,28 @@ void parseData()
   }
   else if (command == command_load)
   {
+    // note. loading down-button slots requires adding 32 to push_addr...
+    if ((bothbuttons) && (push_addr > DOWN_SLOT_START)) {
+      push_addr -= DOWN_SLOT_START;
+      lastbutton = Button::DOWN;
+    } else
+      lastbutton = Button::UP;
+    pushCount = push_addr;
+    memoryEvent = true;
+  }
+  else if ((bothbuttons) && (command == command_loaddown))
+  {
+    lastbutton = Button::DOWN;
     pushCount = push_addr;
     memoryEvent = true;
   }
   else if (command == command_read)
   {
     writeSerial(command_read, eepromGet16(push_addr), push_addr);
+  }
+  else if (command == command_tone)
+  {
+    playTone(position, push_addr*4); // 256*4 ~ 1048ms max
   }
 }
 #endif
@@ -490,8 +559,8 @@ void loop()
 
   linBurst();
 
-  // If we are in recalibrate mode, don't respond to any inputs.
-  if (state == State::STARTING_RECAL || state == State::RECAL || state == State::END_RECAL)
+  // If we are in recalibrate mode, or have a bad currentHeight, don't respond to any inputs.
+  if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
     delayUntil(25);
     return;
@@ -506,23 +575,15 @@ void loop()
       writeSerial(command_decrease, oldHeight-currentHeight, pushCount);
     }
   }
+
+  recvData();
 #endif
 
   readButtons();
 
-#ifdef SERIALCOMMS
-  recvData();
-
-  if (newData == true)
-  {
-    parseData();
-    newData = false;
-  }
-#endif
-
   // When we power on the first time, and have a height value read, set our target height to the same thing
   // So we don't randomly move on powerup.
-  if (currentHeight > 5 && targetHeight == 0)
+  if (targetHeight == 0)
   {
     targetHeight = currentHeight;
   }
@@ -576,22 +637,16 @@ void loop()
 #ifdef SERIALCOMMS
       writeSerial(command_load, targetHeight, pushCount);
 #endif
-
-      if (targetHeight == 0)
-      {
-        targetHeight = currentHeight;
-      }
-      else
-        memoryMoving = true;
+      memoryMoving = true;
     }
     startFresh(); // clears memoryEvent, pushCount, lastPushTime
   }
-  else if (manualUp)
+  else if (manualMove == Command::UP)
   {
     memoryMoving = false;
     targetHeight = currentHeight + HYSTERESIS + 1;
   }
-  else if (manualDown)
+  else if (manualMove == Command::DOWN)
   {
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
@@ -606,19 +661,20 @@ void loop()
   }
 
   if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < maxHeight)
-    motorUp(true);
+    MOTOR_UP;
   else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > minHeight)
-    motorDown(true);
+    MOTOR_DOWN;
   else
   {
-    motorUp(false);
+    // close enough... still coasting however
+    MOTOR_OFF;
     targetHeight = currentHeight;
     memoryMoving = false;
   }
 
-  // Override all logic above and disable if we aren't initialized yet.
-  if (targetHeight < 5)
-    motorUp(false);
+  // Override all logic above and disable if we loaded an invalid height.
+  if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT))
+    MOTOR_OFF;
 
 #ifdef SERIALCOMMS
   oldHeight = currentHeight;
@@ -839,6 +895,7 @@ uint16_t loadMemory(uint8_t memorySlot)
     beep(NOTE_D6);
     beep(NOTE_CSHARP6);
     beep(NOTE_C6);
+    return currentHeight;
   }
 
   return memHeight;
