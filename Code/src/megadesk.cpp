@@ -6,12 +6,12 @@
 
 // Uncomment this define if you want serial control/telemetry
 #define SERIALCOMMS
-
-// Transmit ascii values over serial for human interface/control. just putty/serial-monitor etc.
+// Transmit/receive ascii commands over serial for human interface/control.
 #define HUMANSERIAL
-
 // Echo back the interpreted command before acting on it.
 #define SERIALECHO
+// Report errors over serial
+#define SERIALERRORS
 
 // easter egg
 #define EASTER
@@ -20,22 +20,45 @@
 #include "lin.h"
 #include "megadesk.h"
 
+// constants related to presses/eeprom slots
+// (on attiny841: 512byte eeprom means slots 0-255)
+// EEPROM magic signature to detect if eeprom is valid
+#define EEPROM_SIG_SLOT  0
+#define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
+#define MIN_SLOT         2  // 1 is possible but cant save without serial
+#define MIN_HEIGHT_SLOT  11
+#define MAX_HEIGHT_SLOT  12
+#define RECALIBRATE      14 // nothing is stored there
+#define RESERVED_VARIANT 16 // reserved - deliberately empty
+#define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
+#define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
+#define DOWN_SLOT_START  32 // 0x20 offset for down button slots
+
+#ifdef SERIALCOMMS
+uint16_t oldHeight = 0; // previously reported height
+#endif
+
 #define HYSTERESIS 137
 #define PIN_UP 10
 #define PIN_DOWN 9
 #define PIN_BEEP 7
 #define PIN_SERIAL 1
 
+// click durations
+#define CLICK_TIMEOUT   400UL // Timeout in MS. for long-hold and release idle.
+#define CLICK_LONG    10000UL // very-long holdtime in MS.
+
 // beeps
-#define BEEP_DURATION 150
 #define PIP_DURATION 20
 #define SHORT_PAUSE 50
+#define BEEP_DURATION 150
 #define PAUSE BEEP_DURATION
 #define LONG_PAUSE 500
 #define ONE_SEC_PAUSE 1000
 #define PITCH_ADJUST (48000000 / F_CPU) // digitalWrite takes ~6us at 8MHz
 
 // notes to beep
+#define SILENCE 20
 #define NOTE_A4 440
 #define NOTE_C6 1046
 #define NOTE_CSHARP6 1109
@@ -60,9 +83,6 @@
 #define NOTE_ACK NOTE_G6
 #define NOTE_HIGH NOTE_C7
 
-#define CLICK_TIMEOUT 400UL // Timeout in MS.
-#define CLICK_LONG    900UL    // Long/hold minimum time in MS.
-
 #define FINE_MOVEMENT_VALUE 100 // Based on protocol decoding
 
 // LIN commands/status
@@ -84,21 +104,8 @@
 
 // Changing these might be a really bad idea. They are sourced from
 // decoding the OEM controller limits.
-#define DANGER_MAX_HEIGHT 6777 - HYSTERESIS
-#define DANGER_MIN_HEIGHT 162 + HYSTERESIS
-
-// constants related to presses/eeprom slots
-// (on attiny841: 512byte eeprom means max 255 slots)
-// EEPROM magic signature to detect if eeprom is valid
-#define EEPROM_SIG_SLOT  0
-#define MAGIC_SIG 0x120d // bytes: 13, 18 in little endian order
-#define MIN_HEIGHT_SLOT  11
-#define MAX_HEIGHT_SLOT  12
-#define RECALIBRATE      14 // nothing is stored there
-#define RESERVED_VARIANT 16 // reserved - deliberately empty
-#define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
-#define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
-#define DOWN_SLOT_START  32 // 0x20 in hex offset for down button slots
+#define DANGER_MAX_HEIGHT (6777 - HYSTERESIS)
+#define DANGER_MIN_HEIGHT (162 + HYSTERESIS)
 
 // any button pressed?
 #define PRESSED(b) (b != Button::NONE)
@@ -136,28 +143,13 @@ uint16_t maxHeight = DANGER_MAX_HEIGHT;
 uint16_t minHeight = DANGER_MIN_HEIGHT;
 
 bool memoryMoving = false;
-Command user_cmd = Command::NONE;
-State state = State::OFF;
-
-#ifdef SERIALCOMMS
-uint16_t oldHeight = 0; // previously reported height
-const char rxMarker = '<';
-const char txMarker = '>';
-const char command_increase = '+';
-const char command_decrease = '-';
-const char command_absolute = '=';
-const char command_write = 'W';
-const char command_load = 'L';
-const char command_loaddown = 'l';
-const char command_current = 'C';
-const char command_read = 'R';
-const char command_tone = 'T';
-#endif
+Command user_cmd = Command::NONE; // for requesting motors up/down
+State state = State::OFF; // desk-protocol state
 
 // set/clear motor up command
-#define MOTOR_UP user_cmd = Command::UP
+#define MOTOR_UP   user_cmd = Command::UP
 #define MOTOR_DOWN user_cmd = Command::DOWN
-#define MOTOR_OFF user_cmd = Command::NONE
+#define MOTOR_OFF  user_cmd = Command::NONE
 
 // clean the slate for button presses
 void startFresh()
@@ -192,6 +184,7 @@ void setup()
     {
       if (!digitalRead(PIN_DOWN))
       {
+        // descending tones
         beep(NOTE_E7);
         beep(NOTE_D7);
         beep(NOTE_C7);
@@ -199,6 +192,7 @@ void setup()
       }
       if (!digitalRead(PIN_UP))
       {
+        // ascending tones
         beep(NOTE_C7);
         beep(NOTE_D7);
         beep(NOTE_E7);
@@ -265,7 +259,7 @@ void readButtons()
     lastbutton = buttons;
 #ifdef FEEDBACK
     if (feedback)
-      playTone(scale[pushCount % (sizeof(scale)/sizeof(int))],
+      playTone(scale[pushCount % (sizeof(scale)/sizeof(scale[0]))],
               PIP_DURATION); // musical feedback
 #endif
   }
@@ -280,7 +274,7 @@ void readButtons()
         if (buttons == Button::UP) manualMove = Command::UP;
         if (buttons == Button::DOWN) manualMove = Command::DOWN;
 #ifdef EASTER
-        if ((buttons == Button::BOTH) && (pushLength > 25*CLICK_TIMEOUT)) {
+        if ((buttons == Button::BOTH) && (pushLength > CLICK_LONG)) {
           // 10s hold. unused trigger, play the easter-egg
          #define EIGHTH 131
           uint16_t tones[] = {
@@ -288,12 +282,12 @@ void readButtons()
             NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
             NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
             NOTE_A6, EIGHTH*8,
-            NOTE_F6, EIGHTH, 20, EIGHTH,
+            NOTE_F6, EIGHTH, SILENCE, EIGHTH,
             NOTE_F6, EIGHTH*2,
             NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
             NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
-            NOTE_C6, EIGHTH, 20, EIGHTH, };
-          for (uint16_t i=0; i < sizeof(tones)/2; i+=2) {
+            NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
+          for (uint16_t i=0; i < sizeof(tones)/sizeof(tones[0]); i+=2) {
             playTone(tones[i], tones[i+1]);
           }
         }
@@ -326,7 +320,7 @@ void readButtons()
     if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT))
     {
       // last press
-      if ((pushCount > 1) && MEMORY_BUTTON(lastbutton))
+      if ((pushCount >= MIN_SLOT) && MEMORY_BUTTON(lastbutton))
         memoryEvent = true; // either store or recall a setting
       else { // single push or not a memory button.
         startFresh();
@@ -366,8 +360,8 @@ int readdigits()
 
 // human/ascii commands over serial.
 // accepts commands like: <T2000,255\n  <=3000,. <C0.0.  <+200,0.  <L.2. <C.. <R,0 <R.34
-// can safely paste 16 chars at a time or so before some buffer overflow and loss.
-// (the 2 numeric fields are terminated by any non-numberic character)
+// can safely accept 16 chars at a time before there's buffer overflow and loss.
+// (the 2 numeric fields are terminated by any non-numeric character)
 void recvData()
 {
   const int numChars = 2;
@@ -559,7 +553,7 @@ void loop()
 
   linBurst();
 
-  // If we are in recalibrate mode, or have a bad currentHeight, don't respond to any inputs.
+  // If we are in recalibrate mode or have a bad currentHeight, don't take any input.
   if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
     delayUntil(25);
@@ -568,12 +562,15 @@ void loop()
 
 #ifdef SERIALCOMMS
   if (memoryMoving == false && oldHeight != currentHeight){
+    // report new location
     if (oldHeight < currentHeight){
-      writeSerial(command_increase, currentHeight-oldHeight, pushCount);
+      writeSerial(command_increase, currentHeight-oldHeight);
     }
     else {
-      writeSerial(command_decrease, oldHeight-currentHeight, pushCount);
+      writeSerial(command_decrease, oldHeight-currentHeight);
     }
+    writeSerial(command_absolute, currentHeight);
+    oldHeight = currentHeight;
   }
 
   recvData();
@@ -593,6 +590,9 @@ void loop()
     if (pushCount == RECALIBRATE)
     {
       // do calibration
+#ifdef SERIALCOMMS
+      writeSerial(response_calibration, 0, pushCount);
+#endif
       state = State::STARTING_RECAL;
     }
 #ifdef MINMAX
@@ -602,7 +602,7 @@ void loop()
     }
     else if (pushCount == MAX_HEIGHT_SLOT)
     {
-      if (ADJUST_DOWN)
+      if (ADJUST_DOWN) // 12 presses on either button sets corresponding max/min limits
         toggleMinHeight();
       else
         toggleMaxHeight();
@@ -651,12 +651,9 @@ void loop()
     memoryMoving = false;
     targetHeight = currentHeight - HYSTERESIS - 1;
   }
-  else if (!memoryMoving){
-#ifdef SERIALCOMMS
-    if (oldHeight != currentHeight){
-      writeSerial(command_absolute, currentHeight);
-    }
-#endif
+  else if (!memoryMoving)
+  {
+    // prevent hunting if overshot target. call it quits if shy.
     targetHeight = currentHeight;
   }
 
@@ -666,7 +663,11 @@ void loop()
     MOTOR_DOWN;
   else
   {
-    // close enough... still coasting however
+    // some possibilities:
+    //   close enough and still coasting,
+    //   or overshot,
+    //   or out of range!
+    // so stop
     MOTOR_OFF;
     targetHeight = currentHeight;
     memoryMoving = false;
@@ -675,10 +676,6 @@ void loop()
   // Override all logic above and disable if we loaded an invalid height.
   if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT))
     MOTOR_OFF;
-
-#ifdef SERIALCOMMS
-  oldHeight = currentHeight;
-#endif
 
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delayUntil(25);
@@ -870,9 +867,12 @@ void eepromPut16( int slot, uint16_t val )
 void saveMemory(uint8_t memorySlot, uint16_t value)
 {
   // Sanity check
-  if (memorySlot < 2 || value < 5 || value > 32700)
+  if (memorySlot < MIN_SLOT || value < DANGER_MIN_HEIGHT || value > DANGER_MAX_HEIGHT) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    writeSerial(response_error, value, memorySlot); // Indicate an error
+#endif
     return;
-
+  }
   // save confirmation tone
   beep(NOTE_HIGH);
 
@@ -881,9 +881,12 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
 
 uint16_t loadMemory(uint8_t memorySlot)
 {
-  if (memorySlot < 2)
+  if (memorySlot < MIN_SLOT) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    writeSerial(response_error, 0, memorySlot); // Indicate an error
+#endif
     return currentHeight;
-
+  }
   uint16_t memHeight = eepromGet16(memorySlot);
 
   if (memHeight == 0)
@@ -1081,20 +1084,18 @@ void initAndReadEEPROM(bool force)
     eepromPut16(EEPROM_SIG_SLOT, MAGIC_SIG);
 
   }
-  #ifdef MINMAX
+#ifdef MINMAX
   // reset max/min height
   minHeight = eepromGet16(MIN_HEIGHT_SLOT);
   maxHeight = eepromGet16(MAX_HEIGHT_SLOT);
   // check if 0 and fix/beep ...
   if (minHeight == 0) toggleMinHeight();
   if (maxHeight == 0) toggleMaxHeight();
-  #endif
+#endif
   bothbuttons = eepromGet16(BOTHBUTTON_SLOT);
 #ifdef FEEDBACK
   feedback = eepromGet16(FEEDBACK_SLOT);
 #endif
-
-  // could also increment slot 1 every time to keep track of resets/power-cycles.
 }
 
 
