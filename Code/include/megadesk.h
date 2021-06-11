@@ -67,7 +67,7 @@ void toggleBothMode();
 void toggleFeedback();
 
 // serial functions
-void writeSerial(byte operation, uint16_t position, uint8_t push_addr = 0);
+void writeSerial(byte operation, uint16_t position, uint8_t push_addr = 0, byte marker = txMarker);
 void parseData(byte command, uint16_t position, uint8_t push_addr);
 
 // eeprom

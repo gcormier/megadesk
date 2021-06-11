@@ -427,10 +427,10 @@ void recvData()
 }
 #endif
 
-void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
+void writeSerial(byte operation, uint16_t position, uint8_t push_addr, byte marker)
 {
   // note. serial.write only ever writes bytes. ints/longs get truncated!
-  Serial1.write((byte) txMarker);
+  Serial1.write(marker);
   Serial1.write(operation);
 #ifdef HUMANSERIAL
   Serial1.print(position); // Tx human-readable output option
@@ -447,33 +447,51 @@ void writeSerial(byte operation, uint16_t position, uint8_t push_addr)
 void parseData(byte command, uint16_t position, uint8_t push_addr)
 {
 #ifdef SERIALECHO
-  writeSerial(command, position, push_addr); // echo command back for debugging
+  writeSerial(command, position, push_addr, rxMarker); // echo command back for debugging
 #endif
   /*
   data start (first byte)
-    <    start data sentence
+    char   meaning
+  -----------------
+    <      start Rx Marker
 
   command (second byte)
-    +    increase
-    -    decrease
-    =    absolute
-    C    Ask for current location
-    W    Write EEPROM location
-    R    Read EEPROM location
-    L    Load EEPROM location
-    l    load (Downbutton) EEPROM location
-    T    play tone
+    cmd    meaning
+  -----------------
+    +      increase
+    -      decrease
+    =      absolute
+    C      Ask for current location
+    S      Save location to (UpButton) EEPROM
+    s      Save location to Downbutton EEPROM
+    L      Load (Upbutton) location from EEPROM and move
+    l      load Downbutton location from EEPROM and move
+    W      Write arbitrary data to EEPROM
+    R      Read arbitrary data from EEPROM
+    T      play tone
 
-  position (third/fourth bytes)
-    +-   relative to current
-    =W   absolute
-    T    tone frequency
-    CRL  (ignore)
+  position (third/fourth bytes or 1st digit field. max 65535)
+    cmd    meaning
+  -----------------
+    +-     relative to current position
+    =SsW   absolute position
+    T      tone frequency
+    CRLl   (ignore)
 
-  push_addr (fifth byte) max 255
-    WRL   EEPROM pushCount number
-    T     tone duration/4 ms. (250 == 1s)
-    *     (ignore)
+  push_addr (fifth byte or 2nd digit field. max 255)
+    cmd    meaning
+  -----------------
+    SLlWwR EEPROM pushCount/slot
+    T      tone duration/4 ms. (250 == 1s)
+    +-=C   (ignore)
+
+
+  Transmitted operations
+    char   meaning
+  -----------------
+    >      Tx start Marker
+    E      error response
+    X      calibration started
   */
 
   if (command == command_increase)
@@ -495,21 +513,23 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
   {
     writeSerial(command_absolute, currentHeight);
   }
-  else if (command == command_write)
+  else if ((command == command_save) || (command == command_save_down))
   {
-    // note. saving against down-button requires adding 32 to push_addr...
+    // note. saving against down-button requires adding 32 to push_addr
+    // or by using command 's'
+    if (command == command_save_down)
+      push_addr += DOWN_SLOT_START;
 
-    // if position not set, then set to currentHeight
+    // if position not set, then use currentHeight
     if (position == 0)
     {
       position = currentHeight;
     }
-
     // save position to memory location
     saveMemory(push_addr, position);
 
 #ifdef MINMAX
-    //if changing memory location for min/max height, update corect variable
+    //if changing memory location for min/max height, update correct variable
     if (push_addr == MIN_HEIGHT_SLOT)
     {
       minHeight = position;
@@ -522,7 +542,7 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
   }
   else if (command == command_load)
   {
-    // note. loading down-button slots requires adding 32 to push_addr...
+    // check if loading down-button slot
     if ((bothbuttons) && (push_addr > DOWN_SLOT_START)) {
       push_addr -= DOWN_SLOT_START;
       lastbutton = Button::DOWN;
@@ -531,20 +551,33 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
     pushCount = push_addr;
     memoryEvent = true;
   }
-  else if ((bothbuttons) && (command == command_loaddown))
+  else if ((bothbuttons) && (command == command_load_down))
   {
     lastbutton = Button::DOWN;
     pushCount = push_addr;
     memoryEvent = true;
   }
-  else if (command == command_read)
+  else if ((command == command_write) || (command == command_read))
   {
-    writeSerial(command_read, eepromGet16(push_addr), push_addr);
+    if (command == command_write)
+      eepromPut16(push_addr, position);
+
+    writeSerial(command, eepromGet16(push_addr), push_addr);
   }
   else if (command == command_tone)
   {
-    playTone(position, push_addr*4); // 256*4 ~ 1048ms max
+    playTone(position, push_addr*4); // 255*4 ~ 1020ms max
   }
+#ifdef SERIALERRORS
+  else
+  {
+    // not a recognized command.
+    //writeSerial(response_error, 0); // respond with a empty error
+    // or
+    // respond with the recieved message but with txMarker replaced with 'E'
+    writeSerial(command, position, push_addr, response_error);
+  }
+#endif
 }
 #endif
 
@@ -623,9 +656,6 @@ void loop()
       if (ADJUST_DOWN)
         pushCount += DOWN_SLOT_START;
       saveMemory(pushCount, currentHeight);
-#ifdef SERIALCOMMS
-      writeSerial(command_write, currentHeight, pushCount);
-#endif
     }
     else
     {
@@ -634,9 +664,6 @@ void loop()
       if (ADJUST_DOWN)
         pushCount += DOWN_SLOT_START;
       targetHeight = loadMemory(pushCount);
-#ifdef SERIALCOMMS
-      writeSerial(command_load, targetHeight, pushCount);
-#endif
       memoryMoving = true;
     }
     startFresh(); // clears memoryEvent, pushCount, lastPushTime
@@ -876,6 +903,13 @@ void saveMemory(uint8_t memorySlot, uint16_t value)
   // save confirmation tone
   beep(NOTE_HIGH);
 
+#ifdef SERIALCOMMS
+  if (memorySlot > DOWN_SLOT_START)
+    writeSerial(command_save_down, value, memorySlot-DOWN_SLOT_START);
+  else
+    writeSerial(command_save, value, memorySlot);
+#endif
+
   eepromPut16(memorySlot, value);
 }
 
@@ -898,8 +932,18 @@ uint16_t loadMemory(uint8_t memorySlot)
     beep(NOTE_D6);
     beep(NOTE_CSHARP6);
     beep(NOTE_C6);
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    writeSerial(response_error, 0, memorySlot); // Indicate an error
+#endif
     return currentHeight;
   }
+
+#ifdef SERIALCOMMS
+  if (memorySlot > DOWN_SLOT_START)
+    writeSerial(command_load_down, memHeight, memorySlot-DOWN_SLOT_START);
+  else
+    writeSerial(command_load, memHeight, memorySlot);
+#endif
 
   return memHeight;
 }
