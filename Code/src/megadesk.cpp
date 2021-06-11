@@ -611,13 +611,6 @@ void loop()
 
   readButtons();
 
-  // When we power on the first time, and have a height value read, set our target height to the same thing
-  // So we don't randomly move on powerup.
-  if (targetHeight == 0)
-  {
-    targetHeight = currentHeight;
-  }
-
   if (memoryEvent)
   {
     if (pushCount == RECALIBRATE)
@@ -684,9 +677,18 @@ void loop()
     targetHeight = currentHeight;
   }
 
-  if (targetHeight > currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight < maxHeight)
+  // avoid moving if we loaded an invalid height.
+  if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT)) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    writeSerial(response_error, targetHeight); // Indicate an error and the bad targetHeight
+#endif
+    targetHeight = currentHeight; // abandon target
+  }
+
+  // Turn on motors?
+  if (targetHeight > currentHeight + HYSTERESIS && currentHeight < maxHeight)
     MOTOR_UP;
-  else if (targetHeight < currentHeight && abs(targetHeight - currentHeight) > HYSTERESIS && currentHeight > minHeight)
+  else if (targetHeight < currentHeight - HYSTERESIS && currentHeight > minHeight)
     MOTOR_DOWN;
   else
   {
@@ -696,13 +698,8 @@ void loop()
     //   or out of range!
     // so stop
     MOTOR_OFF;
-    targetHeight = currentHeight;
     memoryMoving = false;
   }
-
-  // Override all logic above and disable if we loaded an invalid height.
-  if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT))
-    MOTOR_OFF;
 
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delayUntil(25);
