@@ -536,6 +536,10 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
     saveMemory(push_addr, position);
 
 #ifdef MINMAX
+    // note. L command at same slot will *toggle* min/max heights.
+    // S command writes it unconditionally. W writes without updating min/maxHeight.
+    // Nowhere is there a check if limits are outside DANGER_MIN/MAX_HEIGHT...
+
     //if changing memory location for min/max height, update correct variable
     if (push_addr == MIN_HEIGHT_SLOT)
     {
@@ -578,7 +582,8 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
 #ifdef SERIALERRORS
   else
   {
-    // not a recognized command.
+    // not a recognized command. writeSerial isn't very expressive for this error.
+    // two options:
     //writeSerial(response_error, 0); // respond with a empty error
     // or
     // respond with the recieved message but with txMarker replaced with 'E'
@@ -684,7 +689,7 @@ void loop()
     targetHeight = currentHeight;
   }
 
-  // avoid moving if we loaded an invalid height.
+  // avoid moving toward an invalid height.
   if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT)) {
 #if (defined SERIALCOMMS && defined SERIALERRORS)
     writeSerial(response_error, targetHeight); // Indicate an error and the bad targetHeight
@@ -869,8 +874,8 @@ void linBurst()
     state = State::RECAL;
     break;
   case State::RECAL:
-    if (node_a[0] == 99 && node_a[1] == 0 && node_a[2] == 1 &&
-        node_b[0] == 99 && node_b[1] == 0 && node_b[2] == 1) // Are both motors reporting 99/0/1? We should be bottomed out at this point.
+    if (node_a[0] <= 99 && node_a[1] == 0 && node_a[2] == 1 &&
+        node_b[0] <= 99 && node_b[1] == 0 && node_b[2] == 1) // Are both motors reporting 99/0/1? We should be bottomed out at this point.
         state = State::END_RECAL;
     break;
   case State::END_RECAL:
@@ -1151,7 +1156,8 @@ void initAndReadEEPROM(bool force)
 // Swap the minHeight values and save in EEPROM
 void toggleMinHeight()
 {
-  
+  // no bounds checks for < DANGER_MIN_HEIGHT!
+
   if (minHeight == DANGER_MIN_HEIGHT)
   {
     minHeight = currentHeight;
@@ -1162,7 +1168,7 @@ void toggleMinHeight()
   {
     minHeight = DANGER_MIN_HEIGHT;
     // default-limits sound
-    beep(minHeight, 1);
+    beep(minHeight);
   }
   
   eepromPut16(MIN_HEIGHT_SLOT, minHeight);
@@ -1171,7 +1177,8 @@ void toggleMinHeight()
 // Swap the maxHeight values and save in EEPROM
 void toggleMaxHeight()
 {
-  
+  // no bounds checks for > DANGER_MAX_HEIGHT!
+
   if (maxHeight == DANGER_MAX_HEIGHT)
   {
     maxHeight = currentHeight;
@@ -1182,7 +1189,7 @@ void toggleMaxHeight()
   {
     maxHeight = DANGER_MAX_HEIGHT;
     // default-limits sound
-    beep(maxHeight, 1);
+    beep(maxHeight);
   }
 
   eepromPut16(MAX_HEIGHT_SLOT, maxHeight);
