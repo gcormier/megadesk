@@ -676,12 +676,14 @@ void loop()
   else if (manualMove == Command::UP)
   {
     memoryMoving = false;
-    targetHeight = currentHeight + HYSTERESIS + 1;
+    // max() allows escape from recalibration
+    targetHeight = max(currentHeight + HYSTERESIS + 1, DANGER_MIN_HEIGHT);
   }
   else if (manualMove == Command::DOWN)
   {
     memoryMoving = false;
-    targetHeight = currentHeight - HYSTERESIS - 1;
+    // min() allows descend if beyond DANGER_MAX_HEIGHT
+    targetHeight = min(currentHeight - HYSTERESIS - 1, DANGER_MAX_HEIGHT);
   }
   else if (!memoryMoving)
   {
@@ -689,7 +691,7 @@ void loop()
     targetHeight = currentHeight;
   }
 
-  // avoid moving toward an invalid height.
+  // avoid moving toward an out-of-bounds position
   if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT)) {
 #if (defined SERIALCOMMS && defined SERIALERRORS)
     writeSerial(response_error, targetHeight); // Indicate an error and the bad targetHeight
