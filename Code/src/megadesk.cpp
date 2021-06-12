@@ -244,91 +244,98 @@ void readButtons()
     buttons = Button::NONE;
   }
 
-  // If already moving and any button is pressed - stop!
-  if ( memoryMoving && PRESSED(buttons))
-    targetHeight = currentHeight;
+  if ( PRESSED(buttons) )
+  { // a button is pressed
+    if (previous != buttons)
+    { // new push
 
-
-  if ( (previous != buttons) && PRESSED(buttons) ) // new push
-  {
-    // clear pushCount if pushing a different button from last
-    if (buttons != lastbutton)
-      startFresh();
-
-    lastPushTime = currentMillis;
-    lastbutton = buttons;
-#ifdef FEEDBACK
-    if (feedback)
-      playTone(scale[pushCount % (sizeof(scale)/sizeof(scale[0]))],
-              PIP_DURATION); // musical feedback
-#endif
-  }
-  else if ((previous == buttons) && PRESSED(buttons) ) // button held
-  {
-    unsigned long pushLength = currentMillis - lastPushTime;
-
-    // long push?
-    if (pushLength > CLICK_TIMEOUT) {
-      // first long push? then move!
-      if (pushCount == 0) {
-        if (buttons == Button::UP) manualMove = Command::UP;
-        if (buttons == Button::DOWN) manualMove = Command::DOWN;
-#ifdef EASTER
-        if ((buttons == Button::BOTH) && (pushLength > CLICK_LONG)) {
-          // 10s hold. unused trigger, play the easter-egg
-         #define EIGHTH 131
-          uint16_t tones[] = {
-            NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
-            NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
-            NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
-            NOTE_A6, EIGHTH*8,
-            NOTE_F6, EIGHTH, SILENCE, EIGHTH,
-            NOTE_F6, EIGHTH*2,
-            NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
-            NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
-            NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
-          for (uint16_t i=0; i < sizeof(tones)/sizeof(tones[0]); i+=2) {
-            playTone(tones[i], tones[i+1]);
-          }
-        }
-#endif
-      }
-      else if ( MEMORY_BUTTON(buttons) && (!savePosition) )
-      {
-        // longpress after previous pushes - save this position
-        beep(NOTE_ACK, pushCount + 1); // first provide feedback to release...
-        savePosition = true;
-      }
-    }
-  }
-  else if ( PRESSED(previous) && !PRESSED(buttons) ) // just released
-  {
-    // moving?
-    if (manualMove != Command::NONE)
-    {
-      // we were under manual control before, stop now
-      manualMove = Command::NONE;
-    } else {
-      // not moving manually
-      pushCount++; // short press increase the count
-    }
-
-  }
-  else if ( !PRESSED(previous) && !PRESSED(buttons) ) // released and idle
-  {
-    // check timeout on release - indicating last press
-    if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT))
-    {
-      // last press
-      if ((pushCount >= MIN_SLOT) && MEMORY_BUTTON(lastbutton))
-        memoryEvent = true; // either store or recall a setting
-      else { // single push or not a memory button.
+      // clear pushCount if pushing a different button from last
+      if (buttons != lastbutton)
         startFresh();
-        // could still be a trigger for something. For now just...
+
+      // If already moving and any button is pressed - stop!
+      if ( memoryMoving )
+        targetHeight = currentHeight;
+
+      lastPushTime = currentMillis;
+      lastbutton = buttons;
+
 #ifdef FEEDBACK
-        // play short dull buzz, indicating this is a no-op.
-        if (feedback) playTone(NOTE_A4, PIP_DURATION);
+      if (feedback)
+        playTone(scale[pushCount % (sizeof(scale)/sizeof(scale[0]))],
+                PIP_DURATION); // musical feedback
 #endif
+    }
+    else
+    { // button held
+      unsigned long pushLength = currentMillis - lastPushTime;
+
+      // long push?
+      if (pushLength > CLICK_TIMEOUT) {
+        // first long push? then move!
+        if (pushCount == 0) {
+          if (buttons == Button::UP) manualMove = Command::UP;
+          if (buttons == Button::DOWN) manualMove = Command::DOWN;
+#ifdef EASTER
+          if ((buttons == Button::BOTH) && (pushLength > CLICK_LONG)) {
+            // 10s hold. unused trigger, play the easter-egg
+          #define EIGHTH 131
+            uint16_t tones[] = {
+              NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
+              NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
+              NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
+              NOTE_A6, EIGHTH*8,
+              NOTE_F6, EIGHTH, SILENCE, EIGHTH,
+              NOTE_F6, EIGHTH*2,
+              NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
+              NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
+              NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
+            for (uint16_t i=0; i < sizeof(tones)/sizeof(tones[0]); i+=2) {
+              playTone(tones[i], tones[i+1]);
+            }
+          }
+#endif
+        }
+        else if ( MEMORY_BUTTON(buttons) && (!savePosition) )
+        {
+          // longpress after previous pushes - save this position
+          beep(NOTE_ACK, pushCount + 1); // first provide feedback to release...
+          savePosition = true;
+        }
+      }
+    }
+  }
+  else
+  { // nothing currently pressed
+    if ( PRESSED(previous) )
+    { // just released
+      // moving?
+      if (manualMove != Command::NONE)
+      {
+        // we were under manual control before, stop now
+        manualMove = Command::NONE;
+      } else {
+        // not moving manually
+        pushCount++; // short press increase the count
+      }
+
+    }
+    else
+    { // released and idle
+      // check timeout on release - indicating last press
+      if ((lastPushTime != 0) && (currentMillis - lastPushTime > CLICK_TIMEOUT))
+      {
+        // last press
+        if ((pushCount >= MIN_SLOT) && MEMORY_BUTTON(lastbutton))
+          memoryEvent = true; // either store or recall a setting
+        else { // single push or not a memory button.
+          startFresh();
+          // could still be a trigger for something. For now just...
+#ifdef FEEDBACK
+          // play short dull buzz, indicating this is a no-op.
+          if (feedback) playTone(NOTE_A4, PIP_DURATION);
+#endif
+        }
       }
     }
   }
