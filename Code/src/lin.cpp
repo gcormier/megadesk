@@ -35,7 +35,6 @@ void Lin::begin(int speed)
 {
   serialSpd = speed;
   serial.begin(serialSpd);
-  serialOn  = 1;
 
   unsigned long int Tbit = 100000/serialSpd;  // Not quite in uSec, I'm saving an extra 10 to change a 1.4 (40%) to 14 below...
   unsigned long int nominalFrameTime = ((34*Tbit)+90*Tbit);  // 90 = 10*max # payload bytes + checksum (9). 
@@ -46,10 +45,8 @@ void Lin::begin(int speed)
 // Generate a BREAK signal (a low signal for longer than a byte) across the serial line
 void Lin::serialBreak(void)
 {
-  if (serialOn) {
-    serial.flush();
-    serial.end();
-  }
+  serial.flush();
+  serial.end();
 
   
   digitalWrite(txPin, LOW);  // Send BREAK
@@ -64,7 +61,6 @@ void Lin::serialBreak(void)
   else delayMicroseconds(brkend);
 
   serial.begin(serialSpd);
-  serialOn = 1;
 }
 
 /* Lin defines its checksum as an inverted 8 bit sum with carry */
@@ -86,11 +82,11 @@ uint8_t Lin::addrParity(uint8_t addr)
   return (p0 | (p1<<1))<<6;
 }
 
-void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t proto, int16_t cksum)
+void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, int16_t cksum)
 {
   uint8_t addrbyte = (addr & 0x3f) | addrParity(addr);
   if (cksum == -1)
-    cksum = dataChecksum(message,nBytes,(proto==1) ? 0:addrbyte);
+    cksum = dataChecksum(message,nBytes,addrbyte);
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte
   serial.write(addrbyte);  // ID byte
@@ -99,7 +95,7 @@ void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t pro
   serial.flush();
 }
 
-uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes,uint8_t proto)
+uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
   int16_t timeoutCount=timeout;
@@ -131,8 +127,7 @@ uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes,uint8_t proto)
   {
     uint8_t cksum = serial.read();
     bytesRcvd++;
-    if (proto==1) idByte = 0;  // Don't cksum the ID byte in LIN 1.x
-    if (dataChecksum(message,nBytes,idByte) == cksum) bytesRcvd = 0xff;
+    if (dataChecksum(message,nBytes,idByte) == cksum) bytesRcvd = 0;
   }
 
 done:

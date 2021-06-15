@@ -356,7 +356,7 @@ int digits=0;
 int readdigits()
 {
   int r;
-  while ((r = Serial1.read()) != -1) {
+  while ((r = Serial1.read()) > 0) {
     if ((r < 0x30) || (r > 0x39)) {
       // non-digit we're done, return what we have
       return digits;
@@ -733,26 +733,26 @@ void linBurst()
   refTime = micros();
 
   // Send PID 17
-  lin.send(17, empty, 3, 2);
+  lin.send(17, empty, 3);
   delayUntil(5);
 
   // Recv from PID 09
-  lin.recv(9, node_b, 3, 2);
+  lin.recv(9, node_b, 3);
   delayUntil(5);
 
   // Recv from PID 08
-  lin.recv(8, node_a, 3, 2);
+  lin.recv(8, node_a, 3);
   delayUntil(5);
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
-    lin.send(16, 0, 0, 2);
+    lin.send(16, 0, 0);
     delayUntil(5);
   }
 
   // Send PID 1
-  lin.send(1, 0, 0, 2);
+  lin.send(1, 0, 0);
   delayUntil(5);
 
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
@@ -814,7 +814,7 @@ void linBurst()
 
   cmd[0] = enc_target & 0xFF;
   cmd[1] = enc_target >> 8;
-  lin.send(18, cmd, 3, 2);
+  lin.send(18, cmd, 3);
 
   switch (state)
   {
@@ -1025,7 +1025,7 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
   chksum = chksum % 255;
   chksum = 255 - chksum;
 
-  lin.send(60, packet, 8, 2, chksum);
+  lin.send(60, packet, 8, chksum);
   delay(3);
 }
 
@@ -1120,14 +1120,14 @@ void linInit()
   delay(15);
 
   byte magicPacket[3] = {246, 255, 191};
-  lin.send(18, magicPacket, 3, 2);
+  lin.send(18, magicPacket, 3);
 
   delay(5);
 }
 
 byte recvInitPacket(byte array[])
 {
-  return lin.recv(61, array, 8, 2);
+  return lin.recv(61, array, 8);
 }
 
 void initAndReadEEPROM(bool force)
