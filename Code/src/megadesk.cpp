@@ -151,6 +151,20 @@ State state = State::OFF; // desk-protocol state
 #define MOTOR_DOWN user_cmd = Command::DOWN
 #define MOTOR_OFF  user_cmd = Command::NONE
 
+#ifdef EASTER
+#define EIGHTH 131
+const uint16_t tones[] = {
+  NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
+  NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
+  NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
+  NOTE_A6, EIGHTH*8,
+  NOTE_F6, EIGHTH, SILENCE, EIGHTH,
+  NOTE_F6, EIGHTH*2,
+  NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
+  NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
+  NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
+#endif
+
 // clean the slate for button presses
 void startFresh()
 {
@@ -279,17 +293,6 @@ void readButtons()
 #ifdef EASTER
           if ((buttons == Button::BOTH) && (pushLength > CLICK_LONG)) {
             // 10s hold. unused trigger, play the easter-egg
-          #define EIGHTH 131
-            uint16_t tones[] = {
-              NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
-              NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
-              NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
-              NOTE_A6, EIGHTH*8,
-              NOTE_F6, EIGHTH, SILENCE, EIGHTH,
-              NOTE_F6, EIGHTH*2,
-              NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
-              NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
-              NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
             for (uint16_t i=0; i < sizeof(tones)/sizeof(tones[0]); i+=2) {
               playTone(tones[i], tones[i+1]);
             }
