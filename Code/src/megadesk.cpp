@@ -1136,10 +1136,10 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    for (unsigned int index = EEPROM.length()/2; index >= 0; index--) {
+    for (int index = EEPROM.length()-1; index >0; index--) {
       EEPROM.write(index, 0);
-      //EEPROM.write(256+index, 0); //don't bother clearing the 2nd half
-      // 2nd half could be a back-up of the 1st half...
+      // 2nd half of eeprom could be a back-up of the 1st half...
+      // then swap/copy between the two (for different users? backups?)
     }
     // Store signature value
     eepromPut16(EEPROM_SIG_SLOT, MAGIC_SIG);
