@@ -724,9 +724,9 @@ void loop()
 
 void linBurst()
 {
-  byte node_a[4] = {0, 0, 0, 0};
-  byte node_b[4] = {0, 0, 0, 0};
-  byte cmd[3] = {0, 0, 0};
+  static byte node_a[4] = {0, 0, 0, 0};
+  static byte node_b[4] = {0, 0, 0, 0};
+  static byte cmd[3] = {0, 0, 0};
   static State lastState = State::OFF;
 
   // ensure accurate timing from this point
@@ -1018,8 +1018,11 @@ void beep(uint16_t freq, uint8_t count)
 
 void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 {
-  byte packet[8] = {a1, a2, a3, a4, 255, 255, 255, 255};
-
+  static byte packet[8] = {0, 0, 0, 0, 255, 255, 255, 255};
+  packet[0] = a1;
+  packet[1] = a2;
+  packet[2] = a3;
+  packet[3] = a4;
   // Custom checksum formula for the initialization
   int chksum = a1 + a2 + a3 + a4;
   chksum = chksum % 255;
@@ -1029,105 +1032,105 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
   delay(3);
 }
 
+byte recvInitPacket()
+{
+  static byte resp[8];
+  return lin.recv(61, resp, 8);
+}
+
 void linInit()
 {
   // Really weird startup sequenced, sourced from the controller.
-  byte resp[8];
+  static const byte magicPacket[3] = {246, 255, 191};
 
   // Brief stabilization delay
   delay(150);
 
   sendInitPacket(255, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(255, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(255, 1, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(208, 2, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   uint8_t initA = 0;
   while (true)
   {
     sendInitPacket(initA, 2, 7);
-    if (recvInitPacket(resp) > 0)
+    if (recvInitPacket() > 0)
       break;
     initA++;
   }
 
   sendInitPacket(initA, 6, 9, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 12, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 13, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 10, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 11, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 4, 0, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   byte initB = initA + 1;
   while (true)
   {
     sendInitPacket(initB, 2, 0, 0);
-    if (recvInitPacket(resp) > 0)
+    if (recvInitPacket() > 0)
       break;
     initB++;
   }
 
   sendInitPacket(initB, 6, 9, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 12, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 13, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 10, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 11, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 4, 1, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   uint8_t initC = initB + 1;
   while (initC < 8)
   {
     sendInitPacket(initC, 2, 1, 0);
-    recvInitPacket(resp);
+    recvInitPacket();
     initC++;
   }
 
   sendInitPacket(208, 1, 7, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(208, 2, 7, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   delay(15);
 
-  byte magicPacket[3] = {246, 255, 191};
   lin.send(18, magicPacket, 3);
 
   delay(5);
-}
-
-byte recvInitPacket(byte array[])
-{
-  return lin.recv(61, array, 8);
 }
 
 void initAndReadEEPROM(bool force)
