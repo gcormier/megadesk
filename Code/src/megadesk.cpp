@@ -1136,8 +1136,9 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    for (int index = EEPROM.length()-1; index >0; index--) {
-      EEPROM.write(index, 0);
+    // use 8bit wraparound as exit-condition
+    for (uint8_t index = 2; index != 0; index++) {
+      eepromPut16(index,0);
       // 2nd half of eeprom could be a back-up of the 1st half...
       // then swap/copy between the two (for different users? backups?)
     }
@@ -1146,10 +1147,10 @@ void initAndReadEEPROM(bool force)
 
   }
 #ifdef MINMAX
-  // reset max/min height
+  // retrieve max/min height
   minHeight = eepromGet16(MIN_HEIGHT_SLOT);
   maxHeight = eepromGet16(MAX_HEIGHT_SLOT);
-  // check if 0 and fix/beep ...
+  // check if invalid and fix/beep ...
   if (minHeight == 0) toggleMinHeight();
   if (maxHeight == 0) toggleMaxHeight();
 #endif
