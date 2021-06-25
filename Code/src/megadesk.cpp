@@ -19,6 +19,7 @@
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
+#include <avr/wdt.h>
 
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means slots 0-255)
@@ -175,13 +176,30 @@ void startFresh()
   memoryEvent = false;
 }
 
+// use a class initializer to disable the watchdog well before setup() is called
+softReset::softReset()
+{
+    MCUSR = 0;
+    wdt_disable();
+    return;
+}
+softReset soft;
+
+// watchdog software-reset method.
+inline void softReset::Reset() {
+  wdt_enable( WDTO_30MS );
+  // avoid wdt_reset() with this loop
+  for(;;) {}
+}
+
+
+
 void setup()
 {
   bool up_press = false;
   pinMode(PIN_UP, INPUT_PULLUP);
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
-
   delay(SHORT_PAUSE);
 
   // hold up button on boot to toggle both/single Button Mode

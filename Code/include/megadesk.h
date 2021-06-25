@@ -32,6 +32,12 @@ enum class Button : byte
   BOTH,
 };
 
+class softReset {
+  public:
+    softReset();
+    static void Reset();
+};
+
 // serial markers and operations
 const char rxMarker = '<'; // start marker for comms coming to desk (Rx)
 const char command_increase = '+';
