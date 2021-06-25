@@ -27,6 +27,7 @@
 #define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
 #define MIN_SLOT         2  // 1 is possible but cant save without serial
+#define FORCE_RESET      5  // reset tests
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
 #define RECALIBRATE      14 // nothing is stored there
@@ -616,10 +617,13 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
 
 void loop()
 {
+  readButtons();
+  if (memoryEvent && (pushCount == FORCE_RESET))
+    softReset::Reset();
 
   linBurst();
 
-  // If we are in recalibrate mode or have a bad currentHeight, don't take any input.
+  // If we are in recalibrate mode or have a bad currentHeight, don't act on input.
   if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
     delayUntil(25);
@@ -641,8 +645,6 @@ void loop()
 
   recvData();
 #endif
-
-  readButtons();
 
   if (memoryEvent)
   {
@@ -1015,7 +1017,7 @@ void playTone(uint16_t freq, uint16_t duration) {
   uint16_t halfperiod = 500000L / freq; // in us.
   // mostly equivalent to:
   // for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
-  for ( duration = (62 * duration) / (halfperiod / 8); duration > 0; duration -= 1 ) {
+  for ( duration = (62 * duration) / (halfperiod/8); duration > 0; duration-- ) {
     digitalWrite(PIN_BEEP, HIGH);
     delayMicroseconds(halfperiod - PITCH_ADJUST);
     digitalWrite(PIN_BEEP, LOW);
