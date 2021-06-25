@@ -95,6 +95,10 @@ void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, int16_t cks
   serial.flush();
 }
 
+// returns character read or:
+// returns 0xfd if serial isn't echoing
+// returns 0xfe if serial echoed only one char - a fluke?
+// returns 0 if no characters or if checksum failed.
 uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
@@ -127,7 +131,7 @@ uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
   {
     uint8_t cksum = serial.read();
     bytesRcvd++;
-    if (dataChecksum(message,nBytes,idByte) == cksum) bytesRcvd = 0;
+    if (dataChecksum(message,nBytes,idByte) == cksum) bytesRcvd = 0xff;
   }
 
 done:
