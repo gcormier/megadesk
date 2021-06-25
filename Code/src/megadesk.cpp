@@ -1077,6 +1077,85 @@ byte recvInitPacket()
 #endif
 }
 
+#define SMALL_INIT
+#ifdef SMALL_INIT
+
+#define SEQUENCE_LENGTH 21
+const byte init_seq[SEQUENCE_LENGTH][4] = {
+  {255, 7, 255, 255}, //0 (no resp)
+  {255, 7, 255, 255}, //1 (no resp)
+  {255, 1, 7, 255}, //2 (no resp)
+  {208, 2, 7, 255}, //3
+#define REPEAT1 4
+// ivanwick  V
+  {0, 2, 7, 255}, //4 REPEAT1 until resp >0
+  {0, 6, 9, 0}, //5
+  {0, 6, 12, 0}, //6
+  {0, 6, 13, 0}, //7
+  {0, 6, 10, 0}, //8
+  {0, 6, 11, 0}, //9
+  {0, 4, 0, 0}, //10
+#define REPEAT2 11
+  {0, 2, 0, 0}, //11 REPEAT2 until resp>0
+  {0, 6, 9, 0}, //12
+  {0, 6, 12, 0}, //13
+  {0, 6, 13, 0}, //14
+  {0, 6, 10, 0}, //15
+  {0, 6, 11, 0}, //16
+  {0, 4, 1, 0}, //17
+#define REPEAT3 18
+  {0, 2, 1, 0}, //18 REPEAT8 while seq <8 (no resp)
+
+// ivanwick   V
+  {208, 1, 7, 0}, //19 (no resp)
+  {208, 2, 7, 0}, //20 (no resp)
+};
+
+void linInit()
+{
+  static const byte magicPacket[3] = {246, 255, 191};
+  // Really weird startup sequence, sourced from the controller.
+
+  // Brief stabilization delay
+  delay(250);
+
+  int8_t initA = -1;
+  //uint8_t rc = 0;
+
+  for (uint8_t i=0; i<SEQUENCE_LENGTH; i++) {
+    if ((i==REPEAT1) || (i==REPEAT2)) {
+      while (true)
+      //while (initA < 8)
+      {
+        initA++;
+        sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+        if (recvInitPacket() > 0) break;
+      }
+    } else if (i==REPEAT3) {
+      while (initA < 8)
+      {
+        initA++;
+        sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+        recvInitPacket(); // no response expected
+      }
+    } else {
+      if (init_seq[i][0])
+        sendInitPacket(init_seq[i][0], init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+      else
+        sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+      recvInitPacket();
+    }
+  }
+
+  delay(15);
+
+  lin.send(18, magicPacket, 3);
+
+  delay(5);
+  if (initFailures) softReset::Reset();
+}
+
+#else
 void linInit()
 {
   // Really weird startup sequenced, sourced from the controller.
@@ -1171,6 +1250,7 @@ void linInit()
 
   delay(5);
 }
+#endif
 
 void initAndReadEEPROM(bool force)
 {
