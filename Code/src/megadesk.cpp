@@ -7,11 +7,13 @@
 // Uncomment this define if you want serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
-#define HUMANSERIAL
+//#define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
-#define SERIALECHO
+//#define SERIALECHO
 // Report errors over serial
-#define SERIALERRORS
+//#define SERIALERRORS
+// raw debug of packets sent during init over serial
+#define DEBUGSTARTUP
 
 // easter egg
 #define EASTER
@@ -237,7 +239,8 @@ void setup()
   }
 
 #ifdef SERIALCOMMS
-  Serial1.begin(19200);
+  //Serial1.begin(19200);
+  Serial1.begin(115200);
 #endif
 
   // init + arpeggio
@@ -1036,6 +1039,8 @@ void beep(uint16_t freq, uint8_t count)
   }
 }
 
+uint8_t initFailures = 0;
+
 void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 {
   static byte packet[8] = {0, 0, 0, 0, 255, 255, 255, 255};
@@ -1043,6 +1048,9 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
   packet[1] = a2;
   packet[2] = a3;
   packet[3] = a4;
+#ifdef DEBUGSTARTUP
+  writeSerial(a2, a3, a4, a1);
+#endif
   // Custom checksum formula for the initialization
   int chksum = a1 + a2 + a3 + a4;
   chksum = chksum % 255;
@@ -1055,7 +1063,18 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 byte recvInitPacket()
 {
   static byte resp[8];
+#ifdef DEBUGSTARTUP
+  uint8_t chars= lin.recv(61, resp, 8);
+  if ((chars !=0) && (chars <0xF0))
+    writeSerial(resp[1], resp[2], resp[3], resp[0]);
+  else
+    writeSerial(5, 5, 5, chars);
+  if (chars == 0xfd) //softReset::Reset();
+    initFailures++;
+  return chars;
+#else
   return lin.recv(61, resp, 8);
+#endif
 }
 
 void linInit()
