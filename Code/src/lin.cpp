@@ -74,7 +74,8 @@ uint8_t Lin::dataChecksum(const uint8_t* message, char nBytes,uint16_t sum)
 }
 
 /* Create the Lin ID parity */
-#define BIT(data,shift) ((addr&(1<<shift))>>shift)
+//#define BIT(data,shift) ((addr&(1<<shift))>>shift)
+#define BIT(data,shift) ((addr>>shift)&1)
 uint8_t Lin::addrParity(uint8_t addr)
 {
   uint8_t p0 = BIT(addr,0) ^ BIT(addr,1) ^ BIT(addr,2) ^ BIT(addr,4);
@@ -95,6 +96,18 @@ void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, int16_t cks
   serial.flush();
 }
 
+// read serial or wait until timeoutCount hits zero.
+int Lin::read_withtimeout(int16_t &timeoutCount)
+{
+  while(!serial.available())
+  {
+    delayMicroseconds(100);
+    timeoutCount-= 100;
+    if (timeoutCount<=0) return -1;
+  }
+  return serial.read();
+}
+
 // returns character read or:
 // returns 0xfd if serial isn't echoing
 // returns 0xfe if serial echoed only one char - a fluke?
@@ -103,36 +116,30 @@ uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
   int16_t timeoutCount=timeout;
+  int16_t readByte;
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.flush();
   serial.write(0x55);  // Sync byte
   uint8_t idByte = (addr&0x3f) | addrParity(addr);
   serial.write(idByte);  // ID byte
-  bytesRcvd = 0xfd;
   do { // I hear myself
-    while(!serial.available()) { delayMicroseconds(100); timeoutCount-= 100; if (timeoutCount<=0) goto done; }
-  } while(serial.read() != 0x55);
-  bytesRcvd = 0xfe;
+    readByte = read_withtimeout(timeoutCount);
+  } while(readByte != 0x55 && readByte != -1);
   do {
-    while(!serial.available()) { delayMicroseconds(100); timeoutCount-= 100; if (timeoutCount<=0) goto done; }
-  } while(serial.read() != idByte);
+    readByte = read_withtimeout(timeoutCount);
+  } while(readByte != idByte && readByte != -1);
 
-
-  bytesRcvd = 0;
+  // This while loop strategy does not take into account the added time for the logic.  So the actual timeout will be slightly longer then written here.
   for (uint8_t i=0;i<nBytes;i++)
   {
-    // This while loop strategy does not take into account the added time for the logic.  So the actual timeout will be slightly longer then written here.
-    while(!serial.available()) { delayMicroseconds(100); timeoutCount-= 100; if (timeoutCount<=0) goto done; }
-    message[i] = serial.read();
+    readByte = read_withtimeout(timeoutCount);
+    message[i] = readByte;
+    if (readByte == -1) goto done;
     bytesRcvd++;
   }
-  while(!serial.available()) { delayMicroseconds(100); timeoutCount-= 100; if (timeoutCount<=0) goto done; }
-  if (serial.available())
-  {
-    uint8_t cksum = serial.read();
-    bytesRcvd++;
-    if (dataChecksum(message,nBytes,idByte) == cksum) bytesRcvd = 0xff;
-  }
+  readByte = read_withtimeout(timeoutCount);
+  bytesRcvd++;
+  if (dataChecksum(message,nBytes,idByte) == readByte) bytesRcvd = 0xff;
 
 done:
   serial.flush();

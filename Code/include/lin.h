@@ -33,18 +33,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class Lin
 {
 protected:
-  
+  LIN_SERIAL& serial;
+  uint8_t txPin;               //  what pin # is used to transmit (needed to generate the BREAK signal)
+  int     serialSpd;           //  in bits/sec. Also called baud rate
+
   // For Lin 1.X "start" should = 0, for Lin 2.X "start" should be the addr byte. 
   static uint8_t dataChecksum(const uint8_t* message, char nBytes,uint16_t start=0);
   static uint8_t addrParity(uint8_t addr);
 
-public:
+  int read_withtimeout(int16_t &timeoutCount);
   void serialBreak(void);
-  Lin(LIN_SERIAL& ser=Serial,uint8_t txPin=1);
-  LIN_SERIAL& serial;
-  uint8_t txPin;               //  what pin # is used to transmit (needed to generate the BREAK signal)
-  int     serialSpd;           //  in bits/sec. Also called baud rate
+
+public:
   unsigned long int timeout;   //  How long to wait for a slave to fully transmit when doing a "read".  You can modify this after calling "begin"
+
+  Lin(LIN_SERIAL& ser=Serial,uint8_t txPin=1);
   void begin(int speed);
 
   // Send a message right now, ignoring the schedule table.
