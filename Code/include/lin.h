@@ -45,8 +45,6 @@ protected:
   void serialBreak(void);
 
 public:
-  unsigned long int timeout;   //  How long to wait for a slave to fully transmit when doing a "read".  You can modify this after calling "begin"
-
   Lin(LIN_SERIAL& ser=Serial,uint8_t txPin=1);
   void begin(int speed);
 

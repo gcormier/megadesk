@@ -36,11 +36,9 @@ void Lin::begin(int speed)
   serialSpd = speed;
   serial.begin(serialSpd);
 
-  unsigned long int Tbit = 100000/serialSpd;  // Not quite in uSec, I'm saving an extra 10 to change a 1.4 (40%) to 14 below...
-  unsigned long int nominalFrameTime = ((34*Tbit)+90*Tbit);  // 90 = 10*max # payload bytes + checksum (9). 
-  timeout = LIN_TIMEOUT_IN_FRAMES * 14 * nominalFrameTime;  // 14 is the specced addtl 40% space above normal*10 -- the extra 10 is just pulled out of the 1000000 needed to convert to uSec (so that there are no decimal #s).
   pinMode(txPin, OUTPUT);
 }
+
 
 // Generate a BREAK signal (a low signal for longer than a byte) across the serial line
 void Lin::serialBreak(void)
@@ -48,10 +46,10 @@ void Lin::serialBreak(void)
   serial.flush();
   serial.end();
 
+  uint16_t brkend = (1000000UL/serialSpd); // comes to 52us for symbol period
+  uint16_t brkbegin = brkend*LIN_BREAK_DURATION; // 780us break time
   
   digitalWrite(txPin, LOW);  // Send BREAK
-  const unsigned long int brkend = (1000000UL/((unsigned long int)serialSpd));
-  const unsigned long int brkbegin = brkend*LIN_BREAK_DURATION;
   if (brkbegin > 16383) delay(brkbegin/1000);  // delayMicroseconds unreliable above 16383 see arduino man pages
   else delayMicroseconds(brkbegin);
   
@@ -74,7 +72,6 @@ uint8_t Lin::dataChecksum(const uint8_t* message, char nBytes,uint16_t sum)
 }
 
 /* Create the Lin ID parity */
-//#define BIT(data,shift) ((addr&(1<<shift))>>shift)
 #define BIT(data,shift) ((addr>>shift)&1)
 uint8_t Lin::addrParity(uint8_t addr)
 {
@@ -115,20 +112,24 @@ int Lin::read_withtimeout(int16_t &timeoutCount)
 uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
-  int16_t timeoutCount=timeout;
   int16_t readByte;
-  serialBreak();       // Generate the low signal that exceeds 1 char.
-  serial.flush();
-  serial.write(0x55);  // Sync byte
   uint8_t idByte = (addr&0x3f) | addrParity(addr);
+  uint16_t Tbit_times_ten = 1000000/serialSpd;  // symbol period is Tbit*10
+  uint16_t nominalFrameTime_times_ten = (34+90)*Tbit_times_ten;  // 34 header bit length, 9 = # payload bytes + checksum.
+  int16_t timeoutCount = LIN_TIMEOUT_IN_FRAMES * nominalFrameTime_times_ten;  // comes to 12916us
+  serialBreak();       // Generate the low signal that exceeds 1 char.
+  serial.write(0x55);  // Sync byte
   serial.write(idByte);  // ID byte
+  serial.flush();
+  bytesRcvd = 0xfd;
   do { // I hear myself
     readByte = read_withtimeout(timeoutCount);
   } while(readByte != 0x55 && readByte != -1);
+  bytesRcvd = 0xfe;
   do {
     readByte = read_withtimeout(timeoutCount);
   } while(readByte != idByte && readByte != -1);
-
+  bytesRcvd = 0;
   // This while loop strategy does not take into account the added time for the logic.  So the actual timeout will be slightly longer then written here.
   for (uint8_t i=0;i<nBytes;i++)
   {

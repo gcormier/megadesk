@@ -251,6 +251,10 @@ void setup()
 
   lin.begin(19200);
   beep(NOTE_G6);
+#ifdef DEBUGSTARTUP
+  writeSerial(1000000/19200,
+            2*(34+90)*1000000/19200, 0xaa);
+#endif
 
   linInit();
 
