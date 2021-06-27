@@ -59,7 +59,7 @@ const char response_calibration = 'X'; // indicates calibration is starting
 void playTone(uint16_t freq, uint16_t duration);
 void beep(uint16_t freq, byte count=1);
 
-void delayUntil(unsigned long microSeconds);
+void delayUntil(uint16_t milliSeconds);
 
 void linInit();
 void linBurst();

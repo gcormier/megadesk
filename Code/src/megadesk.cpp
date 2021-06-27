@@ -7,12 +7,12 @@
 // Uncomment this define if you want serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
-//#define HUMANSERIAL
+#define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
-//#define SERIALECHO
+#define SERIALECHO
 // Report errors over serial
-//#define SERIALERRORS
-// raw debug of packets sent during init over serial
+#define SERIALERRORS
+// raw debug of packets sent during init over serial - turn off HUMANSERIAL & use hexlify
 #define DEBUGSTARTUP
 
 // easter egg
@@ -992,14 +992,18 @@ uint16_t loadMemory(uint8_t memorySlot)
 
 // accurate delay from the last time delayUntil() returned.
 // for precise periodic timing
-void delayUntil(unsigned long microSeconds)
+void delayUntil(uint16_t milliSeconds)
 {
-  unsigned long target = refTime + (1000 * microSeconds);
+  unsigned long target = refTime + (1000 * milliSeconds);
   unsigned long micro_delay = target - micros();
 
   if (micro_delay > 1000000)
   {
-    // crazy long delay - target time is in the past!
+    // >1s - long delay - target time is in the past!
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    // report lateness (us) and requested delay (ms)
+    writeSerial(response_error, (-micro_delay), milliSeconds, '!');
+#endif
     // reset refTime and return
     refTime = micros();
     return;
@@ -1055,12 +1059,8 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 #ifdef DEBUGSTARTUP
   writeSerial(a2, a3, a4, a1);
 #endif
-  // Custom checksum formula for the initialization
-  int chksum = a1 + a2 + a3 + a4;
-  chksum = chksum % 255;
-  chksum = 255 - chksum;
 
-  lin.send(60, packet, 8, chksum);
+  lin.send(60, packet, 8);
   delay(3);
 }
 

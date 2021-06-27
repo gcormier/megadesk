@@ -80,11 +80,11 @@ uint8_t Lin::addrParity(uint8_t addr)
   return (p0 | (p1<<1))<<6;
 }
 
-void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, int16_t cksum)
+void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes)
 {
   uint8_t addrbyte = (addr & 0x3f) | addrParity(addr);
-  if (cksum == -1)
-    cksum = dataChecksum(message,nBytes,addrbyte);
+  // LIN diagnostic (60) frame shall always use CHKSUM of protocol version 1.x.
+  uint8_t cksum = dataChecksum(message,nBytes,(addr == 0x3c) ? 0: addrbyte);
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte
   serial.write(addrbyte);  // ID byte
