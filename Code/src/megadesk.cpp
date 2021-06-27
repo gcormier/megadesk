@@ -628,12 +628,13 @@ void loop()
   if (memoryEvent && (pushCount == FORCE_RESET))
     softReset::Reset();
 
+  // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
+  delayUntil(25);
   linBurst();
 
   // If we are in recalibrate mode or have a bad currentHeight, don't act on input.
   if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
-    delayUntil(25);
     return;
   }
 
@@ -745,8 +746,6 @@ void loop()
     memoryMoving = false;
   }
 
-  // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
-  delayUntil(25);
 }
 
 void linBurst()
@@ -761,26 +760,25 @@ void linBurst()
 
   // Send PID 17
   lin.send(17, empty, 3);
-  delayUntil(5);
 
+  delayUntil(5);
   // Recv from PID 09
   lin.recv(9, node_b, 3);
-  delayUntil(5);
 
+  delayUntil(5);
   // Recv from PID 08
   lin.recv(8, node_a, 3);
-  delayUntil(5);
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
-    lin.send(16, 0, 0);
     delayUntil(5);
+    lin.send(16, 0, 0);
   }
 
+  delayUntil(5);
   // Send PID 1
   lin.send(1, 0, 0);
-  delayUntil(5);
 
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
@@ -841,6 +839,7 @@ void linBurst()
 
   cmd[0] = enc_target & 0xFF;
   cmd[1] = enc_target >> 8;
+  delayUntil(5);
   lin.send(18, cmd, 3);
 
   switch (state)
