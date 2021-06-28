@@ -13,7 +13,7 @@
 // Report errors over serial
 #define SERIALERRORS
 // raw debug of packets sent during init over serial - turn off HUMANSERIAL & use hexlify
-#define DEBUGSTARTUP
+//#define DEBUGSTARTUP
 
 // easter egg
 #define EASTER
@@ -1058,7 +1058,7 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 #ifdef DEBUGSTARTUP
   writeSerial(a2, a3, a4, a1);
 #endif
-
+  delayUntil(10);
   lin.send(60, packet, 8);
   delay(3);
 }
@@ -1066,6 +1066,7 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 byte recvInitPacket()
 {
   static byte resp[8];
+  delayUntil(10);
 #ifdef DEBUGSTARTUP
   uint8_t chars= lin.recv(61, resp, 8);
   if ((chars !=0) && (chars <0xF0))
@@ -1121,10 +1122,9 @@ void linInit()
 
   // Brief stabilization delay
   delay(250);
-
   int8_t initA = -1;
-  //uint8_t rc = 0;
 
+  refTime = micros();
   for (uint8_t i=0; i<SEQUENCE_LENGTH; i++) {
     if ((i==REPEAT1) || (i==REPEAT2)) {
       while (true)
@@ -1166,6 +1166,7 @@ void linInit()
 
   // Brief stabilization delay
   delay(150);
+  refTime = micros();
 
   sendInitPacket(255, 7);
   recvInitPacket();

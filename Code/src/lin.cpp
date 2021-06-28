@@ -43,10 +43,9 @@ void Lin::begin(int speed)
 // Generate a BREAK signal (a low signal for longer than a byte) across the serial line
 void Lin::serialBreak(void)
 {
-  serial.flush();
   serial.end();
 
-  uint16_t brkend = (1000000UL/serialSpd); // comes to 52us for symbol period
+  uint16_t brkend = (1000000UL/serialSpd); // comes to 52us for bit period
   uint16_t brkbegin = brkend*LIN_BREAK_DURATION; // 780us break time
   
   digitalWrite(txPin, LOW);  // Send BREAK
@@ -107,16 +106,18 @@ int Lin::read_withtimeout(int16_t &timeoutCount)
 
 // returns character read or:
 // returns 0xfd if serial isn't echoing
-// returns 0xfe if serial echoed only one char - a fluke?
-// returns 0 if no characters or if checksum failed.
+// returns 0xfe if serial echoed only the sync - a fluke?
+// returns 0xff for checksum error
+// returns 0 if no characters.
 uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
   int16_t readByte;
   uint8_t idByte = (addr&0x3f) | addrParity(addr);
-  uint16_t Tbit_times_ten = 1000000/serialSpd;  // symbol period is Tbit*10
-  uint16_t nominalFrameTime_times_ten = (34+90)*Tbit_times_ten;  // 34 header bit length, 9 = # payload bytes + checksum.
-  int16_t timeoutCount = LIN_TIMEOUT_IN_FRAMES * nominalFrameTime_times_ten;  // comes to 12916us
+  uint16_t Tbit = 1000000/serialSpd;  // Tbit
+  // header 34 bits = 13 break, 1 delimin, 10 sync, 10 addr
+  uint16_t nominalFrameTime = (34+90)*Tbit;  // 10bits/byte * 9 (payload bytes + checksum)
+  int16_t timeoutCount = nominalFrameTime * LIN_TIMEOUT_IN_FRAMES;
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte
   serial.write(idByte);  // ID byte

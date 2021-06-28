@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define LIN_SERIAL            HardwareSerial
 #define LIN_BREAK_DURATION    15    // Number of bits in the break.
-#define LIN_TIMEOUT_IN_FRAMES 2     // Wait this many max frame times before declaring a read timeout.
+#define LIN_TIMEOUT_IN_FRAMES 1     // Wait this many max frame times before declaring a read timeout.
 
 class Lin
 {
