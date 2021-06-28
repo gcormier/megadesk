@@ -92,14 +92,14 @@ void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes)
   serial.flush();
 }
 
-// read serial or wait until timeoutCount hits zero.
-int Lin::read_withtimeout(int16_t &timeoutCount)
+// read serial or wait until countDown hits zero.
+int Lin::read_withtimeout(int16_t &countDown)
 {
   while(!serial.available())
   {
     delayMicroseconds(100);
-    timeoutCount-= 100;
-    if (timeoutCount<=0) return -1;
+    countDown-= 100;
+    if (countDown<=0) return -1;
   }
   return serial.read();
 }
@@ -117,29 +117,29 @@ uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
   uint16_t Tbit = 1000000/serialSpd;  // Tbit
   // header 34 bits = 13 break, 1 delimin, 10 sync, 10 addr
   uint16_t nominalFrameTime = (34+90)*Tbit;  // 10bits/byte * 9 (payload bytes + checksum)
-  int16_t timeoutCount = nominalFrameTime * LIN_TIMEOUT_IN_FRAMES;
+  int16_t countDown = nominalFrameTime * LIN_TIMEOUT_IN_FRAMES;
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte
   serial.write(idByte);  // ID byte
   serial.flush();
   bytesRcvd = 0xfd;
   do { // I hear myself
-    readByte = read_withtimeout(timeoutCount);
+    readByte = read_withtimeout(countDown);
   } while(readByte != 0x55 && readByte != -1);
   bytesRcvd = 0xfe;
   do {
-    readByte = read_withtimeout(timeoutCount);
+    readByte = read_withtimeout(countDown);
   } while(readByte != idByte && readByte != -1);
   bytesRcvd = 0;
   // This while loop strategy does not take into account the added time for the logic.  So the actual timeout will be slightly longer then written here.
   for (uint8_t i=0;i<nBytes;i++)
   {
-    readByte = read_withtimeout(timeoutCount);
+    readByte = read_withtimeout(countDown);
     message[i] = readByte;
     if (readByte == -1) goto done;
     bytesRcvd++;
   }
-  readByte = read_withtimeout(timeoutCount);
+  readByte = read_withtimeout(countDown);
   bytesRcvd++;
   if (dataChecksum(message,nBytes,idByte) == readByte) bytesRcvd = 0xff;
 

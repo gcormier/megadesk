@@ -182,7 +182,7 @@ void startFresh()
   memoryEvent = false;
 }
 
-// use a class initializer to disable the watchdog well before setup() is called
+// use a class constructor to disable the watchdog well before setup() is called
 softReset::softReset()
 {
     MCUSR = 0;

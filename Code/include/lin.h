@@ -41,7 +41,7 @@ protected:
   static uint8_t dataChecksum(const uint8_t* message, char nBytes,uint16_t start=0);
   static uint8_t addrParity(uint8_t addr);
 
-  int read_withtimeout(int16_t &timeoutCount);
+  int read_withtimeout(int16_t &countDown);
   void serialBreak(void);
 
 public:
