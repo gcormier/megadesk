@@ -31,10 +31,17 @@ Lin::Lin(LIN_SERIAL& ser,uint8_t TxPin)
 {
 }
 
+// define bit period without () so that integer calculations can be more accurate
+#define TBIT 1000000UL/serialSpd
 void Lin::begin(int speed)
 {
   serialSpd = speed;
   serial.begin(serialSpd);
+
+  // header 34 bits = 13 break, 1 delimin, 10 sync, 10 addr
+  nominalFrameTime = (34+90)*TBIT;  // 10bits/byte * 9 (payload bytes + checksum)
+  breakTime = LIN_BREAK_DURATION*TBIT; // 780us break time
+  delimitTime = TBIT;  // 52us for bit period
 
   pinMode(txPin, OUTPUT);
 }
@@ -45,17 +52,11 @@ void Lin::serialBreak(void)
 {
   serial.end();
 
-  uint16_t brkend = (1000000UL/serialSpd); // comes to 52us for bit period
-  uint16_t brkbegin = brkend*LIN_BREAK_DURATION; // 780us break time
-  
   digitalWrite(txPin, LOW);  // Send BREAK
-  if (brkbegin > 16383) delay(brkbegin/1000);  // delayMicroseconds unreliable above 16383 see arduino man pages
-  else delayMicroseconds(brkbegin);
-  
-  digitalWrite(txPin, HIGH);  // BREAK delimiter
+  delayMicroseconds(breakTime);
 
-  if (brkend > 16383) delay(brkend/1000);  // delayMicroseconds unreliable above 16383 see arduino man pages
-  else delayMicroseconds(brkend);
+  digitalWrite(txPin, HIGH);  // BREAK delimiter
+  delayMicroseconds(delimitTime);
 
   serial.begin(serialSpd);
 }
@@ -114,9 +115,6 @@ uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
   uint8_t bytesRcvd=0;
   int16_t readByte;
   uint8_t idByte = (addr&0x3f) | addrParity(addr);
-  uint16_t Tbit = 1000000/serialSpd;  // Tbit
-  // header 34 bits = 13 break, 1 delimin, 10 sync, 10 addr
-  uint16_t nominalFrameTime = (34+90)*Tbit;  // 10bits/byte * 9 (payload bytes + checksum)
   int16_t countDown = nominalFrameTime * LIN_TIMEOUT_IN_FRAMES;
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte

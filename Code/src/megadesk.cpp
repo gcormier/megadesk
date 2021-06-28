@@ -182,7 +182,7 @@ void startFresh()
   memoryEvent = false;
 }
 
-// use a class constructor to disable the watchdog well before setup() is called
+// use a constructor to disable the watchdog well before setup() is called
 softReset::softReset()
 {
     MCUSR = 0;
@@ -255,8 +255,7 @@ void setup()
   lin.begin(19200);
   beep(NOTE_G6);
 #ifdef DEBUGSTARTUP
-  writeSerial(1000000/19200,
-            2*(34+90)*1000000/19200, 0xaa);
+  writeSerial(1000000/19200, (34+90)*1000000/19200, 0xaa);
 #endif
 
   linInit();
@@ -390,7 +389,7 @@ int readdigits()
       // non-digit we're done, return what we have
       return digits;
     }
-    // it's a digit, "append"
+    // it's a digit, add with base10 shift
     digits = 10*digits + (r-0x30);
     // keep reading...
   }
@@ -758,28 +757,25 @@ void linBurst()
   static byte cmd[3] = {0, 0, 0};
   static State lastState = State::OFF;
 
-  // ensure accurate timing from this point
-  refTime = micros();
-
   // Send PID 17
   lin.send(17, empty, 3);
 
-  delayUntil(6);
+  delayUntil(5);
   // Recv from PID 09
   lin.recv(9, node_b, 3);
 
-  delayUntil(6);
+  delayUntil(5);
   // Recv from PID 08
   lin.recv(8, node_a, 3);
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
-    delayUntil(6);
+    delayUntil(5);
     lin.send(16, 0, 0);
   }
 
-  delayUntil(6);
+  delayUntil(5);
   // Send PID 1
   lin.send(1, 0, 0);
 
@@ -842,7 +838,7 @@ void linBurst()
 
   cmd[0] = enc_target & 0xFF;
   cmd[1] = enc_target >> 8;
-  delayUntil(6);
+  delayUntil(5);
   lin.send(18, cmd, 3);
 
   switch (state)

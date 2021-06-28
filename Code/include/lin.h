@@ -36,6 +36,9 @@ protected:
   LIN_SERIAL& serial;
   uint8_t txPin;               //  what pin # is used to transmit (needed to generate the BREAK signal)
   int     serialSpd;           //  in bits/sec. Also called baud rate
+  uint16_t nominalFrameTime;
+  uint16_t breakTime;
+  uint8_t  delimitTime;
 
   // For Lin 1.X "start" should = 0, for Lin 2.X "start" should be the addr byte. 
   static uint8_t dataChecksum(const uint8_t* message, char nBytes,uint16_t start=0);
