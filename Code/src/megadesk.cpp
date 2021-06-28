@@ -4,6 +4,9 @@
 // option to include immediate user-feedback pips
 #define FEEDBACK
 
+// experimental smaller linInit
+#define SMALL_INIT
+
 // Uncomment this define if you want serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
@@ -761,22 +764,22 @@ void linBurst()
   // Send PID 17
   lin.send(17, empty, 3);
 
-  delayUntil(5);
+  delayUntil(6);
   // Recv from PID 09
   lin.recv(9, node_b, 3);
 
-  delayUntil(5);
+  delayUntil(6);
   // Recv from PID 08
   lin.recv(8, node_a, 3);
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
-    delayUntil(5);
+    delayUntil(6);
     lin.send(16, 0, 0);
   }
 
-  delayUntil(5);
+  delayUntil(6);
   // Send PID 1
   lin.send(1, 0, 0);
 
@@ -839,7 +842,7 @@ void linBurst()
 
   cmd[0] = enc_target & 0xFF;
   cmd[1] = enc_target >> 8;
-  delayUntil(5);
+  delayUntil(6);
   lin.send(18, cmd, 3);
 
   switch (state)
@@ -1058,15 +1061,14 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 #ifdef DEBUGSTARTUP
   writeSerial(a2, a3, a4, a1);
 #endif
-  delayUntil(10);
+  delayUntil(10); // long frames need more time
   lin.send(60, packet, 8);
-  delay(3);
 }
 
 byte recvInitPacket()
 {
   static byte resp[8];
-  delayUntil(10);
+  delayUntil(10); // long frames need more time
 #ifdef DEBUGSTARTUP
   uint8_t chars= lin.recv(61, resp, 8);
   if ((chars !=0) && (chars <0xF0))
@@ -1081,7 +1083,6 @@ byte recvInitPacket()
 #endif
 }
 
-#define SMALL_INIT
 #ifdef SMALL_INIT
 
 #define SEQUENCE_LENGTH 21
@@ -1150,8 +1151,7 @@ void linInit()
     }
   }
 
-  delay(15);
-
+  delayUntil(15);
   lin.send(18, magicPacket, 3);
 
   delay(5);
@@ -1248,8 +1248,7 @@ void linInit()
   sendInitPacket(208, 2, 7, 0);
   recvInitPacket();
 
-  delay(15);
-
+  delayUntil(15);
   lin.send(18, magicPacket, 3);
 
   delay(5);
