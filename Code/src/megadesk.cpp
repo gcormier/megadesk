@@ -10,13 +10,15 @@
 // Uncomment this define if you want serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
-#define HUMANSERIAL
+//#define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
-#define SERIALECHO
+//#define SERIALECHO
 // Report errors over serial
 #define SERIALERRORS
-// raw debug of packets sent during init over serial - turn off HUMANSERIAL & use hexlify
-//#define DEBUGSTARTUP
+
+// raw debug of packets sent during init over serial.
+// turn off HUMANSERIAL,SERIALECHO & use hexlify
+#define DEBUGSTARTUP
 
 // easter egg
 #define EASTER
@@ -1020,7 +1022,7 @@ void delayUntil(uint16_t milliSeconds)
 }
 
 // simple, limited tone generation - leaner than tone()
-// but sound will break up if servicing interrupts.
+// but sound will break up if servicing interrupts (receiving serial).
 // freq is in Hz. duration is in ms. (max 1048ms)
 void playTone(uint16_t freq, uint16_t duration) {
   uint16_t halfperiod = 500000L / freq; // in us.
@@ -1124,13 +1126,13 @@ void linInit()
   refTime = micros();
   for (uint8_t i=0; i<SEQUENCE_LENGTH; i++) {
     if ((i==REPEAT1) || (i==REPEAT2)) {
-      while (true)
-      //while (initA < 8)
+      while (initA < 8)
       {
         initA++;
         sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
         if (recvInitPacket() > 0) break;
       }
+      if (initA >= 8) initFailures++;
     } else if (i==REPEAT3) {
       while (initA < 8)
       {
@@ -1151,7 +1153,13 @@ void linInit()
   lin.send(18, magicPacket, 3);
 
   delay(5);
-  if (initFailures) softReset::Reset();
+  if (initFailures) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    // report lateness (us) and requested delay (ms)
+    writeSerial(response_error, 0, initFailures, '*');
+#endif
+    softReset::Reset();
+  }
 }
 
 #else
