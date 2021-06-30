@@ -1,13 +1,20 @@
-# 38400
-# 00 nothing received or bad cksum
-# FD - not seeing own 0x55 on wire
-# FE - not seeing own id on wire
+# used monitor speed 115200 to minimize the delays of slower baudrates
+# in case that makes a difference for the init-sequence-timing
 
+      
+D0 02 00 07 FF    FE 00 00 00 00
+^                 ^
+4/8 bytes sent    4/8 bytes received
+      00                00 (null bytes not transmitted)
+                     05 00 05 05 when theres some error code
+                 <00 05 00 05 05> no response - delete these so its easier to read
+                 <FD 05 00 05 05> not seeing own 0x55 on wire. bus is hosed?
+                 <FE 05 00 05 05> not seeing own id on wire
+                 <FF 05 00 05 05> checksum problem!
 
-# 115200
 # FD immediately - not seeing own 0x55/id on wire
-FF 07 00 FF FF   FD 05 00 05
-05 FF 07 00 FF FF FD 05 00 05 05 FF 01 00 07 FF FD 05 00
+FF 07 00 FF FF   FD 05 00 05 05 
+FF 07 00 FF FF FD 05 00 05 05 FF 01 00 07 FF FD 05 00
  | 05 05 D0 02 00 07 FF FD 05 00 05 05 00 02 00 07
  | FF FD 05 00 05 05 00 06 00 09 00 FD 05 00 05 05
  | 00 06 00 0C 00 FD 05 00 05 05 00 06 00 0D 00 FD
@@ -15,7 +22,7 @@ FF 07 00 FF FF   FD 05 00 05
 
 
 
-# Reference! never a 'FD'
+# Reference boot! never a 'FD'
 # original lininit @ 115200 & desk powercycle
 FF 07 00 FF FF    
 FF 07 00 FF FF    
@@ -894,3 +901,133 @@ D0 01 00 07 00
 D0 02 00 07 00  
 21 45 10 10 19 
 3E 2B 05 D0 00 3E 3D 05 D0 00 
+
+
+deliberately kept 1 leg (right) disconnected:
+3E 34 19 3A AA 
+FF 07 00 FF FF  
+FF 07 00 FF FF  
+FF 01 00 07 FF  
+D0 02 00 07 FF FF 00 00 00 00 
+00 02 00 07 FF  
+01 02 00 07 FF  
+02 02 00 07 FF  
+03 02 00 07 FF  
+04 02 00 07 FF  
+05 02 00 07 FF  
+06 02 00 07 FF FF 00 00 00 00 
+06 06 00 09 00 09 01 00 FF FF 
+06 06 00 0C 00 0C 1A 00 FF FF 
+06 06 00 0D 00 0D 99 00 FF FF 
+06 06 00 0A 00 0A 00 00 FF FF 
+06 06 00 0B 00 0B 8C 00 FF FF 
+06 04 00 00 00 FF 00 00 00 00 
+07 02 00 00 00  
+08 02 00 00 00  
+08 06 00 09 00  
+08 06 00 0C 00  
+08 06 00 0D 00  
+08 06 00 0A 00  
+08 06 00 0B 00  
+08 04 00 01 00  
+D0 01 00 07 00  
+D0 02 00 07 00  
+2A 45 00 00 01 
+<reboot>
+3E 34 19 3A AA 
+FF 07 00 FF FF  
+FF 07 00 FF FF  
+FF 01 00 07 FF  
+D0 02 00 07 FF FF 00 00 00 00 
+00 02 00 07 FF  
+01 02 00 07 FF  
+02 02 00 07 FF  
+03 02 00 07 FF  
+04 02 00 07 FF FF 00 00 00 00 
+04 06 00 09 00 09 01 00 FF FF 
+04 06 00 0C 00 0C 1A 00 FF FF 
+04 06 00 0D 00 0D 99 00 FF FF 
+04 06 00 0A 00 0A 00 00 FF FF 
+04 06 00 0B 00 0B 8C 00 FF FF 
+04 04 00 00 00 FF 00 00 00 00 
+05 02 00 00 00  
+06 02 00 00 00  
+07 02 00 00 00  
+08 02 00 00 00  
+08 06 00 09 00  
+08 06 00 0C 00  
+08 06 00 0D 00  
+08 06 00 0A 00  
+08 06 00 0B 00  
+08 04 00 01 00  
+D0 01 00 07 00  
+D0 02 00 07 00  
+2A 45 00 00 01 
+<reboot>
+3E 34 19 3A AA 
+FF 07 00 FF FF  
+FF 07 00 FF FF  
+FF 01 00 07 FF  
+D0 02 00 07 FF FF 00 00 00 00 
+00 02 00 07 FF  
+01 02 00 07 FF  
+02 02 00 07 FF  
+03 02 00 07 FF  
+04 02 00 07 FF  
+05 02 00 07 FF FF 00 00 00 00 
+05 06 00 09 00 09 01 00 FF FF 
+05 06 00 0C 00 0C 1A 00 FF FF 
+05 06 00 0D 00 0D 99 00 FF FF 
+05 06 00 0A 00 0A 00 00 FF FF 
+05 06 00 0B 00 0B 8C 00 FF FF 
+05 04 00 00 00 FF 00 00 00 00 
+06 02 00 00 00  
+07 02 00 00 00  
+08 02 00 00 00  
+08 06 00 09 00  
+08 06 00 0C 00  
+08 06 00 0D 00  
+08 06 00 0A 00  
+08 06 00 0B 00  
+08 04 00 01 00  
+D0 01 00 07 00  
+D0 02 00 07 00  
+2A 45 00 00 01 
+
+
+new encoding:
+<sent>          <received>
+----no_bytes-----  9 = 8+checksum
+V               V 
+   -- bytes--      -- bytes-- 
+   v  v  v  v      v  v  v  v
+04 FF 07 FF FF  00 05 05 05 05 
+04 FF 07 FF FF  00 05 05 05 05 
+04 FF 01 07 FF  00 05 05 05 05 
+04 D0 02 07 FF  09 FF 00 00 00 
+04 00 02 07 FF  00 05 05 05 05 
+04 01 02 07 FF  00 05 05 05 05 
+04 02 02 07 FF  00 05 05 05 05 
+04 03 02 07 FF  00 05 05 05 05 
+04 04 02 07 FF  00 05 05 05 05 
+04 05 02 07 FF  09 FF 00 00 00 
+04 05 06 09 00  09 09 01 FF FF 
+04 05 06 0C 00  09 0C 1A FF FF 
+04 05 06 0D 00  09 0D 99 FF FF 
+04 05 06 0A 00  09 0A 00 FF FF 
+04 05 06 0B 00  09 0B 8C FF FF 
+04 05 04 00 00  09 FF 00 00 00 
+04 06 02 00 00  00 05 05 05 05 
+04 07 02 00 00  09 FF 00 00 00 
+04 07 06 09 00  09 09 01 FF FF 
+04 07 06 0C 00  09 0C 1A FF FF 
+04 07 06 0D 00  09 0D 99 FF FF 
+04 07 06 0A 00  09 0A 00 FF FF 
+04 07 06 0B 00  09 0B 8C FF FF 
+04 07 04 01 00  09 FF 01 00 00 
+04 08 02 01 00  00 05 05 05 05 
+04 D0 01 07 00  00 05 05 05 05 
+04 D0 02 07 00  00 05 05 05 05 
+21 45 10 18 19      !E 0x1018,20 
+3E 2B 16 C5 00      >+ 0x16C5,0
+3E 3D 16 C5 00      >= 0x16C5,0

@@ -244,7 +244,6 @@ void setup()
   }
 
 #ifdef SERIALCOMMS
-  //Serial1.begin(19200);
   Serial1.begin(115200);
 #endif
 
@@ -257,6 +256,7 @@ void setup()
   lin.begin(19200);
   beep(NOTE_G6);
 #ifdef DEBUGSTARTUP
+  // output bit period and recv-timeout times.
   writeSerial(1000000/19200, (34+90)*1000000/19200, 0xaa);
 #endif
 
@@ -1057,7 +1057,7 @@ void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
   packet[2] = a3;
   packet[3] = a4;
 #ifdef DEBUGSTARTUP
-  writeSerial(a2, a3, a4, a1);
+  writeSerial(a1, (a2<<8)+a3, a4, 8);
 #endif
   delayUntil(10); // long frames need more time
   lin.send(60, packet, 8);
@@ -1070,9 +1070,9 @@ byte recvInitPacket()
 #ifdef DEBUGSTARTUP
   uint8_t chars= lin.recv(61, resp, 8);
   if ((chars !=0) && (chars <0xF0))
-    writeSerial(resp[1], resp[2], resp[3], resp[0]);
+    writeSerial(resp[0], (resp[1]<<8) + resp[2], resp[3], chars);
   else
-    writeSerial(5, 5, 5, chars);
+    writeSerial(5, (5<<8)+5, 5, chars);
   if (chars == 0xfd) //softReset::Reset();
     initFailures++;
   return chars;
@@ -1090,7 +1090,6 @@ const byte init_seq[SEQUENCE_LENGTH][4] = {
   {255, 1, 7, 255}, //2 (no resp)
   {208, 2, 7, 255}, //3
 #define REPEAT1 4
-// ivanwick  V
   {0, 2, 7, 255}, //4 REPEAT1 until resp >0
   {0, 6, 9, 0}, //5
   {0, 6, 12, 0}, //6
@@ -1109,7 +1108,6 @@ const byte init_seq[SEQUENCE_LENGTH][4] = {
 #define REPEAT3 18
   {0, 2, 1, 0}, //18 REPEAT8 while seq <8 (no resp)
 
-// ivanwick   V
   {208, 1, 7, 0}, //19 (no resp)
   {208, 2, 7, 0}, //20 (no resp)
 };
