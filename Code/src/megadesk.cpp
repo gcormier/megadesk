@@ -7,7 +7,10 @@
 // experimental smaller linInit
 #define SMALL_INIT
 
-// Uncomment this define if you want serial control/telemetry
+// enable reset via button-press and/or bad linInit
+#define ENABLERESET
+
+// Serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
 #define HUMANSERIAL
@@ -34,7 +37,9 @@
 #define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
 #define MIN_SLOT         2  // 1 is possible but cant save without serial
-#define FORCE_RESET      5  // reset tests
+#ifdef ENABLERESET
+#define FORCE_RESET      5  // force reset - once tested move to 10?
+#endif
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
 #define RECALIBRATE      14 // nothing is stored there
@@ -184,12 +189,12 @@ void startFresh()
   memoryEvent = false;
 }
 
+#ifdef ENABLERESET
 // use a constructor to disable the watchdog well before setup() is called
 softReset::softReset()
 {
     MCUSR = 0;
     wdt_disable();
-    return;
 }
 softReset soft;
 
@@ -199,7 +204,7 @@ inline void softReset::Reset() {
   // avoid wdt_reset() with this loop
   for(;;) {}
 }
-
+#endif
 
 
 void setup()
@@ -629,8 +634,10 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
 void loop()
 {
   readButtons();
+#ifdef ENABLERESET
   if (memoryEvent && (pushCount == FORCE_RESET))
     softReset::Reset();
+#endif
 
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delayUntil(25);
@@ -711,7 +718,7 @@ void loop()
   else if (manualMove == Command::UP)
   {
     memoryMoving = false;
-    // max() allows escape from recalibration
+    // max() allows escape from recalibration (below DANGER_MIN_HEIGHT)
     targetHeight = max(currentHeight + HYSTERESIS + 1, DANGER_MIN_HEIGHT);
   }
   else if (manualMove == Command::DOWN)
@@ -1023,7 +1030,7 @@ void delayUntil(uint16_t milliSeconds)
 }
 
 // simple, limited tone generation - leaner than tone()
-// but sound will break up if servicing interrupts (receiving serial).
+// but sound will break up if servicing interrupts (like receiving serial).
 // freq is in Hz. duration is in ms. (max 1048ms)
 void playTone(uint16_t freq, uint16_t duration) {
   uint16_t halfperiod = 500000L / freq; // in us.
@@ -1074,7 +1081,7 @@ byte recvInitPacket()
     writeSerial(resp[0], (resp[1]<<8) + resp[2], resp[3], chars);
   else
     writeSerial(5, (5<<8)+5, 5, chars);
-  if (chars == 0xfd) //softReset::Reset();
+  if (chars == 0xfd)
     initFailures++;
   return chars;
 #else
@@ -1154,10 +1161,12 @@ void linInit()
   delay(5);
   if (initFailures) {
 #if (defined SERIALCOMMS && defined SERIALERRORS)
-    // report lateness (us) and requested delay (ms)
-    writeSerial(response_error, 0, initFailures, '*');
+    // report boot failure. and how many legs failed (initFailures)
+    writeSerial(response_error, 0, initFailures, bootfailMarker);
 #endif
+#ifdef ENABLERESET
     softReset::Reset();
+#endif
   }
 }
 

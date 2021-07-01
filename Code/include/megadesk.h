@@ -54,6 +54,7 @@ const char command_tone      = 'T';
 // responses only..
 const char txMarker          = '>'; // default start marker from desk (Tx)
 const char lateMarker        = '!'; // when reporting delayUntil was late
+const char bootfailMarker    = '*'; // when linInit fails to communicate
 const char response_error    = 'E'; // indicates an error
 const char response_calibration = 'X'; // indicates calibration is starting
 
