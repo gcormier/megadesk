@@ -1,7 +1,5 @@
 #pragma once
 
-byte empty[] = {0, 0, 0};
-
 enum class State : byte
 {
   OFF,
@@ -32,6 +30,8 @@ enum class Button : byte
   BOTH,
 };
 
+// class to reset via watchdog timer,
+// then disable watchdog again during init
 class softReset {
   public:
     softReset();
@@ -39,20 +39,21 @@ class softReset {
 };
 
 // serial markers and operations
-const char rxMarker = '<'; // start marker for comms coming to desk (Rx)
-const char command_increase = '+';
-const char command_decrease = '-';
-const char command_absolute = '=';
-const char command_save      = 'S';
-const char command_save_down = 's';
-const char command_load      = 'L';
-const char command_load_down = 'l';
+const char rxMarker          = '<'; // start marker for comms coming to desk (Rx)
+const char command_increase  = '+';
+const char command_decrease  = '-';
+const char command_absolute  = '=';
+const char command_save      = 'S'; // up-button slots
+const char command_save_down = 's'; // down-button slots
+const char command_load      = 'L'; // up-button slots
+const char command_load_down = 'l'; // down-button slots
 const char command_write     = 'W';
 const char command_read      = 'R';
-const char command_current   = 'C';
+const char command_current   = 'C'; // report current height
 const char command_tone      = 'T';
 // responses only..
-const char txMarker = '>'; // default start marker from desk (Tx)
+const char txMarker          = '>'; // default start marker from desk (Tx)
+const char lateMarker        = '!'; // when reporting delayUntil was late
 const char response_error    = 'E'; // indicates an error
 const char response_calibration = 'X'; // indicates calibration is starting
 

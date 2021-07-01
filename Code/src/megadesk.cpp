@@ -10,15 +10,15 @@
 // Uncomment this define if you want serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
-//#define HUMANSERIAL
+#define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
-//#define SERIALECHO
+#define SERIALECHO
 // Report errors over serial
 #define SERIALERRORS
 
 // raw debug of packets sent during init over serial.
 // turn off HUMANSERIAL,SERIALECHO & use hexlify
-#define DEBUGSTARTUP
+//#define DEBUGSTARTUP
 
 // easter egg
 #define EASTER
@@ -754,9 +754,10 @@ void loop()
 
 void linBurst()
 {
+  static byte empty[3] = {0, 0, 0};
+  static byte cmd[3] = {0, 0, 0};
   static byte node_a[4] = {0, 0, 0, 0};
   static byte node_b[4] = {0, 0, 0, 0};
-  static byte cmd[3] = {0, 0, 0};
   static State lastState = State::OFF;
 
   // Send PID 17
@@ -1002,7 +1003,7 @@ void delayUntil(uint16_t milliSeconds)
     // >1s - long delay - target time is in the past!
 #if (defined SERIALCOMMS && defined SERIALERRORS)
     // report lateness (us) and requested delay (ms)
-    writeSerial(response_error, (-micro_delay), milliSeconds, '!');
+    writeSerial(response_error, (-micro_delay), milliSeconds, lateMarker);
 #endif
     // reset refTime and return
     refTime = micros();
