@@ -4,7 +4,13 @@
 // option to include immediate user-feedback pips
 #define FEEDBACK
 
-// Uncomment this define if you want serial control/telemetry
+// experimental smaller linInit
+#define SMALL_INIT
+
+// enable reset via button-press and/or bad linInit
+#define ENABLERESET
+
+// Serial control/telemetry
 #define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
 #define HUMANSERIAL
@@ -13,12 +19,17 @@
 // Report errors over serial
 #define SERIALERRORS
 
+// raw debug of packets sent during init over serial.
+// turn off HUMANSERIAL,SERIALECHO & use hexlify
+//#define DEBUGSTARTUP
+
 // easter egg
 #define EASTER
 
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
+#include <avr/wdt.h>
 
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means slots 0-255)
@@ -26,6 +37,9 @@
 #define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
 #define MIN_SLOT         2  // 1 is possible but cant save without serial
+#ifdef ENABLERESET
+#define FORCE_RESET      5  // force reset - once tested move to 10?
+#endif
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
 #define RECALIBRATE      14 // nothing is stored there
@@ -151,6 +165,20 @@ State state = State::OFF; // desk-protocol state
 #define MOTOR_DOWN user_cmd = Command::DOWN
 #define MOTOR_OFF  user_cmd = Command::NONE
 
+#ifdef EASTER
+#define EIGHTH 131
+const uint16_t tones[] = {
+  NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
+  NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
+  NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
+  NOTE_A6, EIGHTH*8,
+  NOTE_F6, EIGHTH, SILENCE, EIGHTH,
+  NOTE_F6, EIGHTH*2,
+  NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
+  NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
+  NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
+#endif
+
 // clean the slate for button presses
 void startFresh()
 {
@@ -161,13 +189,30 @@ void startFresh()
   memoryEvent = false;
 }
 
+#ifdef ENABLERESET
+// use a constructor to disable the watchdog well before setup() is called
+softReset::softReset()
+{
+    MCUSR = 0;
+    wdt_disable();
+}
+softReset soft;
+
+// watchdog software-reset method.
+inline void softReset::Reset() {
+  wdt_enable( WDTO_30MS );
+  // avoid wdt_reset() with this loop
+  for(;;) {}
+}
+#endif
+
+
 void setup()
 {
   bool up_press = false;
   pinMode(PIN_UP, INPUT_PULLUP);
   pinMode(PIN_DOWN, INPUT_PULLUP);
   pinMode(PIN_BEEP, OUTPUT);
-
   delay(SHORT_PAUSE);
 
   // hold up button on boot to toggle both/single Button Mode
@@ -204,7 +249,7 @@ void setup()
   }
 
 #ifdef SERIALCOMMS
-  Serial1.begin(19200);
+  Serial1.begin(115200);
 #endif
 
   // init + arpeggio
@@ -215,6 +260,10 @@ void setup()
 
   lin.begin(19200);
   beep(NOTE_G6);
+#ifdef DEBUGSTARTUP
+  // output bit period and recv-timeout times.
+  writeSerial(1000000/19200, (34+90)*1000000/19200, 0xaa);
+#endif
 
   linInit();
 
@@ -279,17 +328,6 @@ void readButtons()
 #ifdef EASTER
           if ((buttons == Button::BOTH) && (pushLength > CLICK_LONG)) {
             // 10s hold. unused trigger, play the easter-egg
-          #define EIGHTH 131
-            uint16_t tones[] = {
-              NOTE_C6, EIGHTH*2, NOTE_C7, EIGHTH*8,
-              NOTE_B6, EIGHTH, NOTE_C7, EIGHTH,
-              NOTE_B6, EIGHTH, NOTE_G6, EIGHTH,
-              NOTE_A6, EIGHTH*8,
-              NOTE_F6, EIGHTH, SILENCE, EIGHTH,
-              NOTE_F6, EIGHTH*2,
-              NOTE_F6, EIGHTH, NOTE_E6, EIGHTH,
-              NOTE_D6, EIGHTH, NOTE_E6, EIGHTH,
-              NOTE_C6, EIGHTH, SILENCE, EIGHTH, };
             for (uint16_t i=0; i < sizeof(tones)/sizeof(tones[0]); i+=2) {
               playTone(tones[i], tones[i+1]);
             }
@@ -353,12 +391,12 @@ int digits=0;
 int readdigits()
 {
   int r;
-  while ((r = Serial1.read()) != -1) {
+  while ((r = Serial1.read()) > 0) {
     if ((r < 0x30) || (r > 0x39)) {
       // non-digit we're done, return what we have
       return digits;
     }
-    // it's a digit, "append"
+    // it's a digit, add with base10 shift
     digits = 10*digits + (r-0x30);
     // keep reading...
   }
@@ -595,13 +633,19 @@ void parseData(byte command, uint16_t position, uint8_t push_addr)
 
 void loop()
 {
+  readButtons();
+#ifdef ENABLERESET
+  if (memoryEvent && (pushCount == FORCE_RESET))
+    softReset::Reset();
+#endif
 
+  // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
+  delayUntil(25);
   linBurst();
 
-  // If we are in recalibrate mode or have a bad currentHeight, don't take any input.
+  // If we are in recalibrate mode or have a bad currentHeight, don't act on input.
   if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
-    delayUntil(25);
     return;
   }
 
@@ -620,8 +664,6 @@ void loop()
 
   recvData();
 #endif
-
-  readButtons();
 
   if (memoryEvent)
   {
@@ -676,7 +718,7 @@ void loop()
   else if (manualMove == Command::UP)
   {
     memoryMoving = false;
-    // max() allows escape from recalibration
+    // max() allows escape from recalibration (below DANGER_MIN_HEIGHT)
     targetHeight = max(currentHeight + HYSTERESIS + 1, DANGER_MIN_HEIGHT);
   }
   else if (manualMove == Command::DOWN)
@@ -715,42 +757,37 @@ void loop()
     memoryMoving = false;
   }
 
-  // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
-  delayUntil(25);
 }
 
 void linBurst()
 {
-  byte node_a[4] = {0, 0, 0, 0};
-  byte node_b[4] = {0, 0, 0, 0};
-  byte cmd[3] = {0, 0, 0};
+  static byte empty[3] = {0, 0, 0};
+  static byte cmd[3] = {0, 0, 0};
+  static byte node_a[4] = {0, 0, 0, 0};
+  static byte node_b[4] = {0, 0, 0, 0};
   static State lastState = State::OFF;
 
-  // ensure accurate timing from this point
-  refTime = micros();
-
   // Send PID 17
-  lin.send(17, empty, 3, 2);
-  delayUntil(5);
+  lin.send(17, empty, 3);
 
+  delayUntil(5);
   // Recv from PID 09
-  lin.recv(9, node_b, 3, 2);
-  delayUntil(5);
+  lin.recv(9, node_b, 3);
 
-  // Recv from PID 08
-  lin.recv(8, node_a, 3, 2);
   delayUntil(5);
+  // Recv from PID 08
+  lin.recv(8, node_a, 3);
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
-    lin.send(16, 0, 0, 2);
     delayUntil(5);
+    lin.send(16, 0, 0);
   }
 
-  // Send PID 1
-  lin.send(1, 0, 0, 2);
   delayUntil(5);
+  // Send PID 1
+  lin.send(1, 0, 0);
 
   uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
@@ -811,7 +848,8 @@ void linBurst()
 
   cmd[0] = enc_target & 0xFF;
   cmd[1] = enc_target >> 8;
-  lin.send(18, cmd, 3, 2);
+  delayUntil(5);
+  lin.send(18, cmd, 3);
 
   switch (state)
   {
@@ -962,14 +1000,18 @@ uint16_t loadMemory(uint8_t memorySlot)
 
 // accurate delay from the last time delayUntil() returned.
 // for precise periodic timing
-void delayUntil(unsigned long microSeconds)
+void delayUntil(uint16_t milliSeconds)
 {
-  unsigned long target = refTime + (1000 * microSeconds);
+  unsigned long target = refTime + (1000 * milliSeconds);
   unsigned long micro_delay = target - micros();
 
   if (micro_delay > 1000000)
   {
-    // crazy long delay - target time is in the past!
+    // >1s - long delay - target time is in the past!
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    // report lateness (us) and requested delay (ms)
+    writeSerial(response_error, (-micro_delay), milliSeconds, lateMarker);
+#endif
     // reset refTime and return
     refTime = micros();
     return;
@@ -988,13 +1030,13 @@ void delayUntil(unsigned long microSeconds)
 }
 
 // simple, limited tone generation - leaner than tone()
-// but sound will break up if servicing interrupts.
+// but sound will break up if servicing interrupts (like receiving serial).
 // freq is in Hz. duration is in ms. (max 1048ms)
 void playTone(uint16_t freq, uint16_t duration) {
   uint16_t halfperiod = 500000L / freq; // in us.
   // mostly equivalent to:
   // for (long i = 0; i < duration * 1000L; i += halfperiod * 2) {
-  for ( duration = (62 * duration) / (halfperiod / 8); duration > 0; duration -= 1 ) {
+  for ( duration = (62 * duration) / (halfperiod/8); duration > 0; duration-- ) {
     digitalWrite(PIN_BEEP, HIGH);
     delayMicroseconds(halfperiod - PITCH_ADJUST);
     digitalWrite(PIN_BEEP, LOW);
@@ -1013,119 +1055,217 @@ void beep(uint16_t freq, uint8_t count)
   }
 }
 
+uint8_t initFailures = 0;
+
 void sendInitPacket(byte a1, byte a2, byte a3, byte a4)
 {
-  byte packet[8] = {a1, a2, a3, a4, 255, 255, 255, 255};
-
-  // Custom checksum formula for the initialization
-  int chksum = a1 + a2 + a3 + a4;
-  chksum = chksum % 255;
-  chksum = 255 - chksum;
-
-  lin.send(60, packet, 8, 2, chksum);
-  delay(3);
+  static byte packet[8] = {0, 0, 0, 0, 255, 255, 255, 255};
+  packet[0] = a1;
+  packet[1] = a2;
+  packet[2] = a3;
+  packet[3] = a4;
+#ifdef DEBUGSTARTUP
+  writeSerial(a1, (a2<<8)+a3, a4, 8);
+#endif
+  delayUntil(10); // long frames need more time
+  lin.send(60, packet, 8);
 }
+
+byte recvInitPacket()
+{
+  static byte resp[8];
+  delayUntil(10); // long frames need more time
+#ifdef DEBUGSTARTUP
+  uint8_t chars= lin.recv(61, resp, 8);
+  if ((chars !=0) && (chars <0xF0))
+    writeSerial(resp[0], (resp[1]<<8) + resp[2], resp[3], chars);
+  else
+    writeSerial(5, (5<<8)+5, 5, chars);
+  if (chars == 0xfd)
+    initFailures++;
+  return chars;
+#else
+  return lin.recv(61, resp, 8);
+#endif
+}
+
+#ifdef SMALL_INIT
+
+#define SEQUENCE_LENGTH 21
+const byte init_seq[SEQUENCE_LENGTH][4] = {
+  {255, 7, 255, 255}, //0 (no resp)
+  {255, 7, 255, 255}, //1 (no resp)
+  {255, 1, 7, 255}, //2 (no resp)
+  {208, 2, 7, 255}, //3
+#define REPEAT1 4
+  {0, 2, 7, 255}, //4 REPEAT1 until resp >0
+  {0, 6, 9, 0}, //5
+  {0, 6, 12, 0}, //6
+  {0, 6, 13, 0}, //7
+  {0, 6, 10, 0}, //8
+  {0, 6, 11, 0}, //9
+  {0, 4, 0, 0}, //10
+#define REPEAT2 11
+  {0, 2, 0, 0}, //11 REPEAT2 until resp>0
+  {0, 6, 9, 0}, //12
+  {0, 6, 12, 0}, //13
+  {0, 6, 13, 0}, //14
+  {0, 6, 10, 0}, //15
+  {0, 6, 11, 0}, //16
+  {0, 4, 1, 0}, //17
+#define REPEAT3 18
+  {0, 2, 1, 0}, //18 REPEAT8 while seq <8 (no resp)
+
+  {208, 1, 7, 0}, //19 (no resp)
+  {208, 2, 7, 0}, //20 (no resp)
+};
 
 void linInit()
 {
+  static const byte magicPacket[3] = {246, 255, 191};
+  // Really weird startup sequence, sourced from the controller.
+
+  // Brief stabilization delay
+  delay(250);
+  int8_t initA = -1;
+
+  refTime = micros();
+  for (uint8_t i=0; i<SEQUENCE_LENGTH; i++) {
+    if ((i==REPEAT1) || (i==REPEAT2)) {
+      while (initA < 8)
+      {
+        initA++;
+        sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+        if (recvInitPacket() > 0) break;
+      }
+      if (initA >= 8) initFailures++;
+    } else if (i==REPEAT3) {
+      while (initA < 8)
+      {
+        initA++;
+        sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+        recvInitPacket(); // no response expected
+      }
+    } else {
+      if (init_seq[i][0])
+        sendInitPacket(init_seq[i][0], init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+      else
+        sendInitPacket(initA, init_seq[i][1], init_seq[i][2], init_seq[i][3]);
+      recvInitPacket();
+    }
+  }
+
+  delayUntil(15);
+  lin.send(18, magicPacket, 3);
+
+  delay(5);
+  if (initFailures) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    // report boot failure. and how many legs failed (initFailures)
+    writeSerial(response_error, 0, initFailures, bootfailMarker);
+#endif
+#ifdef ENABLERESET
+    softReset::Reset();
+#endif
+  }
+}
+
+#else
+void linInit()
+{
   // Really weird startup sequenced, sourced from the controller.
-  byte resp[8];
+  static const byte magicPacket[3] = {246, 255, 191};
 
   // Brief stabilization delay
   delay(150);
+  refTime = micros();
 
   sendInitPacket(255, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(255, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(255, 1, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(208, 2, 7);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   uint8_t initA = 0;
   while (true)
   {
     sendInitPacket(initA, 2, 7);
-    if (recvInitPacket(resp) > 0)
+    if (recvInitPacket() > 0)
       break;
     initA++;
   }
 
   sendInitPacket(initA, 6, 9, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 12, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 13, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 10, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 6, 11, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initA, 4, 0, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   byte initB = initA + 1;
   while (true)
   {
     sendInitPacket(initB, 2, 0, 0);
-    if (recvInitPacket(resp) > 0)
+    if (recvInitPacket() > 0)
       break;
     initB++;
   }
 
   sendInitPacket(initB, 6, 9, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 12, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 13, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 10, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 6, 11, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(initB, 4, 1, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   uint8_t initC = initB + 1;
   while (initC < 8)
   {
     sendInitPacket(initC, 2, 1, 0);
-    recvInitPacket(resp);
+    recvInitPacket();
     initC++;
   }
 
   sendInitPacket(208, 1, 7, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
   sendInitPacket(208, 2, 7, 0);
-  recvInitPacket(resp);
+  recvInitPacket();
 
-  delay(15);
-
-  byte magicPacket[3] = {246, 255, 191};
-  lin.send(18, magicPacket, 3, 2);
+  delayUntil(15);
+  lin.send(18, magicPacket, 3);
 
   delay(5);
 }
-
-byte recvInitPacket(byte array[])
-{
-  return lin.recv(61, array, 8, 2);
-}
+#endif
 
 void initAndReadEEPROM(bool force)
 {
@@ -1133,17 +1273,21 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    for (unsigned int index = 0; index < EEPROM.length(); index++)
-      EEPROM.write(index, 0);
+    // use 8bit wraparound as exit-condition
+    for (uint8_t index = 2; index != 0; index++) {
+      eepromPut16(index,0);
+      // 2nd half of eeprom could be a back-up of the 1st half...
+      // then swap/copy between the two (for different users? backups?)
+    }
     // Store signature value
     eepromPut16(EEPROM_SIG_SLOT, MAGIC_SIG);
 
   }
 #ifdef MINMAX
-  // reset max/min height
+  // retrieve max/min height
   minHeight = eepromGet16(MIN_HEIGHT_SLOT);
   maxHeight = eepromGet16(MAX_HEIGHT_SLOT);
-  // check if 0 and fix/beep ...
+  // check if invalid and fix/beep ...
   if (minHeight == 0) toggleMinHeight();
   if (maxHeight == 0) toggleMaxHeight();
 #endif

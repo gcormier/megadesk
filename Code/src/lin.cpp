@@ -31,40 +31,34 @@ Lin::Lin(LIN_SERIAL& ser,uint8_t TxPin)
 {
 }
 
+// define bit period without () so that integer calculations can be more accurate
+#define TBIT 1000000UL/serialSpd
 void Lin::begin(int speed)
 {
   serialSpd = speed;
   serial.begin(serialSpd);
-  serialOn  = 1;
 
-  unsigned long int Tbit = 100000/serialSpd;  // Not quite in uSec, I'm saving an extra 10 to change a 1.4 (40%) to 14 below...
-  unsigned long int nominalFrameTime = ((34*Tbit)+90*Tbit);  // 90 = 10*max # payload bytes + checksum (9). 
-  timeout = LIN_TIMEOUT_IN_FRAMES * 14 * nominalFrameTime;  // 14 is the specced addtl 40% space above normal*10 -- the extra 10 is just pulled out of the 1000000 needed to convert to uSec (so that there are no decimal #s).
+  // header 34 bits = 13 break, 1 delimin, 10 sync, 10 addr
+  nominalFrameTime = (34+90)*TBIT;  // 10bits/byte * 9 (payload bytes + checksum)
+  breakTime = LIN_BREAK_DURATION*TBIT; // 780us break time
+  delimitTime = TBIT;  // 52us for bit period
+
   pinMode(txPin, OUTPUT);
 }
+
 
 // Generate a BREAK signal (a low signal for longer than a byte) across the serial line
 void Lin::serialBreak(void)
 {
-  if (serialOn) {
-    serial.flush();
-    serial.end();
-  }
+  serial.end();
 
-  
   digitalWrite(txPin, LOW);  // Send BREAK
-  const unsigned long int brkend = (1000000UL/((unsigned long int)serialSpd));
-  const unsigned long int brkbegin = brkend*LIN_BREAK_DURATION;
-  if (brkbegin > 16383) delay(brkbegin/1000);  // delayMicroseconds unreliable above 16383 see arduino man pages
-  else delayMicroseconds(brkbegin);
-  
-  digitalWrite(txPin, HIGH);  // BREAK delimiter
+  delayMicroseconds(breakTime);
 
-  if (brkend > 16383) delay(brkend/1000);  // delayMicroseconds unreliable above 16383 see arduino man pages
-  else delayMicroseconds(brkend);
+  digitalWrite(txPin, HIGH);  // BREAK delimiter
+  delayMicroseconds(delimitTime);
 
   serial.begin(serialSpd);
-  serialOn = 1;
 }
 
 /* Lin defines its checksum as an inverted 8 bit sum with carry */
@@ -78,7 +72,7 @@ uint8_t Lin::dataChecksum(const uint8_t* message, char nBytes,uint16_t sum)
 }
 
 /* Create the Lin ID parity */
-#define BIT(data,shift) ((addr&(1<<shift))>>shift)
+#define BIT(data,shift) ((addr>>shift)&1)
 uint8_t Lin::addrParity(uint8_t addr)
 {
   uint8_t p0 = BIT(addr,0) ^ BIT(addr,1) ^ BIT(addr,2) ^ BIT(addr,4);
@@ -86,11 +80,11 @@ uint8_t Lin::addrParity(uint8_t addr)
   return (p0 | (p1<<1))<<6;
 }
 
-void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t proto, int16_t cksum)
+void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes)
 {
   uint8_t addrbyte = (addr & 0x3f) | addrParity(addr);
-  if (cksum == -1)
-    cksum = dataChecksum(message,nBytes,(proto==1) ? 0:addrbyte);
+  // LIN diagnostic (60) frame shall always use CHKSUM of protocol version 1.x.
+  uint8_t cksum = dataChecksum(message,nBytes,(addr == 0x3c) ? 0: addrbyte);
   serialBreak();       // Generate the low signal that exceeds 1 char.
   serial.write(0x55);  // Sync byte
   serial.write(addrbyte);  // ID byte
@@ -99,41 +93,53 @@ void Lin::send(uint8_t addr, const uint8_t* message, uint8_t nBytes, uint8_t pro
   serial.flush();
 }
 
-uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes,uint8_t proto)
+// read serial or wait until countDown hits zero.
+int Lin::read_withtimeout(int16_t &countDown)
+{
+  while(!serial.available())
+  {
+    delayMicroseconds(100);
+    countDown-= 100;
+    if (countDown<=0) return -1;
+  }
+  return serial.read();
+}
+
+// returns character read or:
+// returns 0xfd if serial isn't echoing
+// returns 0xfe if serial echoed only the sync - a fluke?
+// returns 0xff for checksum error
+// returns 0 if no characters.
+uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
-  unsigned int timeoutCount=0;
-  serialBreak();       // Generate the low signal that exceeds 1 char.
-  serial.flush();
-  serial.write(0x55);  // Sync byte
+  int16_t readByte;
   uint8_t idByte = (addr&0x3f) | addrParity(addr);
+  int16_t countDown = nominalFrameTime * LIN_TIMEOUT_IN_FRAMES;
+  serialBreak();       // Generate the low signal that exceeds 1 char.
+  serial.write(0x55);  // Sync byte
   serial.write(idByte);  // ID byte
+  serial.flush();
   bytesRcvd = 0xfd;
   do { // I hear myself
-    while(!serial.available()) { delayMicroseconds(100); timeoutCount+= 100; if (timeoutCount>=timeout) goto done; }
-  } while(serial.read() != 0x55);
+    readByte = read_withtimeout(countDown);
+  } while(readByte != 0x55 && readByte != -1);
   bytesRcvd = 0xfe;
   do {
-    while(!serial.available()) { delayMicroseconds(100); timeoutCount+= 100; if (timeoutCount>=timeout) goto done; }
-  } while(serial.read() != idByte);
-
-
+    readByte = read_withtimeout(countDown);
+  } while(readByte != idByte && readByte != -1);
   bytesRcvd = 0;
+  // This while loop strategy does not take into account the added time for the logic.  So the actual timeout will be slightly longer then written here.
   for (uint8_t i=0;i<nBytes;i++)
   {
-    // This while loop strategy does not take into account the added time for the logic.  So the actual timeout will be slightly longer then written here.
-    while(!serial.available()) { delayMicroseconds(100); timeoutCount+= 100; if (timeoutCount>=timeout) goto done; } 
-    message[i] = serial.read();
+    readByte = read_withtimeout(countDown);
+    message[i] = readByte;
+    if (readByte == -1) goto done;
     bytesRcvd++;
   }
-  while(!serial.available()) { delayMicroseconds(100); timeoutCount+= 100; if (timeoutCount>=timeout) goto done; }
-  if (serial.available())
-  {
-    uint8_t cksum = serial.read();
-    bytesRcvd++;
-    if (proto==1) idByte = 0;  // Don't cksum the ID byte in LIN 1.x
-    if (dataChecksum(message,nBytes,idByte) == cksum) bytesRcvd = 0xff;
-  }
+  readByte = read_withtimeout(countDown);
+  bytesRcvd++;
+  if (dataChecksum(message,nBytes,idByte) == readByte) bytesRcvd = 0xff;
 
 done:
   serial.flush();
