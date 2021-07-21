@@ -5,7 +5,10 @@ Do you wish your IKEA Bekant had memory buttons? I sure did. So I made megadesk.
 
 <img  src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png"  width=25%/> <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>
 
-## August 2021 - Megaupdate
+# For sale on Tindie - Plug and Play!
+I've setup a store on Tindie for those who wish to order a ready to go, plug and play version. It comes with a fully assembled PCB as well as the cable you will need to connect it. No soldering or assembly required! <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+
+## July 21, 2021 - Megaupdate
 We've had a lot of contributions lately from @philwmcdonald and @tagno25 which have really upped the features available on megadesk! They've been in the development branch for a while, but have now been merged to the master branch!
 
 Functions can be accessed/toggled/programmed with "memory" positions that are always above position 10, as it's unlikely someone needs 10 memory positions. 
@@ -46,8 +49,7 @@ Code improvements to detect bad/unhandled states with the motors and attemp to r
 
 ### General Improvements
 Huge optimization of code size by @philwmcdonald which has enabled us to include these features and make room for more. Some changes to audio tones.
-# For sale on Tindie - Plug and Play!
-I've setup a store on Tindie for those who wish to order a ready to go, plug and play version. It comes with a fully assembled PCB as well as the cable you will need to connect it. No soldering or assembly required! <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
+
 
 # Disassembly of the existing control unit
 I now have a <a href="https://www.youtube.com/watch?v=jCPlM2KYwDQ">video with a few tips</a> on disassembling the IKEA Bekant controller and installing megadesk. Due to popular request, I now have a <a href="https://www.youtube.com/watch?v=qiOev3miDo8">second video with live surgery</a> of a brand new, unopened control unit.
