@@ -38,7 +38,7 @@
 #define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
 #define MIN_SLOT         2  // 1 is possible but cant save without serial
 #ifdef ENABLERESET
-#define FORCE_RESET      5  // force reset - once tested move to 10?
+#define FORCE_RESET      10  // force reset - once tested move to 10?
 #endif
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
