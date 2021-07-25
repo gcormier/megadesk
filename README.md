@@ -16,6 +16,12 @@ Memory position 14.
 
 The factory recalibration routine has been implemented. The original BEKANT controller is no longer needed to recalibrate motors. **This will cause the desk to move to the lowest possible extremity. Please exercise caution and be prepared to unplug the power if needed.** Any interruption to this procedure requires a power-cycle.
 
+### Reset
+Memory position 15.
+
+Reboot megadesk controller without power-cycling. On success, plays a full fanfare. On failure, repeatedly plays partial fanfare until communications succeed with both legs/motors.
+
+
 ### Serial control 
 Disabled by default in codebase/firmwares.
 
@@ -78,6 +84,7 @@ Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode
 | 11        | Set the lowest/minimum height to current position, or, reset back to default (toggles) | Single low beep
 | 12        | Set the highest/maximum height to current position, or, reset back to default (toggles) | Single low beep
 | 14        | Recalibration procedure, desk will lower down to the lowest limits | (Will begin moving)
+| 15        | Reset | Fanfare
 | 16        | Units before Feb 2021 - toggle different variants. Newer units, no operation
 | 18        | Toggle audio-feedback mode
 | 18        | Toggle both-button mode
