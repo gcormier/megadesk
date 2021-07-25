@@ -778,7 +778,7 @@ uint8_t linBurst()
   // Recv from PID 09
 #ifdef DEBUG_ENCODER
   uint8_t chars = lin.recv(9, node_b, 3);
-  if (chars != 4) // && (chars <0xF0))
+  if (chars != 4)
     writeSerial(node_b[1], (node_b[0]<<8) + node_b[2], 1, chars);
 #else
   lin.recv(9, node_b, 3);
@@ -788,7 +788,7 @@ uint8_t linBurst()
   // Recv from PID 08
 #ifdef DEBUG_ENCODER
   chars = lin.recv(8, node_a, 3);
-  if (chars != 4) // && (chars <0xF0))
+  if (chars != 4)
     writeSerial(node_a[1], (node_a[0]<<8) + node_a[2], 0, chars);
 #else
   lin.recv(8, node_a, 3);
@@ -811,7 +811,7 @@ uint8_t linBurst()
   currentHeight = enc_a;
 #ifdef DEBUG_ENCODER
   if (((enc_a>enc_b) && (enc_a-enc_b>20)) ||
-      ((enc_b>enc_a) && (enc_b-enc_a>20 )))
+      ((enc_b>enc_a) && (enc_b-enc_a>20)))
     writeSerial(node_a[1], (node_a[0]<<8) + node_b[1], node_b[0], 0xAA);
 #endif
 
