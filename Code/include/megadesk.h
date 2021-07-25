@@ -55,6 +55,7 @@ const char command_tone      = 'T';
 const char txMarker          = '>'; // default start marker from desk (Tx)
 const char lateMarker        = '!'; // when reporting delayUntil was late
 const char bootfailMarker    = '*'; // when linInit fails to communicate
+const char response_idle     = 'i'; // indicates the type of idle packet
 const char response_error    = 'E'; // indicates an error
 const char response_calibration = 'X'; // indicates calibration is starting
 
@@ -64,7 +65,7 @@ void beep(uint16_t freq, byte count=1);
 void delayUntil(uint16_t milliSeconds);
 
 void linInit();
-void linBurst();
+uint8_t linBurst();
 
 void sendInitPacket(byte a1 = 255, byte a2 = 255, byte a3 = 255, byte a4 = 255);
 byte recvInitPacket(byte array[]);

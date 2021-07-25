@@ -139,7 +139,7 @@ uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
   }
   readByte = read_withtimeout(countDown);
   bytesRcvd++;
-  if (dataChecksum(message,nBytes,idByte) == readByte) bytesRcvd = 0xff;
+  if (dataChecksum(message,nBytes,(addr == 0x3d) ? 0: idByte) != readByte) bytesRcvd = 0xff;
 
 done:
   serial.flush();

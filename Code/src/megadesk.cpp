@@ -19,9 +19,14 @@
 // Report errors over serial
 #define SERIALERRORS
 
-// raw debug of packets sent during init over serial.
-// turn off HUMANSERIAL,SERIALECHO & use hexlify
+// Report the variant (idle) type on move
+//#define SERIAL_IDLE
+
+// raw data. turn off HUMANSERIAL,SERIALECHO & use hexlify..
+// Debug of packets sent during init over serial.
 //#define DEBUGSTARTUP
+// Debug of encoder values in linBurst.
+//#define DEBUG_ENCODER
 
 // easter egg
 #define EASTER
@@ -37,12 +42,12 @@
 #define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
 #define MIN_SLOT         2  // 1 is possible but cant save without serial
-#ifdef ENABLERESET
-#define FORCE_RESET      5  // force reset - once tested move to 10?
-#endif
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
 #define RECALIBRATE      14 // nothing is stored there
+#ifdef ENABLERESET
+#define FORCE_RESET      15  // force reset
+#endif
 #define RESERVED_VARIANT 16 // reserved - deliberately empty
 #define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
 #define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
@@ -641,7 +646,7 @@ void loop()
 
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delayUntil(25);
-  linBurst();
+  uint8_t drift = linBurst(); // drift is difference between enc_a and enc_b
 
   // If we are in recalibrate mode or have a bad currentHeight, don't act on input.
   if (state >= State::STARTING_RECAL || currentHeight <= 5)
@@ -658,10 +663,9 @@ void loop()
     else {
       writeSerial(command_decrease, oldHeight-currentHeight);
     }
-    writeSerial(command_absolute, currentHeight);
+    writeSerial(command_absolute, currentHeight, drift);
     oldHeight = currentHeight;
   }
-
   recvData();
 #endif
 
@@ -759,7 +763,7 @@ void loop()
 
 }
 
-void linBurst()
+uint8_t linBurst()
 {
   static byte empty[3] = {0, 0, 0};
   static byte cmd[3] = {0, 0, 0};
@@ -772,11 +776,23 @@ void linBurst()
 
   delayUntil(5);
   // Recv from PID 09
+#ifdef DEBUG_ENCODER
+  uint8_t chars = lin.recv(9, node_b, 3);
+  if (chars != 4)
+    writeSerial(node_b[1], (node_b[0]<<8) + node_b[2], 1, chars);
+#else
   lin.recv(9, node_b, 3);
+#endif
 
   delayUntil(5);
   // Recv from PID 08
+#ifdef DEBUG_ENCODER
+  chars = lin.recv(8, node_a, 3);
+  if (chars != 4)
+    writeSerial(node_a[1], (node_a[0]<<8) + node_a[2], 0, chars);
+#else
   lin.recv(8, node_a, 3);
+#endif
 
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
@@ -793,6 +809,11 @@ void linBurst()
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
   uint16_t enc_target = enc_a;
   currentHeight = enc_a;
+#ifdef DEBUG_ENCODER
+  if (((enc_a>enc_b) && (enc_a-enc_b>20)) ||
+      ((enc_b>enc_a) && (enc_b-enc_a>20)))
+    writeSerial(node_a[1], (node_a[0]<<8) + node_b[1], node_b[0], 0xAA);
+#endif
 
   // Send PID 18
   switch (state)
@@ -861,6 +882,9 @@ void linBurst()
         if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
         {
           state = State::STARTING;
+#if (defined SERIALCOMMS && defined SERIAL_IDLE)
+          writeSerial(response_idle, 0, node_a[2]); // Indicate the idle variant type
+#endif
         }
       }
     }
@@ -925,6 +949,7 @@ void linBurst()
     state = State::OFF;
     break;
   }
+  return ((enc_b>enc_a)?enc_b-enc_a:enc_a-enc_b);
 }
 
 // lean EEPROM functions to get/put 16bit values
