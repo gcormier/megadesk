@@ -11,7 +11,7 @@
 #define ENABLERESET
 
 // Serial control/telemetry
-#define SERIALCOMMS
+//#define SERIALCOMMS
 // Transmit/receive ascii commands over serial for human interface/control.
 #define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
@@ -646,8 +646,11 @@ void loop()
 
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delayUntil(25);
-  uint8_t drift = linBurst(); // drift is difference between enc_a and enc_b
-
+  #ifdef SERIALCOMMS
+   uint8_t drift = linBurst(); // drift is difference between enc_a and enc_b
+  #else
+    linBurst();
+  #endif
   // If we are in recalibrate mode or have a bad currentHeight, don't act on input.
   if (state >= State::STARTING_RECAL || currentHeight <= 5)
   {
