@@ -105,16 +105,16 @@ uint16_t oldHeight = 0; // previously reported height
 #define FINE_MOVEMENT_VALUE 100 // Based on protocol decoding
 
 // LIN commands/status
-#define LIN_CMD_IDLE 252
-#define LIN_CMD_RAISE 134
-#define LIN_CMD_LOWER 133
-#define LIN_CMD_FINE 135
-#define LIN_CMD_FINISH 132
-#define LIN_CMD_PREMOVE 196
-#define LIN_CMD_RECALIBRATE 189
+#define LIN_CMD_IDLE            252
+#define LIN_CMD_RAISE           134
+#define LIN_CMD_LOWER           133
+#define LIN_CMD_FINE            135
+#define LIN_CMD_FINISH          132
+#define LIN_CMD_PREMOVE         196
+#define LIN_CMD_RECALIBRATE     189
 #define LIN_CMD_RECALIBRATE_END 188
-#define LIN_MOTOR_BUSY 2
-#define LIN_MOTOR_BUSY_FINE 3
+#define LIN_MOTOR_BUSY          2
+#define LIN_MOTOR_BUSY_FINE     3
 
 // These are the 3 known idle states
 #define LIN_MOTOR_IDLE1 0
