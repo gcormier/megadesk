@@ -39,68 +39,68 @@
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means slots 0-255)
 // EEPROM magic signature to detect if eeprom is valid
-#define EEPROM_SIG_SLOT  0
-#define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
-#define MIN_SLOT         2  // 1 is possible but cant save without serial
+#define EEPROM_SIG_SLOT   0
+#define MAGIC_SIG         0x120d // bytes: 13, 18 in little endian order
+#define MIN_SLOT          2  // 1 is possible but cant save without serial
 #ifdef ENABLERESET
-#define FORCE_RESET      15  // force reset
+#define FORCE_RESET       15  // force reset
 #endif
-#define MIN_HEIGHT_SLOT  11
-#define MAX_HEIGHT_SLOT  12
-#define RECALIBRATE      14 // nothing is stored there
-#define RESERVED_VARIANT 16 // reserved - deliberately empty
-#define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
-#define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
-#define DOWN_SLOT_START  32 // 0x20 offset for down button slots
+#define MIN_HEIGHT_SLOT   11
+#define MAX_HEIGHT_SLOT   12
+#define RECALIBRATE       14 // nothing is stored there
+#define RESERVED_VARIANT  16 // reserved - deliberately empty
+#define FEEDBACK_SLOT     17 // short tones on every button-press. buzz on no-ops
+#define BOTHBUTTON_SLOT   18 // store whether bothbuttons is enabled
+#define DOWN_SLOT_START   32 // 0x20 offset for down button slots
 
 #ifdef SERIALCOMMS
 uint16_t oldHeight = 0; // previously reported height
 #endif
 
-#define HYSTERESIS 137
-#define PIN_UP 10
-#define PIN_DOWN 9
-#define PIN_BEEP 7
-#define PIN_SERIAL 1
+#define HYSTERESIS    137
+#define PIN_UP        10
+#define PIN_DOWN      9
+#define PIN_BEEP      7
+#define PIN_SERIAL    1
 
 // click durations
 #define CLICK_TIMEOUT   400UL // Timeout in MS. for long-hold and release idle.
 #define CLICK_LONG    10000UL // very-long holdtime in MS.
 
 // beeps
-#define PIP_DURATION 20
-#define SHORT_PAUSE 50
-#define BEEP_DURATION 150
+#define PIP_DURATION      20
+#define SHORT_PAUSE       50
+#define BEEP_DURATION     150
+#define LONG_PAUSE        500
+#define ONE_SEC_PAUSE     1000
 #define PAUSE BEEP_DURATION
-#define LONG_PAUSE 500
-#define ONE_SEC_PAUSE 1000
 #define PITCH_ADJUST (48000000 / F_CPU) // digitalWrite takes ~6us at 8MHz
 
 // notes to beep
-#define SILENCE 20
-#define NOTE_A4 440
-#define NOTE_C6 1046
-#define NOTE_CSHARP6 1109
-#define NOTE_D6 1175
-#define NOTE_DSHARP6 1245
-#define NOTE_E6 1319
-#define NOTE_F6 1397
-#define NOTE_G6 1568
-#define NOTE_A6 1760
-#define NOTE_B6 1976
-#define NOTE_C7 2093
-#define NOTE_CSHARP7 2217
-#define NOTE_D7 2344
-#define NOTE_DSHARP7 2489
-#define NOTE_E7 2637
-#define NOTE_F7 2794
-#define NOTE_G7 3136
-#define NOTE_A7 3520
-#define NOTE_B7 3951
-#define NOTE_C8 4186
-#define NOTE_LOW NOTE_C6
-#define NOTE_ACK NOTE_G6
-#define NOTE_HIGH NOTE_C7
+#define SILENCE         20
+#define NOTE_A4         440
+#define NOTE_C6         1046
+#define NOTE_CSHARP6    1109
+#define NOTE_D6         1175
+#define NOTE_DSHARP6    1245
+#define NOTE_E6         1319
+#define NOTE_F6         1397
+#define NOTE_G6         1568
+#define NOTE_A6         1760
+#define NOTE_B6         1976
+#define NOTE_C7         2093
+#define NOTE_CSHARP7    2217
+#define NOTE_D7         2344
+#define NOTE_DSHARP7    2489
+#define NOTE_E7         2637
+#define NOTE_F7         2794
+#define NOTE_G7         3136
+#define NOTE_A7         3520
+#define NOTE_B7         3951
+#define NOTE_C8         4186
+#define NOTE_LOW        NOTE_C6
+#define NOTE_ACK        NOTE_G6
+#define NOTE_HIGH       NOTE_C7
 
 #define FINE_MOVEMENT_VALUE 100 // Based on protocol decoding
 
