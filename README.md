@@ -19,7 +19,6 @@ Memory position 14.
 
 The factory recalibration routine has been implemented. The original BEKANT controller is no longer needed to recalibrate motors. **This will cause the desk to move to the lowest possible extremity. Please exercise caution and be prepared to unplug the power if needed.** Any interruption to this procedure requires a power-cycle.
 
-<<<<<<< HEAD
 ### Reset
 Memory position 15.
 
@@ -31,8 +30,6 @@ Disabled by default in codebase/firmwares.
 
 Enables serial input/output for what the megadesk is doing and to send commands. Some people wanted to have a smart/connected megadesk, but due to the size limitations of the space inside the case, an external module is the best solution. A lot of discussion in PR #12 and PR #58.
 
-=======
->>>>>>> master
 ### Custom MIN/MAX
 Enabled by default, no limits.
 
