@@ -42,12 +42,12 @@
 #define EEPROM_SIG_SLOT  0
 #define MAGIC_SIG    0x120d // bytes: 13, 18 in little endian order
 #define MIN_SLOT         2  // 1 is possible but cant save without serial
+#ifdef ENABLERESET
+#define FORCE_RESET      10  // force reset
+#endif
 #define MIN_HEIGHT_SLOT  11
 #define MAX_HEIGHT_SLOT  12
 #define RECALIBRATE      14 // nothing is stored there
-#ifdef ENABLERESET
-#define FORCE_RESET      15  // force reset
-#endif
 #define RESERVED_VARIANT 16 // reserved - deliberately empty
 #define FEEDBACK_SLOT    17 // short tones on every button-press. buzz on no-ops
 #define BOTHBUTTON_SLOT  18 // store whether bothbuttons is enabled
