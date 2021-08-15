@@ -25,8 +25,6 @@
 // raw data. turn off HUMANSERIAL,SERIALECHO & use hexlify..
 // Debug of packets sent during init over serial.
 //#define DEBUGSTARTUP
-// Debug of encoder values in linBurst.
-//#define DEBUG_ENCODER
 
 // easter egg
 #define EASTER
@@ -770,8 +768,8 @@ uint8_t linBurst()
 {
   static byte empty[3] = {0, 0, 0};
   static byte cmd[3] = {0, 0, 0};
-  static byte node_a[4] = {0, 0, 0, 0};
-  static byte node_b[4] = {0, 0, 0, 0};
+  static byte node_a[3] = {0, 0, 0};
+  static byte node_b[3] = {0, 0, 0};
   static State lastState = State::OFF;
 
   // Send PID 17
@@ -779,24 +777,28 @@ uint8_t linBurst()
 
   delayUntil(5);
   // Recv from PID 09
-#ifdef DEBUG_ENCODER
-  uint8_t chars = lin.recv(9, node_b, 3);
-  if (chars != 4)
-    writeSerial(node_b[1], (node_b[0]<<8) + node_b[2], 1, chars);
-#else
-  lin.recv(9, node_b, 3);
+  uint8_t chars = lin.recv(9, node_b, sizeof(node_b));
+  if (chars != sizeof(node_b)+1) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    writeSerial(response_error, node_b[0] | (node_b[1] << 8), chars, badPID9Marker);
 #endif
-
+#ifdef FEEDBACK
+    playTone(NOTE_A4, PIP_DURATION);
+#endif
+    return 0;
+  }
   delayUntil(5);
   // Recv from PID 08
-#ifdef DEBUG_ENCODER
-  chars = lin.recv(8, node_a, 3);
-  if (chars != 4)
-    writeSerial(node_a[1], (node_a[0]<<8) + node_a[2], 0, chars);
-#else
-  lin.recv(8, node_a, 3);
+  chars = lin.recv(8, node_a, sizeof(node_a));
+  if (chars != sizeof(node_a)+1) {
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+    writeSerial(response_error, node_a[0] | (node_a[1] << 8), chars, badPID8Marker);
 #endif
-
+#ifdef FEEDBACK
+    playTone(NOTE_A4, PIP_DURATION);
+#endif
+    return 0;
+  }
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
@@ -812,10 +814,10 @@ uint8_t linBurst()
   uint16_t enc_b = node_b[0] | (node_b[1] << 8);
   uint16_t enc_target = enc_a;
   currentHeight = enc_a;
-#ifdef DEBUG_ENCODER
-  if (((enc_a>enc_b) && (enc_a-enc_b>20)) ||
-      ((enc_b>enc_a) && (enc_b-enc_a>20)))
-    writeSerial(node_a[1], (node_a[0]<<8) + node_b[1], node_b[0], 0xAA);
+#if (defined SERIALCOMMS && defined SERIALERRORS)
+  // monitor delta between motor positions. report if above 20.
+  if ( min(enc_a-enc_b, enc_b-enc_a) > 20)
+    writeSerial(response_error, enc_a, min(enc_a-enc_b, enc_b-enc_a), DriftMarker);
 #endif
 
   // Send PID 18
