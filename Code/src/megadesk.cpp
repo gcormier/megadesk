@@ -779,11 +779,13 @@ uint8_t linBurst()
   // Recv from PID 09
   uint8_t chars = lin.recv(9, node_b, sizeof(node_b));
   if (chars != sizeof(node_b)+1) {
-#if (defined SERIALCOMMS && defined SERIALERRORS)
+#ifdef SERIALERRORS
+#ifdef SERIALCOMMS
     writeSerial(response_error, node_b[0] | (node_b[1] << 8), chars, badPID9Marker);
 #endif
 #ifdef FEEDBACK
-    playTone(NOTE_A4, PIP_DURATION);
+    if (feedback) playTone(NOTE_A4, PIP_DURATION);
+#endif
 #endif
     return 0;
   }
@@ -791,11 +793,13 @@ uint8_t linBurst()
   // Recv from PID 08
   chars = lin.recv(8, node_a, sizeof(node_a));
   if (chars != sizeof(node_a)+1) {
-#if (defined SERIALCOMMS && defined SERIALERRORS)
+#ifdef SERIALERRORS
+#ifdef SERIALCOMMS
     writeSerial(response_error, node_a[0] | (node_a[1] << 8), chars, badPID8Marker);
 #endif
 #ifdef FEEDBACK
-    playTone(NOTE_A4, PIP_DURATION);
+    if (feedback) playTone(NOTE_A4, PIP_DURATION);
+#endif
 #endif
     return 0;
   }
