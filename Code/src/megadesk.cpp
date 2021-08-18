@@ -645,7 +645,7 @@ void loop()
   // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
   delayUntil(25);
   #ifdef SERIALCOMMS
-   uint8_t drift = linBurst(); // drift is difference between enc_a and enc_b
+   uint8_t drift = linBurst(); // drift is difference between leg encoders
   #else
     linBurst();
   #endif
@@ -778,10 +778,11 @@ uint8_t linBurst()
   delayUntil(5);
   // Recv from PID 09
   uint8_t chars = lin.recv(9, node_b, sizeof(node_b));
+  uint16_t enc_b = node_b[0] | (node_b[1] << 8);
   if (chars != sizeof(node_b)+1) {
 #ifdef SERIALERRORS
 #ifdef SERIALCOMMS
-    writeSerial(response_error, node_b[0] | (node_b[1] << 8), chars, badPID9Marker);
+    writeSerial(response_error, enc_b, chars, badPID9Marker);
 #endif
 #ifdef FEEDBACK
     if (feedback) playTone(NOTE_A4, PIP_DURATION);
@@ -792,10 +793,11 @@ uint8_t linBurst()
   delayUntil(5);
   // Recv from PID 08
   chars = lin.recv(8, node_a, sizeof(node_a));
+  uint16_t enc_a = node_a[0] | (node_a[1] << 8);
   if (chars != sizeof(node_a)+1) {
 #ifdef SERIALERRORS
 #ifdef SERIALCOMMS
-    writeSerial(response_error, node_a[0] | (node_a[1] << 8), chars, badPID8Marker);
+    writeSerial(response_error, enc_a, chars, badPID8Marker);
 #endif
 #ifdef FEEDBACK
     if (feedback) playTone(NOTE_A4, PIP_DURATION);
@@ -803,6 +805,7 @@ uint8_t linBurst()
 #endif
     return 0;
   }
+
   // Send PID 16, 6 times
   for (byte i = 0; i < 6; i++)
   {
@@ -814,15 +817,26 @@ uint8_t linBurst()
   // Send PID 1
   lin.send(1, 0, 0);
 
-  uint16_t enc_a = node_a[0] | (node_a[1] << 8);
-  uint16_t enc_b = node_b[0] | (node_b[1] << 8);
-  uint16_t enc_target = enc_a;
-  currentHeight = enc_a;
-#if (defined SERIALCOMMS && defined SERIALERRORS)
+  uint16_t enc_target = enc_a; //(enc_a+enc_b)/2;
+  uint16_t enc_min = min(enc_a, enc_b);
+  uint16_t enc_max = max(enc_a, enc_b);
+  currentHeight = enc_target;
+
   // monitor delta between motor positions. report if above 20.
-  if ( min(enc_a-enc_b, enc_b-enc_a) > 20)
-    writeSerial(response_error, enc_a, min(enc_a-enc_b, enc_b-enc_a), DriftMarker);
+  if ( enc_max - enc_min > 20) {
+#ifdef SERIALERRORS
+#ifdef SERIALCOMMS
+    writeSerial(response_error, enc_min, enc_max-enc_min, DriftMarker);
 #endif
+#ifdef FEEDBACK
+    // more serious problem? longer tone...
+    if (feedback) playTone(NOTE_A4, SHORT_PAUSE);
+#endif
+#endif
+    // what kind of corrective action can be taken?
+    // change state to STOPPING1?
+  }
+
 
   // Send PID 18
   switch (state)
@@ -837,13 +851,13 @@ uint8_t linBurst()
     break;
 
   case State::UP:
-    enc_target = min(enc_a, enc_b);
+    enc_target = enc_min;
     cmd[2] = LIN_CMD_RAISE;
     lastState = State::UP;
     break;
 
   case State::DOWN:
-    enc_target = max(enc_a, enc_b);
+    enc_target = enc_max;
     cmd[2] = LIN_CMD_LOWER;
     lastState = State::DOWN;
     break;
@@ -852,15 +866,18 @@ uint8_t linBurst()
   case State::STOPPING2:
   case State::STOPPING3:
     if (lastState == State::UP)
-      enc_target = min(enc_a, enc_b) + FINE_MOVEMENT_VALUE;
+      enc_target = enc_min + FINE_MOVEMENT_VALUE;
     else
-      enc_target = min(enc_a, enc_b) - FINE_MOVEMENT_VALUE;
+      enc_target = enc_max - FINE_MOVEMENT_VALUE;
 
     cmd[2] = LIN_CMD_FINE;
     break;
 
   case State::STOPPING4:
-    enc_target = max(enc_a, enc_b);
+    if (lastState == State::UP)
+      enc_target = enc_min;
+    else
+      enc_target = enc_max;
     cmd[2] = LIN_CMD_FINISH;
     break;
 
@@ -881,6 +898,7 @@ uint8_t linBurst()
   delayUntil(5);
   lin.send(18, cmd, 3);
 
+  // update state
   switch (state)
   {
   case State::OFF:
@@ -958,7 +976,7 @@ uint8_t linBurst()
     state = State::OFF;
     break;
   }
-  return ((enc_b>enc_a)?enc_b-enc_a:enc_a-enc_b);
+  return (enc_max - enc_min);
 }
 
 // lean EEPROM functions to get/put 16bit values

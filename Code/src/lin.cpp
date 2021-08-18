@@ -105,11 +105,11 @@ int Lin::read_withtimeout(int16_t &countDown)
   return serial.read();
 }
 
-// returns character read or:
+// returns number of characters read (including checksum) or:
 // returns 0xfd if serial isn't echoing
 // returns 0xfe if serial echoed only the sync - a fluke?
 // returns 0xff for checksum error
-// returns 0 if no characters.
+// returns 0 if no response.
 uint8_t Lin::recv(uint8_t addr, uint8_t* message, uint8_t nBytes)
 {
   uint8_t bytesRcvd=0;
