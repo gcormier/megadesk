@@ -128,8 +128,8 @@ uint16_t oldHeight = 0; // previously reported height
 #define PRESSED(b) (b != Button::NONE)
 // is a memory button?
 #define MEMORY_BUTTON(b) ((b == Button::UP) || ( bothbuttons && (b == Button::DOWN)))
-// is bothbuttons and the down button was used?
-#define ADJUST_DOWN ((bothbuttons) && (lastbutton == Button::DOWN))
+// is bothbuttons enabled and the down button was used?
+#define USED_DOWN ((bothbuttons) && (lastbutton == Button::DOWN))
 
 // Tracking multipress/longpress of buttons
 Button previous = Button::NONE; // previous state of buttons
@@ -687,7 +687,7 @@ void loop()
     }
     else if (pushCount == MAX_HEIGHT_SLOT)
     {
-      if (ADJUST_DOWN) // 12 presses on either button sets corresponding max/min limits
+      if (USED_DOWN) // 12 presses on either button sets corresponding max/min limits
         toggleMinHeight();
       else
         toggleMaxHeight();
@@ -705,7 +705,7 @@ void loop()
 #endif
     else if (savePosition)
     {
-      if (ADJUST_DOWN)
+      if (USED_DOWN)
         pushCount += DOWN_SLOT_START;
       saveMemory(pushCount, currentHeight);
     }
@@ -713,7 +713,7 @@ void loop()
     {
       // load position
       beep(NOTE_LOW, pushCount);
-      if (ADJUST_DOWN)
+      if (USED_DOWN)
         pushCount += DOWN_SLOT_START;
       targetHeight = loadMemory(pushCount);
       memoryMoving = true;
@@ -747,10 +747,18 @@ void loop()
   }
 
   // Turn on motors?
-  if (targetHeight > currentHeight + HYSTERESIS && currentHeight < maxHeight)
-    MOTOR_UP;
-  else if (targetHeight < currentHeight - HYSTERESIS && currentHeight > minHeight)
-    MOTOR_DOWN;
+  if (targetHeight > currentHeight + HYSTERESIS && currentHeight < maxHeight) {
+// #ifdef SERIALCOMMS
+//     writeSerial('^', targetHeight, 0, '^');
+// #endif
+    MOTOR_UP; 
+  }
+  else if (targetHeight < currentHeight - HYSTERESIS && currentHeight > minHeight) {
+// #ifdef SERIALCOMMS
+//     writeSerial('V', targetHeight, 0,'V');
+// #endif
+    MOTOR_DOWN; 
+  }
   else
   {
     // some possibilities:
@@ -767,10 +775,11 @@ void loop()
 uint8_t linBurst()
 {
   static byte empty[3] = {0, 0, 0};
-  static byte cmd[3] = {0, 0, 0};
-  static byte node_a[3] = {0, 0, 0};
-  static byte node_b[3] = {0, 0, 0};
+  static byte cmd[3];
+  byte node_a[3];
+  byte node_b[3];
   static State lastState = State::OFF;
+  byte lin_cmd = LIN_CMD_IDLE;
 
   // Send PID 17
   lin.send(17, empty, 3);
@@ -790,6 +799,7 @@ uint8_t linBurst()
 #endif
     return 0;
   }
+
   delayUntil(5);
   // Recv from PID 08
   chars = lin.recv(8, node_a, sizeof(node_a));
@@ -813,16 +823,12 @@ uint8_t linBurst()
     lin.send(16, 0, 0);
   }
 
-  delayUntil(5);
-  // Send PID 1
-  lin.send(1, 0, 0);
-
   uint16_t enc_target = enc_a; //(enc_a+enc_b)/2;
   uint16_t enc_min = min(enc_a, enc_b);
   uint16_t enc_max = max(enc_a, enc_b);
   currentHeight = enc_target;
 
-  // monitor delta between motor positions. report if above 20.
+  // monitor drift between motor positions. report if above 20.
   if ( enc_max - enc_min > 20) {
 #ifdef SERIALERRORS
 #ifdef SERIALCOMMS
@@ -837,68 +843,11 @@ uint8_t linBurst()
     // change state to STOPPING1?
   }
 
-
-  // Send PID 18
-  switch (state)
-  {
-  case State::OFF:
-    cmd[2] = LIN_CMD_IDLE;
-    break;
-
-  case State::STARTING:
-  case State::STARTING_RECAL:
-    cmd[2] = LIN_CMD_PREMOVE;
-    break;
-
-  case State::UP:
-    enc_target = enc_min;
-    cmd[2] = LIN_CMD_RAISE;
-    lastState = State::UP;
-    break;
-
-  case State::DOWN:
-    enc_target = enc_max;
-    cmd[2] = LIN_CMD_LOWER;
-    lastState = State::DOWN;
-    break;
-
-  case State::STOPPING1:
-  case State::STOPPING2:
-  case State::STOPPING3:
-    if (lastState == State::UP)
-      enc_target = enc_min + FINE_MOVEMENT_VALUE;
-    else
-      enc_target = enc_max - FINE_MOVEMENT_VALUE;
-
-    cmd[2] = LIN_CMD_FINE;
-    break;
-
-  case State::STOPPING4:
-    if (lastState == State::UP)
-      enc_target = enc_min;
-    else
-      enc_target = enc_max;
-    cmd[2] = LIN_CMD_FINISH;
-    break;
-
-  case State::RECAL:
-    // We want to send 0/0/189
-    cmd[2] = LIN_CMD_RECALIBRATE;
-    enc_target = 0; 
-    break;
-  case State::END_RECAL:
-    // We want to send 99/0/188
-    cmd[2] = LIN_CMD_RECALIBRATE_END;
-    enc_target = 99;
-    break;
-  }
-
-  cmd[0] = enc_target & 0xFF;
-  cmd[1] = enc_target >> 8;
   delayUntil(5);
-  lin.send(18, cmd, 3);
+  // Send PID 1
+  lin.send(1, 0, 0);
 
-  // update state
+  // depending on current state, set params for upcoming lin command and update state
   switch (state)
   {
   case State::OFF:
@@ -909,18 +858,19 @@ uint8_t linBurst()
         if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
         {
           state = State::STARTING;
-#if (defined SERIALCOMMS && defined SERIAL_IDLE)
-          writeSerial(response_idle, 0, node_a[2]); // Indicate the idle variant type
-#endif
         }
       }
+#if (defined SERIALCOMMS && defined SERIAL_IDLE)
+      writeSerial(response_idle, node_a[2], node_b[2]); // Indicate the idle variant type
+#endif
     }
     break;
   case State::STARTING:
+    lin_cmd = LIN_CMD_PREMOVE;
     switch (user_cmd)
     {
     case Command::NONE:
-      state = State::OFF;
+      state = State::OFF;  // maybe lin_cmd = LIN_CMD_IDLE;
       break;
     case Command::UP:
       state = State::UP;
@@ -931,27 +881,44 @@ uint8_t linBurst()
     }
     break;
   case State::UP:
-    if (user_cmd != Command::UP || currentHeight >= maxHeight)
+    enc_target = enc_min;
+    lin_cmd = LIN_CMD_RAISE;
+    lastState = State::UP;
+    if (user_cmd != Command::UP || enc_max >= maxHeight)
     {
       state = State::STOPPING1;
     }
     break;
   case State::DOWN:
-    if (user_cmd != Command::DOWN || currentHeight <= minHeight)
+    enc_target = enc_max;
+    lin_cmd = LIN_CMD_LOWER;
+    lastState = State::DOWN;
+    if (user_cmd != Command::DOWN || enc_min <= minHeight)
     {
       state = State::STOPPING1;
     }
     break;
   case State::STOPPING1:
-    state = State::STOPPING2;
-    break;
   case State::STOPPING2:
-    state = State::STOPPING3;
-    break;
   case State::STOPPING3:
-    state = State::STOPPING4;
+    if (lastState == State::UP)
+      enc_target = enc_min + FINE_MOVEMENT_VALUE;
+    else
+      enc_target = enc_max - FINE_MOVEMENT_VALUE;
+    lin_cmd = LIN_CMD_FINE;
+    if (state == State::STOPPING1)
+      state = State::STOPPING2;
+    else if (state == State::STOPPING2)
+      state = State::STOPPING3;
+    else // State::STOPPING3
+      state = State::STOPPING4;
     break;
   case State::STOPPING4:
+    if (lastState == State::UP)
+      enc_target = enc_min;
+    else
+      enc_target = enc_max;
+    lin_cmd = LIN_CMD_FINISH;
     if (node_a[2] == node_b[2])
     {
       if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
@@ -962,20 +929,34 @@ uint8_t linBurst()
     break;
   // recal stuff here
   case State::STARTING_RECAL:
+    lin_cmd = LIN_CMD_PREMOVE;
     state = State::RECAL;
     break;
   case State::RECAL:
-    if (node_a[0] <= 99 && node_a[1] == 0 && node_a[2] == 1 &&
-        node_b[0] <= 99 && node_b[1] == 0 && node_b[2] == 1) // Are both motors reporting 99/0/1? We should be bottomed out at this point.
+    // We want to send 0/0/189
+    enc_target = 0;
+    lin_cmd = LIN_CMD_RECALIBRATE;
+    if (enc_max <= 99 && node_a[2] == 1 && node_b[2] == 1) // Are both motors reporting 99/0/1? We should be bottomed out at this point.
         state = State::END_RECAL;
     break;
   case State::END_RECAL:
+    // We want to send 99/0/188
+    enc_target = 99;
+    lin_cmd = LIN_CMD_RECALIBRATE_END;
     state = State::OFF;
     break;
-  default:
-    state = State::OFF;
-    break;
+  // default: // unused
+  //   state = State::OFF;
+  //   break;
   }
+
+  // lastly send lin command to PID 18
+  cmd[0] = enc_target & 0xFF;
+  cmd[1] = enc_target >> 8;
+  cmd[2] = lin_cmd;
+  delayUntil(5);
+  lin.send(18, cmd, sizeof(cmd));
+
   return (enc_max - enc_min);
 }
 
