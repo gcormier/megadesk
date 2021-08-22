@@ -20,7 +20,10 @@
 #define SERIALERRORS
 
 // Report the variant (idle) type on move
-//#define SERIAL_IDLE
+#define SERIAL_IDLE
+
+// debug requested targetHeight
+#define SERIALHEIGHT
 
 // raw data. turn off HUMANSERIAL,SERIALECHO & use hexlify..
 // Debug of packets sent during init over serial.
@@ -656,7 +659,11 @@ void loop()
   }
 
 #ifdef SERIALCOMMS
+#ifdef SERIALHEIGHT
+  if (oldHeight != currentHeight){
+#else
   if (memoryMoving == false && oldHeight != currentHeight){
+#endif
     // report new location
     if (oldHeight < currentHeight){
       writeSerial(command_increase, currentHeight-oldHeight);
@@ -748,16 +755,16 @@ void loop()
 
   // Turn on motors?
   if (targetHeight > currentHeight + HYSTERESIS && currentHeight < maxHeight) {
-// #ifdef SERIALCOMMS
-//     writeSerial('^', targetHeight, 0, '^');
-// #endif
-    MOTOR_UP; 
+#if (defined SERIALCOMMS && defined SERIALHEIGHT)
+    writeSerial('^', targetHeight);
+#endif
+    MOTOR_UP;
   }
   else if (targetHeight < currentHeight - HYSTERESIS && currentHeight > minHeight) {
-// #ifdef SERIALCOMMS
-//     writeSerial('V', targetHeight, 0,'V');
-// #endif
-    MOTOR_DOWN; 
+#if (defined SERIALCOMMS && defined SERIALHEIGHT)
+    writeSerial('v', targetHeight);
+#endif
+    MOTOR_DOWN;
   }
   else
   {
@@ -853,15 +860,13 @@ uint8_t linBurst()
   case State::OFF:
     if (user_cmd != Command::NONE)
     {
-      if (node_a[2] == node_b[2])
+      if ((node_a[2] == node_b[2]) &&
+          (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3))
       {
-        if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
-        {
-          state = State::STARTING;
-        }
+        state = State::STARTING;
       }
 #if (defined SERIALCOMMS && defined SERIAL_IDLE)
-      writeSerial(response_idle, node_a[2], node_b[2]); // Indicate the idle variant type
+      writeSerial(response_idle, node_a[2], node_b[2], 'o'); // Indicate the idle variant type
 #endif
     }
     break;
@@ -919,13 +924,14 @@ uint8_t linBurst()
     else
       enc_target = enc_max;
     lin_cmd = LIN_CMD_FINISH;
-    if (node_a[2] == node_b[2])
+    if ((node_a[2] == node_b[2]) &&
+        (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3))
     {
-      if (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3)
-      {
-        state = State::OFF;
-      }
+      state = State::OFF;
     }
+#if (defined SERIALCOMMS && defined SERIAL_IDLE)
+      writeSerial(response_idle, node_a[2], node_b[2], 's'); // Indicate the idle variant type
+#endif
     break;
   // recal stuff here
   case State::STARTING_RECAL:
