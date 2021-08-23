@@ -58,7 +58,8 @@
 uint16_t oldHeight = 0; // previously reported height
 #endif
 
-#define HYSTERESIS    137
+#define HYSTERESIS    137    // ignore movement requests < this distance
+#define MOVE_OFFSET   159    // amount to move when moving manually
 #define PIN_UP        10
 #define PIN_DOWN      9
 #define PIN_BEEP      7
@@ -102,8 +103,6 @@ uint16_t oldHeight = 0; // previously reported height
 #define NOTE_LOW        NOTE_C6
 #define NOTE_ACK        NOTE_G6
 #define NOTE_HIGH       NOTE_C7
-
-#define FINE_MOVEMENT_VALUE 100 // Based on protocol decoding
 
 // LIN commands/status
 #define LIN_CMD_IDLE            252
@@ -308,9 +307,16 @@ void readButtons()
       if (buttons != lastbutton)
         startFresh();
 
-      // If already moving and any button is pressed - stop!
-      if ( memoryMoving )
-        targetHeight = currentHeight;
+      // If already moving and any button is pressed - stop smoothly!
+      if ( memoryMoving ) {
+        if (targetHeight > currentHeight )
+          targetHeight = currentHeight + MOVE_OFFSET; // smoother stop
+        else
+          targetHeight = currentHeight - HYSTERESIS;
+#if (defined SERIALCOMMS && defined SERIALHEIGHT)
+        writeSerial('~', targetHeight);
+#endif
+      }
 
       lastPushTime = currentMillis;
       lastbutton = buttons;
@@ -645,8 +651,8 @@ void loop()
     softReset::Reset();
 #endif
 
-  // Wait before next cycle. 150ms on factory controller, 25ms seems fine.
-  delayUntil(25);
+  // Wait before next cycle. 150ms on factory controller, 50ms seems fine.
+  delayUntil(50);
   #ifdef SERIALCOMMS
    uint8_t drift = linBurst(); // drift is difference between leg encoders
   #else
@@ -731,18 +737,13 @@ void loop()
   {
     memoryMoving = false;
     // max() allows escape from recalibration (below DANGER_MIN_HEIGHT)
-    targetHeight = max(currentHeight + HYSTERESIS + 1, DANGER_MIN_HEIGHT);
+    targetHeight = max(currentHeight + MOVE_OFFSET, DANGER_MIN_HEIGHT);
   }
   else if (manualMove == Command::DOWN)
   {
     memoryMoving = false;
     // min() allows descend if beyond DANGER_MAX_HEIGHT
-    targetHeight = min(currentHeight - HYSTERESIS - 1, DANGER_MAX_HEIGHT);
-  }
-  else if (!memoryMoving)
-  {
-    // prevent hunting if overshot target. call it quits if shy.
-    targetHeight = currentHeight;
+    targetHeight = min(currentHeight - MOVE_OFFSET, DANGER_MAX_HEIGHT);
   }
 
   // avoid moving toward an out-of-bounds position
@@ -774,7 +775,6 @@ void loop()
     //   or out of range!
     // so stop
     MOTOR_OFF;
-    memoryMoving = false;
   }
 
 }
@@ -868,6 +868,8 @@ uint8_t linBurst()
 #if (defined SERIALCOMMS && defined SERIAL_IDLE)
       writeSerial(response_idle, node_a[2], node_b[2], 'o'); // Indicate the idle variant type
 #endif
+    } else {
+      memoryMoving = false;
     }
     break;
   case State::STARTING:
@@ -906,10 +908,7 @@ uint8_t linBurst()
   case State::STOPPING1:
   case State::STOPPING2:
   case State::STOPPING3:
-    if (lastState == State::UP)
-      enc_target = enc_min + FINE_MOVEMENT_VALUE;
-    else
-      enc_target = enc_max - FINE_MOVEMENT_VALUE;
+    enc_target = targetHeight; // more accurate stops
     lin_cmd = LIN_CMD_FINE;
     if (state == State::STOPPING1)
       state = State::STOPPING2;
@@ -930,7 +929,7 @@ uint8_t linBurst()
       state = State::OFF;
     }
 #if (defined SERIALCOMMS && defined SERIAL_IDLE)
-      writeSerial(response_idle, node_a[2], node_b[2], 's'); // Indicate the idle variant type
+    writeSerial(response_idle, node_a[2], node_b[2], 's'); // Indicate the idle variant type
 #endif
     break;
   // recal stuff here
@@ -950,6 +949,7 @@ uint8_t linBurst()
     enc_target = 99;
     lin_cmd = LIN_CMD_RECALIBRATE_END;
     state = State::OFF;
+    targetHeight = enc_max; // prevents immediately resuming previous height
     break;
   // default: // unused
   //   state = State::OFF;
