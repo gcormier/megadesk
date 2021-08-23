@@ -779,6 +779,11 @@ void loop()
 
 }
 
+// check if motor is idle
+bool isIdle(byte value) {
+  return (value == LIN_MOTOR_IDLE1 || value == LIN_MOTOR_IDLE2 || value == LIN_MOTOR_IDLE3);
+}
+
 uint8_t linBurst()
 {
   static byte empty[3] = {0, 0, 0};
@@ -860,8 +865,7 @@ uint8_t linBurst()
   case State::OFF:
     if (user_cmd != Command::NONE)
     {
-      if ((node_a[2] == node_b[2]) &&
-          (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3))
+      if (isIdle(node_a[2]) && isIdle(node_b[2]))
       {
         state = State::STARTING;
       }
@@ -923,8 +927,7 @@ uint8_t linBurst()
     else
       enc_target = enc_max;
     lin_cmd = LIN_CMD_FINISH;
-    if ((node_a[2] == node_b[2]) &&
-        (node_a[2] == LIN_MOTOR_IDLE1 || node_a[2] == LIN_MOTOR_IDLE2 || node_a[2] == LIN_MOTOR_IDLE3))
+    if (isIdle(node_a[2]))
     {
       state = State::OFF;
     }
