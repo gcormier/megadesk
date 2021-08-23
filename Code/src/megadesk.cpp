@@ -19,11 +19,11 @@
 // Report errors over serial
 #define SERIALERRORS
 
-// Report the variant (idle) type on move
+// Report the variant (idle) type on move/stop
 #define SERIAL_IDLE
 
 // debug requested targetHeight
-#define SERIALHEIGHT
+#define DEBUGHEIGHT
 
 // raw data. turn off HUMANSERIAL,SERIALECHO & use hexlify..
 // Debug of packets sent during init over serial.
@@ -307,13 +307,13 @@ void readButtons()
       if (buttons != lastbutton)
         startFresh();
 
-      // If already moving and any button is pressed - stop smoothly!
+      // If already moving and any button is pressed - stop (smoothly)
       if ( memoryMoving ) {
         if (targetHeight > currentHeight )
           targetHeight = currentHeight + MOVE_OFFSET; // smoother stop
         else
           targetHeight = currentHeight - HYSTERESIS;
-#if (defined SERIALCOMMS && defined SERIALHEIGHT)
+#if (defined SERIALCOMMS && defined DEBUGHEIGHT)
         writeSerial('~', targetHeight);
 #endif
       }
@@ -665,7 +665,7 @@ void loop()
   }
 
 #ifdef SERIALCOMMS
-#ifdef SERIALHEIGHT
+#ifdef DEBUGHEIGHT
   if (oldHeight != currentHeight){
 #else
   if (memoryMoving == false && oldHeight != currentHeight){
@@ -756,13 +756,13 @@ void loop()
 
   // Turn on motors?
   if (targetHeight > currentHeight + HYSTERESIS && currentHeight < maxHeight) {
-#if (defined SERIALCOMMS && defined SERIALHEIGHT)
+#if (defined SERIALCOMMS && defined DEBUGHEIGHT)
     writeSerial('^', targetHeight);
 #endif
     MOTOR_UP;
   }
   else if (targetHeight < currentHeight - HYSTERESIS && currentHeight > minHeight) {
-#if (defined SERIALCOMMS && defined SERIALHEIGHT)
+#if (defined SERIALCOMMS && defined DEBUGHEIGHT)
     writeSerial('v', targetHeight);
 #endif
     MOTOR_DOWN;
@@ -770,7 +770,7 @@ void loop()
   else
   {
     // some possibilities:
-    //   close enough and still coasting,
+    //   close enough (maybe still coasting),
     //   or overshot,
     //   or out of range!
     // so stop
@@ -872,10 +872,11 @@ uint8_t linBurst()
 #if (defined SERIALCOMMS && defined SERIAL_IDLE)
       writeSerial(response_idle, node_a[2], node_b[2], 'o'); // Indicate the idle variant type
 #endif
-    } else {
-      memoryMoving = false;
+    } else { // Command::NONE
+      memoryMoving = false; // Definitely not moving, serial can report now.
     }
     break;
+
   case State::STARTING:
     lin_cmd = LIN_CMD_PREMOVE;
     switch (user_cmd)
@@ -891,6 +892,7 @@ uint8_t linBurst()
       break;
     }
     break;
+
   case State::UP:
     enc_target = enc_min;
     lin_cmd = LIN_CMD_RAISE;
@@ -900,6 +902,7 @@ uint8_t linBurst()
       state = State::STOPPING1;
     }
     break;
+
   case State::DOWN:
     enc_target = enc_max;
     lin_cmd = LIN_CMD_LOWER;
@@ -909,6 +912,7 @@ uint8_t linBurst()
       state = State::STOPPING1;
     }
     break;
+
   case State::STOPPING1:
   case State::STOPPING2:
   case State::STOPPING3:
@@ -921,12 +925,14 @@ uint8_t linBurst()
     else // State::STOPPING3
       state = State::STOPPING4;
     break;
+
   case State::STOPPING4:
     if (lastState == State::UP)
       enc_target = enc_min;
     else
       enc_target = enc_max;
     lin_cmd = LIN_CMD_FINISH;
+    // only check one, as that's good enough...
     if (isIdle(node_a[2]))
     {
       state = State::OFF;
@@ -935,11 +941,13 @@ uint8_t linBurst()
     writeSerial(response_idle, node_a[2], node_b[2], 's'); // Indicate the idle variant type
 #endif
     break;
+
   // recal stuff here
   case State::STARTING_RECAL:
     lin_cmd = LIN_CMD_PREMOVE;
     state = State::RECAL;
     break;
+
   case State::RECAL:
     // We want to send 0/0/189
     enc_target = 0;
@@ -947,6 +955,7 @@ uint8_t linBurst()
     if (enc_max <= 99 && node_a[2] == 1 && node_b[2] == 1) // Are both motors reporting 99/0/1? We should be bottomed out at this point.
         state = State::END_RECAL;
     break;
+
   case State::END_RECAL:
     // We want to send 99/0/188
     enc_target = 99;
@@ -954,6 +963,7 @@ uint8_t linBurst()
     state = State::OFF;
     targetHeight = enc_max; // prevents immediately resuming previous height
     break;
+
   // default: // unused
   //   state = State::OFF;
   //   break;
