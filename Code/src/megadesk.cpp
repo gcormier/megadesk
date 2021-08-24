@@ -935,8 +935,6 @@ uint8_t linBurst()
     else
       enc_target = enc_max;
     lin_cmd = LIN_CMD_FINISH;
-    //if (isIdle(node_a[2]) && isIdle(node_b[2]))
-    //if ((node_a[2] == node_b[2]) && isIdle(node_a[2]))
     // only check one, as that's good enough...
     if (isIdle(node_a[2]))
     {
@@ -969,9 +967,6 @@ uint8_t linBurst()
     targetHeight = enc_max; // prevents immediately resuming previous height
     break;
 
-  // default: // unused
-  //   state = State::OFF;
-  //   break;
   }
 
   // lastly send lin command to PID 18
