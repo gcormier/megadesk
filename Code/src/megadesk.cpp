@@ -11,19 +11,21 @@
 #define ENABLERESET
 
 // Serial control/telemetry
-//#define SERIALCOMMS
-// Transmit/receive ascii commands over serial for human interface/control.
+#define SERIALCOMMS
+// Transmit/receive *ascii* commands (instead of raw bytes) over serial for human interfacing/control.
 #define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
 #define SERIALECHO
-// Report errors over serial
+
+// Report errors over serial - for debugging
+// timeouts, bad motor reads, user errors
 #define SERIALERRORS
 
-// Report the variant (idle) type on move/stop
-#define SERIAL_IDLE
+// Report the variant (idle) type on move/stop - for debugging hung states
+//#define SERIAL_IDLE
 
-// debug requested targetHeight
-#define DEBUGHEIGHT
+// debug requested targetHeight - for debugging
+//#define DEBUGHEIGHT
 
 // raw data. turn off HUMANSERIAL,SERIALECHO & use hexlify..
 // Debug of packets sent during init over serial.
@@ -314,7 +316,7 @@ void readButtons()
         else
           targetHeight = currentHeight - HYSTERESIS;
 #if (defined SERIALCOMMS && defined DEBUGHEIGHT)
-        writeSerial('~', targetHeight);
+        writeSerial(response_halt, targetHeight); // report target
 #endif
       }
 
@@ -757,13 +759,13 @@ void loop()
   // Turn on motors?
   if (targetHeight > currentHeight + HYSTERESIS && currentHeight < maxHeight) {
 #if (defined SERIALCOMMS && defined DEBUGHEIGHT)
-    writeSerial('^', targetHeight);
+    writeSerial(response_up, targetHeight);
 #endif
     MOTOR_UP;
   }
   else if (targetHeight < currentHeight - HYSTERESIS && currentHeight > minHeight) {
 #if (defined SERIALCOMMS && defined DEBUGHEIGHT)
-    writeSerial('v', targetHeight);
+    writeSerial(response_down, targetHeight);
 #endif
     MOTOR_DOWN;
   }
@@ -853,6 +855,7 @@ uint8_t linBurst()
 #endif
     // what kind of corrective action can be taken?
     // change state to STOPPING1?
+    // note. this is seen during recalibration!
   }
 
   delayUntil(5);
@@ -870,7 +873,7 @@ uint8_t linBurst()
         state = State::STARTING;
       }
 #if (defined SERIALCOMMS && defined SERIAL_IDLE)
-      writeSerial(response_idle, node_a[2], node_b[2], 'o'); // Indicate the idle variant type
+      writeSerial(response_off, node_a[2], node_b[2], idleMarker); // Indicate the idle variant type
 #endif
     } else { // Command::NONE
       memoryMoving = false; // Definitely not moving, serial can report now.
@@ -932,13 +935,15 @@ uint8_t linBurst()
     else
       enc_target = enc_max;
     lin_cmd = LIN_CMD_FINISH;
+    //if (isIdle(node_a[2]) && isIdle(node_b[2]))
+    //if ((node_a[2] == node_b[2]) && isIdle(node_a[2]))
     // only check one, as that's good enough...
     if (isIdle(node_a[2]))
     {
       state = State::OFF;
     }
 #if (defined SERIALCOMMS && defined SERIAL_IDLE)
-    writeSerial(response_idle, node_a[2], node_b[2], 's'); // Indicate the idle variant type
+    writeSerial(response_stop, node_a[2], node_b[2], idleMarker); // Indicate the idle variant type
 #endif
     break;
 
