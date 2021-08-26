@@ -51,16 +51,28 @@ const char command_write     = 'W';
 const char command_read      = 'R';
 const char command_current   = 'C'; // report current height
 const char command_tone      = 'T';
+
 // responses only..
 const char txMarker          = '>'; // default start marker from desk (Tx)
+const char response_error    = 'E'; // indicates an error
+const char response_calibration = 'X'; // indicates calibration is starting
+
+// error markers
 const char lateMarker        = '!'; // when reporting delayUntil was late
 const char bootfailMarker    = '*'; // when linInit fails to communicate
 const char badPID8Marker     = '8'; // when pid8 fails to respond
 const char badPID9Marker     = '9'; // when pid9 fails to respond
 const char DriftMarker       = 'D'; // when pid8 and pid9 report different positions
-const char response_idle     = 'i'; // indicates the type of idle packet
-const char response_error    = 'E'; // indicates an error
-const char response_calibration = 'X'; // indicates calibration is starting
+
+// idle markers
+const char idleMarker        = 'i'; // indicates the type of idle packet
+const char response_stop     = 's'; // during stop idle
+const char response_off      = 'o'; // when starting from off-state
+
+// debugheight markers
+const char response_up       = '^'; // raising to targetheight
+const char response_down     = 'v'; // lowering to targetheight
+const char response_halt     = '~'; // halt moving! aim for targetheight
 
 void playTone(uint16_t freq, uint16_t duration);
 void beep(uint16_t freq, byte count=1);
