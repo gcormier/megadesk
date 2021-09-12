@@ -11,7 +11,7 @@
 #define ENABLERESET
 
 // Serial control/telemetry
-#define SERIALCOMMS
+//#define SERIALCOMMS
 // Transmit/receive *ascii* commands (instead of raw bytes) over serial for human interfacing/control.
 #define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
