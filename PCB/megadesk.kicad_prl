@@ -2,6 +2,7 @@
   "board": {
     "active_layer": 0,
     "active_layer_preset": "",
+    "auto_track_width": true,
     "hidden_nets": [],
     "high_contrast_mode": 0,
     "net_color_mode": 1,
@@ -56,14 +57,18 @@
       28,
       29,
       30,
-      37,
-      38
+      32,
+      33,
+      34,
+      35,
+      36
     ],
-    "visible_layers": "0029020_80000001"
+    "visible_layers": "0029420_80000001",
+    "zone_display_mode": 0
   },
   "meta": {
     "filename": "megadesk.kicad_prl",
-    "version": 2
+    "version": 3
   },
   "project": {
     "files": []
