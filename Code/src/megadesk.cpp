@@ -807,9 +807,11 @@ uint8_t linBurst()
 #ifdef SERIALCOMMS
     writeSerial(response_error, enc_b, chars, badPID9Marker);
 #endif
+/*
 #ifdef FEEDBACK
     if (feedback) playTone(NOTE_A4, PIP_DURATION);
 #endif
+*/
 #endif
     return 0;
   }
@@ -823,9 +825,11 @@ uint8_t linBurst()
 #ifdef SERIALCOMMS
     writeSerial(response_error, enc_a, chars, badPID8Marker);
 #endif
+/*
 #ifdef FEEDBACK
     if (feedback) playTone(NOTE_A4, PIP_DURATION);
 #endif
+*/
 #endif
     return 0;
   }
