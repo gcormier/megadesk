@@ -11,7 +11,7 @@ name: "KiBot - Fabrication and Documentation (push)"
 on:
   push:
     branches:
-      - main
+      - master
 
 #on:
 #  workflow_dispatch:
