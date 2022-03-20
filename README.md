@@ -192,7 +192,7 @@ Examples
 This is only an example for the Wemos D1 Mini. Any esphome compatible device can be used.
 
 Do NOT use the 5V from the Megadesk to power your esphome controller. Megadesk does not have the ability to dissipate
-the amount of heat produced by the linear regulators with a high-power device such. These devices can requires 100-300mA of current. For comparison, the megadesk itself only requires 10-15mA.
+the amount of heat produced by the linear regulators with a high-power device. These devices can requires 100-300mA of current. For comparison, the megadesk itself only requires 10-15mA.
 
 There exists one device with a built-in buck converter that could take the 24V power - https://www.ezsbc.com/product/wifi01-sw/ (unaffiliated and not tested)
 
