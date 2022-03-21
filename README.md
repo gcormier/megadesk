@@ -203,14 +203,100 @@ SCK -> TX
 GND -> GND
 ```
 
+(Store this file in your esphome configuration directory, for example `megadesk.h`)
+```
+#include "esphome.h"
+
+class Megadesk : public Component, public Sensor, public UARTDevice {
+ public:
+  Megadesk(UARTComponent *parent) : UARTDevice(parent) {}
+
+  void setup() override {}
+
+  int digits=0;
+
+  int readdigits()
+  {
+    int r;
+    while ((r = read()) > 0) {
+      if ((r < 0x30) || (r > 0x39)) {
+        // non-digit we're done, return what we have
+        return digits;
+      }
+      // it's a digit, add with base10 shift
+      digits = 10*digits + (r-0x30);
+      // keep reading...
+    }
+    return -1;
+  }
+
+  void recvData()
+  {
+    const int numChars = 2;
+    const int numFields = 4; // read/store all 4 fields for simplicity, use only the last 3.
+    // static variables allows segmented/char-at-a-time decodes
+    static uint16_t receivedBytes[numFields];
+    static uint8_t ndx = 0;
+    int r; // read char/digit
+
+    // read 2 chars
+    while ((ndx < numChars) && ((r = read()) != -1))
+    {
+      if ((ndx == 0) && (r != '>'))
+      {
+        // first char is not Tx, keep reading...
+        continue;
+      }
+      receivedBytes[ndx] = r;
+      ++ndx;
+    }
+    // read ascii digits
+    while ((ndx >= numChars) && ((r = readdigits()) != -1)) {
+      receivedBytes[ndx] = r;
+      digits = 0; // clear
+      if (++ndx == numFields) {
+        // thats all 4 fields. parse/process them now and break-out.
+        parseData(receivedBytes[1],
+                  receivedBytes[2],
+                  receivedBytes[3]);
+        ndx = 0;
+        return;
+      }
+    }
+  }
+
+  void parseData(byte command, uint16_t position, uint8_t push_addr)
+  {
+    if (command == '=')
+    {
+      publish_state(position);
+    }
+  }
+
+  void loop() override {
+    while (available()) {
+      recvData();
+    }
+  }
+};
+```
 
 
+esphome YAML
  ```
- name: megadesk
+esphome:
+  name: megadesk
   platform: ESP8266
   board: d1_mini
+  includes:
+    - megadesk.h
+  on_boot:
+    priority: -100
+    then:
+      - uart.write: "<C0.0."
 
 logger:
+  baud_rate:0
 
 api:
   password: ""
@@ -228,18 +314,134 @@ wifi:
 
 captive_portal:
 
+web_server:
+  port: 80
+
 uart:
+  id: uart_desk
   baud_rate: 115200
   tx_pin: D0
+  rx_pin: D1
 
-switch:
-  - platform: uart
-    name: "Desk up"
-    data: '<L0,4.'
-  - platform: uart
-    name: "Desk down"
-    data: '<L0,3.'
-  - platform: uart
-    name: "Desk middle"
-    data: '<L0,5.'
-```
+sensor:
+- platform: custom
+  lambda: |-
+    auto megadesk = new Megadesk(id(uart_desk));
+    App.register_component(megadesk);
+    return { megadesk };
+  sensors:
+  - id: megadesk_raw
+    internal: true
+    on_value:
+      then:
+        - component.update: megadesk_height_inches
+        - component.update: megadesk_height_cm
+        - component.update: megadesk_height_raw
+
+number:
+  - platform: template
+    name: "Megadesk Height (inches)"
+    id: megadesk_height_inches
+    min_value: 28.6
+    max_value: 46.75
+    step: 0.53
+    mode: slider
+    update_interval: never
+    unit_of_measurement: 'inches'
+    #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+    lambda: -|
+      return ((((id(megadesk_raw).state - 299) * (49.25 - 25.625)) / (6914 - 299)) + 25.625);
+    set_action:
+      - number.set:
+          id: megadesk_height_raw
+          value: !lambda "return int((((x - 25.625) * (6914 - 299)) / (49.25 - 25.625)) + 299);"
+  - platform: template
+    name: "Megadesk Height (cm)"
+    id: megadesk_height_cm
+    min_value: 72.644
+    max_value: 118.745
+    step: 0.53
+    mode: slider
+    update_interval: never
+    unit_of_measurement: 'cm'
+    #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+    lambda: |-
+      return ((((id(megadesk_raw).state - 299) * (125 - 65)) / (6914 - 299)) + 65);
+    set_action:
+      - number.set:
+          id: megadesk_height_raw
+          value: !lambda "return int((((x - 65) * (6640 - 299)) / (125 - 65)) + 299);"
+  - platform: template
+    name: "Megadesk Height (raw)"
+    id: megadesk_height_raw
+#    internal: true
+    min_value: 299
+    max_value: 6640
+    step: 1
+    mode: slider
+    update_interval: never
+    lambda: |-
+      return id(megadesk_raw).state;
+    set_action:
+      - uart.write: !lambda |-
+          char buf[20];
+          sprintf(buf, "<=%i,.", int(x));
+          std::string s = buf;
+          return std::vector<unsigned char>( s.begin(), s.end() );
+
+button:
+  - platform: template
+    name: "Desk Position 2"
+    on_press:
+      then:
+        - uart.write: "<L0,2."
+  - platform: template
+    name: "Desk Position 3"
+    on_press:
+      then:
+        - uart.write: "<L0,3."
+  - platform: template
+    name: "Desk Position 4"
+    on_press:
+      then:
+        - uart.write: "<L0,4."
+  - platform: template
+    name: "Desk Position 5"
+    on_press:
+      then:
+        - uart.write: "<L0,5."
+  - platform: template
+    name: "Set Minimum Desk Height"
+    on_press:
+      then:
+        - uart.write: "<L0,11."
+  - platform: template
+    name: "Set Maximum Desk Height"
+    on_press:
+      then:
+        - uart.write: "<L0,12."
+  - platform: template
+    name: "Recalibrate Desk"
+    on_press:
+      then:
+        - uart.write: "<L0,14."
+  - platform: template
+    name: "Reboot Megadesk"
+    on_press:
+      then:
+        - uart.write: "<L0,15."
+  - platform: template
+    name: "Toggle Audio feedback"
+    on_press:
+      then:
+        - uart.write: "<L0,17."
+  - platform: template
+    name: "Toggle both-button mode"
+    on_press:
+      then:
+        - uart.write: "<L0,18."
+
+interval:
+  - interval: 60s
+    then:
+      - uart.write: "<C0.0."
