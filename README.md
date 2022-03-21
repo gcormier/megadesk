@@ -135,3 +135,6 @@ This has been moved to [DIY.md](DIY.md)
 
 # Serial commands
 This has been moved to [Serial.md](Serial.md)
+
+# esphome configuration
+esphome example configuration avalible at [esphome.md](esphome.md)
