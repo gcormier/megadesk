@@ -48,8 +48,8 @@ Examples
 <T3000,255.   # plays a 3000Hz tone for 1sec
 <C0.0.        # reports current height
 <+300..       # nudge desk up by 300
-<L,5.         # recall position from slot 2
-<l,5.         # recall position from down-button slot 2
+<L,2.         # recall position from slot 2
+<l,2.         # recall position from down-button slot 2
 <R.0/         # read eeprom slot 0
 ```
 
@@ -75,6 +75,10 @@ GND -> GND
 class Megadesk : public Component, public Sensor, public UARTDevice {
  public:
   Megadesk(UARTComponent *parent) : UARTDevice(parent) {}
+
+  Sensor *raw_height = new Sensor();
+  Sensor *min_height = new Sensor();
+  Sensor *max_height = new Sensor();
 
   void setup() override {}
 
@@ -134,7 +138,13 @@ class Megadesk : public Component, public Sensor, public UARTDevice {
   {
     if (command == '=')
     {
-      publish_state(position);
+      raw_height->publish_state(position);
+    } else if (command == 'R'){
+      if (push_addr == 11){
+        min_height->publish_state(position);
+      } else if (push_addr == 12){
+        max_height->publish_state(position);
+      }
     }
   }
 
@@ -158,7 +168,12 @@ esphome:
   on_boot:
     priority: -100
     then:
+      - delay: 1s
       - uart.write: "<C0.0."
+      - delay: 1s
+      - uart.write: "<R0.11."
+      - delay: 1s
+      - uart.write: "<R0.12."
 
 logger:
   baud_rate:0
@@ -193,7 +208,7 @@ sensor:
   lambda: |-
     auto megadesk = new Megadesk(id(uart_desk));
     App.register_component(megadesk);
-    return { megadesk };
+    return { megadesk->raw_height, megadesk->min_height, megadesk->max_height };
   sensors:
   - id: megadesk_raw
     internal: true
@@ -202,6 +217,8 @@ sensor:
         - component.update: megadesk_height_inches
         - component.update: megadesk_height_cm
         - component.update: megadesk_height_raw
+  - name: "Megadesk Minimum Height"
+  - name: "Megadesk Maximum Height"
 
 number:
   - platform: template
@@ -276,15 +293,17 @@ button:
       then:
         - uart.write: "<L0,5."
   - platform: template
-    name: "Set Minimum Desk Height"
+    name: "Toggle Minimum Desk Height"
     on_press:
       then:
         - uart.write: "<L0,11."
+        - uart.write: "<R0,11."
   - platform: template
-    name: "Set Maximum Desk Height"
+    name: "Toggle Maximum Desk Height"
     on_press:
       then:
         - uart.write: "<L0,12."
+        - uart.write: "<R0,12."
   - platform: template
     name: "Recalibrate Desk"
     on_press:
