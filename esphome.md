@@ -13,6 +13,8 @@ SCK -> TX
 GND -> GND
 ```
 
+
+## esphome custom component
 (Store this file in your esphome configuration directory, for example `megadesk.h`)
 ```
 #include "esphome.h"
@@ -102,8 +104,8 @@ class Megadesk : public Component, public Sensor, public UARTDevice {
 ```
 
 
-esphome YAML
- ```
+## esphome YAML
+```
 esphome:
   name: megadesk
   platform: ESP8266
@@ -149,21 +151,21 @@ uart:
   rx_pin: D1
 
 sensor:
-- platform: custom
-  lambda: |-
-    auto megadesk = new Megadesk(id(uart_desk));
-    App.register_component(megadesk);
-    return { megadesk->raw_height, megadesk->min_height, megadesk->max_height };
-  sensors:
-  - id: megadesk_raw
-    internal: true
-    on_value:
-      then:
-        - component.update: megadesk_height_inches
-        - component.update: megadesk_height_cm
-        - component.update: megadesk_height_raw
-  - name: "Megadesk Minimum Height"
-  - name: "Megadesk Maximum Height"
+  - platform: custom
+    lambda: |-
+      auto megadesk = new Megadesk(id(uart_desk));
+      App.register_component(megadesk);
+      return { megadesk->raw_height, megadesk->min_height, megadesk->max_height };
+    sensors:
+    - id: megadesk_raw
+      internal: true
+      on_value:
+        then:
+          - component.update: megadesk_height_inches
+          - component.update: megadesk_height_cm
+          - component.update: megadesk_height_raw
+    - name: "Megadesk Minimum Height"
+    - name: "Megadesk Maximum Height"
 
 number:
   - platform: template
@@ -176,7 +178,7 @@ number:
     update_interval: never
     unit_of_measurement: 'inches'
     #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
-    lambda: -|
+    lambda: |-
       return ((((id(megadesk_raw).state - 299) * (47 - 23)) / (6914 - 299)) + 23);
     set_action:
       - number.set:
@@ -274,3 +276,7 @@ interval:
   - interval: 300s
     then:
       - uart.write: "<C0.0."
+```
+
+### example in Home Assistant dashboard
+![Home-Assistant](https://user-images.githubusercontent.com/8331767/159412715-c8241669-fce7-4f98-8c23-ee1ac8ab0635.jpg)
