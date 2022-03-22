@@ -279,4 +279,4 @@ interval:
 ```
 
 ### example in Home Assistant dashboard
-![Home-Assistant](https://user-images.githubusercontent.com/8331767/159412715-c8241669-fce7-4f98-8c23-ee1ac8ab0635.jpg)
+<img src="Home-Assistant.jpg" width=40%/>
