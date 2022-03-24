@@ -2,17 +2,27 @@
 As most people prefer the fully assembled version, even as a base to their own software, I've moved the DIY notes to this section to reduce clutter and confusion.
 
 ## Cable
-If you want to create your own cable, the connector is AMP VAL-U-LOK by TE Connectivity - PN 1586106-3. Don't forget the crimp pins - Part Number 1586317-1 for 26-22AWG. Otherwise, the existing cable can be unsoldered from the board and fitted with a standard 2.54mm pitch header. Red is positive (24VDC), white is negative, blue is LIN.
+If you want to create your own cable, the connector is AMP VAL-U-LOK by TE Connectivity - PN 1586106-3. Don't forget the crimp pins - Part Number 1586317-1 for 26-22AWG.
+
+Pinout on a DIY cable. In this case Red is positive, black is negative, white is LIN.
+
+<img src="DIY_cable.jpg" width=40%/>
+
+Otherwise, the existing cable can be unsoldered from the board and fitted with a standard 2.54mm pitch header. Red is positive (24VDC), white is negative, blue is LIN.
 
 ## Atmega Fuses
 
 Don't forget to set fuses on your board for the appropriate oscillator!
 
 ATTiny 841 - 8Mhz internal
-`avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m`
+```
+avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m
+```
 
-ATiny 841 - To preserve eeprom when reflashing the image.
-`./avrdude -c usbtiny -p t841 -U hfuse:w:0xd6:m`
+ATiny 841 - To preserve memory-slots/eeprom when reflashing the image.
+```
+avrdude -c usbtiny -p t841 -U hfuse:w:0xd6:m
+```
 
 # Hacking and Contributing
 
@@ -46,7 +56,7 @@ On board versions v1,v2 and v5, this is a standard connector which will accept a
 
 For v4 boards, as many people were not developing, I flipped it upside down so I could program the boards easier when making the boards. As a result, you will need to check the pin mapping accordingly for a top mounted programming header, or, flash from the bottom side of the board.
 
-<img src="https://github.com/gcormier/megadesk/blob/master/programming_header.png" width=40%/>
+<img src="programming_header.png" width=40%/>
 
 ## Other Stuff
 ### Current Measurements

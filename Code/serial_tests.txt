@@ -1,0 +1,176 @@
+Sample/test serial log - to be used with SERIALCOMMS + HUMANSERIAL + SERIALERRORS
+
+Commands all start with '<' and end with newline
+    (unused parameters can be 0 or left out like position in: R,34 or <=2000, or C, )
+Responses are indented for convenience and start with '>' or 'E' (E when there's a command error)
+# are comments
+
+File could be turned into a expect-like test script, for automated sanity test.
+Additonal boundary and range tests should added.
+Recommend use slots 1 (invalid) and 33 for testing storing and recall, as these can't be set/used via button interface.
+
+PS C:\Users\Phil\Documents\PlatformIO\Projects\megadesk\Code> platformio device monitor --baud 19200 --filter direct
+
+# bad command 'c'
+<c0,0
+    Ec0,0
+# get current height
+<C0,0
+    >=1323,0
+# too many txMarkers
+<<,
+    E<0,0
+# read slot 1
+<R,2
+    >R0,2
+# read downslot 2 (34)
+<R,34
+    >R0,34
+
+# load invalid slots/postitions
+<L,1
+    >E0,1  # slot is invalid < 2
+<l,1
+    >E0,33  + beep + sad trombone # position is empty
+# save a position < danger height:
+<S298,33
+    >E298,33   # below danger height
+# force that write
+<W298,33
+    >W298,33
+# load that slot
+<L,33
+    >l298,1
+    >E298,0  # target height beyond limit
+
+# save a position > danger height:
+<s6914,1
+   >E6914,33   # target above danger height
+# force write
+<W6914,33
+    >W6914,33
+# load that slot
+<l,1
+    >l6914,1   + beep
+    >E6914,0   # no movement
+
+# erase slot 33
+<W0,33
+    >W0,33
+
+# get current height
+<C,
+    >=1323,0
+# load downslot 2 (34)
+<l,2
+    >l1326,2
+# load slot 34
+<L,34
+    >l1326,2
+# read downslot 2 (34)
+<R,34
+    >R1326,34
+
+# write 2000 to downslot 3 (35)
+<S2000,35
+    >s2000,3  + high ack tone
+# load it
+<L,35
+    >l2000,3  + 3 beeps
+# read it back
+<R,35
+    >R2000,35
+# erase it
+<W0,35
+    >W0,35
+# read it
+<R,35
+    >R0,35
+# load downslot 3
+<l,3
+    >E0,35  + sad trombone
+
+# write 2000 to slot 10
+<S3000,10
+    >S3000,10  + high ack tone
+# load it
+<L,10
+    >l3000,10  + 10 beeps
+# read it back
+<R,10
+    >R3000,10
+# erase it
+<W0,10
+    >W0,10
+# read it
+<R,10
+    >R0,10
+# load slot 10
+<L,10
+    >E0,10  + 10 beeps + sad trombone
+
+# move up 200
+<+200,0
+
+# move down 200
+<-200,0
+
+# retrieve current max height limit
+<R,12
+    >R5715,12
+#travel to that reported limit
+<=5712,
+    ... >=5703,0
+# higher!
+<+200,0
+    ... >=5805,0
+# higher!
+<+200,0
+    # nothing, no movement
+# back to the limit
+<=5712,
+    # nothing, no movement
+<-200,
+    ... >=5613,0
+
+# retrieve current min height limit
+<R,11
+    >R975,11
+#travel to that reported limit
+<=975,
+    ... >=978,0
+# lower!
+<-200,0
+    ... >=918,0
+# lower!
+<-200,0
+    # nothing, no movement
+# back to the limit
+<=975,
+    # nothing, no movement
+<+200,
+    ... >=1098,0
+
+# toggle feedback pips
+<L,17
+
+# toggle 2 button mode
+<L,18
+
+# play some tones
+<T1319,30
+<T1245,30
+<T1319,30
+<T1245,30
+<T1319,30
+<T888,30
+<T1175,30
+<T1046,30
+<T880,30
+
+# recalibrate
+<L,14
+    >X0,14
+    # stuck? hung? power-off and on again:
+    >E96,0 (currentHeight 96 is below min limit!)
+<L,2
