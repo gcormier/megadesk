@@ -12,18 +12,13 @@ Serial communications can use either human readable ascii or slightly more compa
 Megadesk needs to be recompiled and flashed first as the default image doesn't have the serial features.
 
 Two \#define flags control megadesk serial communications:
-1. SERIALCOMMS - enables basic raw serial communications
-1. HUMANSERIAL (used with SERIALCOMMS) - enables human-readable ascii where each numeric field is separated by a non-digit character
+1. SERIALCOMMS  - enables basic raw serial communications. required with every other flag below.
+1. HUMANSERIAL  - enables human-readable ascii where each numeric field is separated by a non-digit character
+1. SERIALECHO   - echo back the interpreted command before acting on it
+1. SERIALERRORS - Report errors over serial - reports timeouts, bad motor reads, user errors...
 
-# Raw serial
-Always transmit/receive 5 raw bytes:
 
-'<', command ascii byte, MSB-position, LSB-position, slot
-
-The '<' is the sync byte and indicates the start of a new message.
-Command bytes, position and slot ranges and values are explained below.
-
-# Ascii Serial
+# Human/Ascii Serial
 After the marker byte '<', there's the Command byte, then two fields of ascii integer digits.
 
 Terminate each field with any non-digit character eg !,./ or a line-break.
@@ -70,7 +65,19 @@ First field (position) can be any number up to a maximum of 65535, the second fi
 
 ```
 
-Human serial Examples
+# Raw serial
+Without HUMANSERIAL, always transmit 5 raw bytes:
+
+ascii '<', command ascii byte, raw-MSB-position, raw-LSB-position, raw-slot
+
+The '<' is the sync byte and indicates the start of a new message.
+Command bytes, position and slot ranges and values are the same as for Human serial.
+
+
+# Examples
+Human serial commands, when using HUMANSERIAL
+
+line breaks can be used instead of the final '.'
 ```
 <W3000,3.     # writes location 3 with position 3000.
 <T3000,255.   # plays a 3000Hz tone for 1sec
@@ -95,13 +102,16 @@ Megadesk Responses:
 >R5715,2    # reports content of slot 2.
 ```
 
-Megadesk error Responses:
+Megadesk error Responses (if SERIALERRORS is \#defined):
 ```
 >E0,1       # slot 1 is invalid slot for recall
 >E0,33      # slot 33 is empty + sad trombone
 >E6914,0    # error. requested position 6914 may be beyond min/max limits
 Ec0,0       # invalid command 'c' (sent <c)
 E<0,0       # too many txMarkers (sent <<)
+DE2361,117  # legs reported positions differ by 117
+8E2361,0    # communications problem with pid(leg) 8
+!E57496,25  # 25ms delay was late by 7456us
 ```
 
 # esphome configuration
