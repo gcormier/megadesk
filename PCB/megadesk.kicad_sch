@@ -971,7 +971,6 @@
     )
   )
 
-
   (junction (at 218.44 77.47) (diameter 0) (color 0 0 0 0)
     (uuid 40165eda-4ba6-4565-9bb4-b9df6dbb08da)
   )
@@ -1016,7 +1015,7 @@
   (no_connect (at 193.04 69.85) (uuid 585a29f6-7e71-47a2-a19a-4476a58ffb4d))
   (no_connect (at 148.59 21.59) (uuid 840197ca-56c0-4a09-a3d5-3d221574b5a9))
   (no_connect (at 97.79 68.58) (uuid 941bad92-bfe4-4b68-b4d7-5b5868841888))
-  (no_connect (at 97.79 71.12) (uuid 941bad92-bfe4-4b68-b4d7-5b5868841888))
+  (no_connect (at 97.79 71.12) (uuid 941bad92-bfe4-4b68-b4d7-5b5868841889))
   (no_connect (at 148.59 24.13) (uuid abbfd20b-cab8-4de2-a19a-162e656f6106))
   (no_connect (at 148.59 26.67) (uuid c2a48f75-5af9-4d67-b668-7c2919a8e42e))
   (no_connect (at 148.59 29.21) (uuid e2536252-2e45-49f0-8bf9-714c9957860f))
@@ -1364,7 +1363,7 @@
     (effects (font (size 1.524 1.524)) (justify left bottom))
     (uuid ae47cf75-be5c-4294-9ef3-c8ebd36737f6)
   )
-  (text "Headers" (at 134.62 20.32 0)
+  (text "Headers" (at 127 17.78 0)
     (effects (font (size 1.3208 1.3208)) (justify left bottom))
     (uuid d68bf208-63c7-407a-b623-537bf3508cf7)
   )
