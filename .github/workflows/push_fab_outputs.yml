@@ -8,18 +8,8 @@
 # below.
 name: "KiBot - Fabrication and Documentation (push)"
 
-on:
-  push:
-    branches:
-      - master
+on: push
 
-#on:
-#  workflow_dispatch:
-#    inputs:
-#      version:
-#        description: "Design version"
-#        required: true
-#        default: "gerb-review"
 
 jobs:
   FabricationOutputs:
