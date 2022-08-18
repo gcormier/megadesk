@@ -8,7 +8,7 @@
 #define SMALL_INIT
 
 // enable reset via button-press and/or bad linInit
-#define ENABLERESET
+//#define ENABLERESET
 
 // Serial control/telemetry
 //#define SERIALCOMMS
