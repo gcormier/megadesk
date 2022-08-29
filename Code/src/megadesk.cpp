@@ -62,11 +62,18 @@ uint16_t oldHeight = 0; // previously reported height
 
 #define HYSTERESIS    137    // ignore movement requests < this distance
 #define MOVE_OFFSET   159    // amount to move when moving manually
-#define PIN_UP        10
-#define PIN_DOWN      9
-#define PIN_BEEP      7
-#define PIN_SERIAL    1
 
+#ifdef AVR2
+  #define PIN_UP        PIN_PA5
+  #define PIN_DOWN      PIN_PA6
+  #define PIN_BEEP      PIN_PA7
+  #define PIN_SERIAL    PIN_PB2
+#else
+  #define PIN_UP        10
+  #define PIN_DOWN      9
+  #define PIN_BEEP      7
+  #define PIN_SERIAL    1
+#endif
 // click durations
 #define CLICK_TIMEOUT   400UL // Timeout in MS. for long-hold and release idle.
 #define CLICK_LONG    10000UL // very-long holdtime in MS.
