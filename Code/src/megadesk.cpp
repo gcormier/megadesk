@@ -8,7 +8,7 @@
 #define SMALL_INIT
 
 // enable reset via button-press and/or bad linInit
-//#define ENABLERESET
+#define ENABLERESET
 
 // Serial control/telemetry
 //#define SERIALCOMMS
@@ -64,19 +64,28 @@ uint16_t oldHeight = 0; // previously reported height
 #define MOVE_OFFSET   159    // amount to move when moving manually
 
 #ifdef AVR2
-  #define PIN_UP        PIN_PA5
-  #define PIN_DOWN      PIN_PA6
-  #define PIN_BEEP      PIN_PA7
-  #define PIN_SERIAL    PIN_PB2
+  #define PIN_UP          PIN_PA5
+  #define PIN_DOWN        PIN_PA6
+  #define PIN_BEEP        PIN_PA7
+  #define PIN_LIN_SERIAL  PIN_PA1
+  
+  HardwareSerial &userSerial = Serial;
+  HardwareSerial &linSerial = Serial1;
+
 #else
-  #define PIN_UP        10
-  #define PIN_DOWN      9
-  #define PIN_BEEP      7
-  #define PIN_SERIAL    1
+  #define PIN_UP          10
+  #define PIN_DOWN        9
+  #define PIN_BEEP        7
+  #define PIN_LIN_SERIAL  1
+
+  #ifdef SERIALCOMMS
+    HardwareSerial &userSerial = Serial1;
+  #endif
+  HardwareSerial &linSerial = Serial;
 #endif
 // click durations
-#define CLICK_TIMEOUT   400UL // Timeout in MS. for long-hold and release idle.
-#define CLICK_LONG    10000UL // very-long holdtime in MS.
+#define CLICK_TIMEOUT     400UL // Timeout in MS. for long-hold and release idle.
+#define CLICK_LONG        10000UL // very-long holdtime in MS.
 
 // beeps
 #define PIP_DURATION      20
@@ -162,7 +171,7 @@ unsigned long lastPushTime = 0;
 unsigned long refTime = 0;
 //////////////////
 
-Lin lin(Serial, PIN_SERIAL);
+Lin lin(linSerial, PIN_LIN_SERIAL);
 
 uint16_t currentHeight = 0;
 uint16_t targetHeight = 0;
@@ -207,7 +216,7 @@ void startFresh()
 // use a constructor to disable the watchdog well before setup() is called
 softReset::softReset()
 {
-    MCUSR = 0;
+    //MCUSR = 0;
     wdt_disable();
 }
 softReset soft;
@@ -263,7 +272,7 @@ void setup()
   }
 
 #ifdef SERIALCOMMS
-  Serial1.begin(115200);
+  userSerial.begin(115200);
 #endif
 
   // init + arpeggio
@@ -412,7 +421,7 @@ int digits=0;
 int readdigits()
 {
   int r;
-  while ((r = Serial1.read()) > 0) {
+  while ((r = userSerial.read()) > 0) {
     if ((r < 0x30) || (r > 0x39)) {
       // non-digit we're done, return what we have
       return digits;
@@ -438,7 +447,7 @@ void recvData()
   int r; // read char/digit
 
   // read 2 chars
-  while ((ndx < numChars) && ((r = Serial1.read()) != -1))
+  while ((ndx < numChars) && ((r = userSerial.read()) != -1))
   {
     if ((ndx == 0) && (r != rxMarker))
     {
@@ -473,7 +482,7 @@ void recvData()
   static uint8_t ndx = 0;
   int r; // read char
 
-  while ((r = Serial1.read()) != -1)
+  while ((r = userSerial.read()) != -1)
   {
     if ((ndx == 0) && (r != rxMarker))
     {
@@ -496,17 +505,17 @@ void recvData()
 void writeSerial(byte operation, uint16_t position, uint8_t push_addr, byte marker)
 {
   // note. serial.write only ever writes bytes. ints/longs get truncated!
-  Serial1.write(marker);
-  Serial1.write(operation);
+  userSerial.write(marker);
+  userSerial.write(operation);
 #ifdef HUMANSERIAL
-  Serial1.print(position); // Tx human-readable output option
-  Serial1.print(',');
-  Serial1.print(push_addr);
-  Serial1.print('\n');
+  userSerial.print(position); // Tx human-readable output option
+  userSerial.print(',');
+  userSerial.print(push_addr);
+  userSerial.print('\n');
 #else
-  Serial1.write(position >> 8); // high byte
-  Serial1.write(position & 0xff); // low byte
-  Serial1.write(push_addr);
+  userSerial.write(position >> 8); // high byte
+  userSerial.write(position & 0xff); // low byte
+  userSerial.write(push_addr);
 #endif
 }
 
