@@ -1,3 +1,13 @@
+/** 
+ * attiny841
+ * PA4/5 UART1 User
+ * PA1/2 UART0 LIN
+ * 
+ * attiny1624
+ * PA1/2 UART1 LIN
+ * PB2/3 UART0 User
+ **/
+
 // want to override minimum/maximum heights?
 #define MINMAX
 
@@ -78,9 +88,7 @@ uint16_t oldHeight = 0; // previously reported height
   #define PIN_BEEP        7
   #define PIN_LIN_SERIAL  1
 
-  #ifdef SERIALCOMMS
-    HardwareSerial &userSerial = Serial1;
-  #endif
+  HardwareSerial &userSerial = Serial1;
   HardwareSerial &linSerial = Serial;
 #endif
 // click durations
