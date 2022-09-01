@@ -33,9 +33,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 1.152,
-          "height": 1.3,
-          "width": 1.3
+          "drill": 0.0,
+          "height": 5.8,
+          "width": 6.4
         },
         "silk_line_width": 0.15,
         "silk_text_italic": false,
@@ -369,7 +369,6 @@
         "nets": [
           "+12V",
           "+24V",
-          "+5V",
           "GND",
           "LINBUS"
         ],
