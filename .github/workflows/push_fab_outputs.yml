@@ -1,15 +1,10 @@
-# This workflow generates Gerbers for reviewing before release. 
-# The version number and date of the design is automatically updated on the PCB. 
-# The version number is set via an environment variable
-# and by default is `pre-release` since this runs outside of the release process
-# so there's no formal release number to use.
-
-# To use this workflow in your own repo you need to edit the environment variables in the env: section
-# below.
 name: "KiBot - Fabrication and Documentation (push)"
-
-on: push
-
+on:
+  push:
+    paths:
+      - 'PCB/**'
+  workflow_dispatch:
+    
 
 jobs:
   FabricationOutputs:
@@ -19,7 +14,6 @@ jobs:
       OutputFolder: PCB/KiBotOutput
     runs-on: ubuntu-latest
 
-    # These are all the steps that generate the files.
     steps:
       # Check out the files
       - uses: actions/checkout@v2
@@ -48,5 +42,5 @@ jobs:
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.BaseFileName }}-${{ steps.date_only.outputs.date_only }}
+          name: ${{ env.BaseFileName }}-fab-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**

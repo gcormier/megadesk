@@ -1,0 +1,82 @@
+name: "Build firmware artifacts on push"
+on:
+  push:
+    paths:
+      - 'Code/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    env:
+      BaseFileName: megadesk
+      Timezone: America/New_york
+      OutputFolder: build
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Create build folder
+        run: |
+          mkdir $OutputFolder
+
+      - name: Install pyhon
+        uses: actions/setup-python@v2
+
+      - name: Install pio
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+
+      # Get the current date and time, in the timezone specified above, for use later.
+      - name: Get current date and time
+        id: date
+        run: echo "::set-output name=date::$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d %T')"
+
+      # Get the current date
+      - name: Get current date
+        id: date_only
+        run: echo "::set-output name=date_only::$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d')"
+
+
+
+      - name: Build t841 noserial
+        run: pio run --project-dir ./Code --environment attiny841_noserial
+      - name: Rename t841 noserial firmware
+        run: |
+          mv ./Code/.pio/build/attiny841_noserial/firmware.hex $OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t841-noserial.hex
+          FILENAME1=$OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t841-noserial.hex
+          echo "FILENAME1=$FILENAME1" >> $GITHUB_ENV
+
+
+      - name: Build t841 serial
+        run: pio run --project-dir ./Code --environment attiny841_serial
+      - name: Rename t841 serial firmware
+        run: |
+          mv ./Code/.pio/build/attiny841_serial/firmware.hex $OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t841-serial.hex
+          FILENAME2=$OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t841-serial.hex
+          echo "FILENAME2=$FILENAME2" >> $GITHUB_ENV
+
+      - name: Build t1624 noserial
+        run: pio run --project-dir ./Code --environment attiny1624_noserial
+      - name: Rename t1624 noserial firmware
+        run: |
+          mv ./Code/.pio/build/attiny1624_noserial/firmware.hex $OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t1624-noserial.hex
+          FILENAME3=$OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t1624-noserial.hex
+          echo "FILENAME3=$FILENAME3" >> $GITHUB_ENV
+
+
+      - name: Build t1624 serial
+        run: pio run --project-dir ./Code --environment attiny1624_serial
+      - name: Rename t1624 serial firmware
+        run: |
+          mv ./Code/.pio/build/attiny1624_serial/firmware.hex $OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t1624-serial.hex
+          FILENAME4=$OutputFolder/$BaseFileName-$GITHUB_REF_NAME-t1624-serial.hex
+          echo "FILENAME4=$FILENAME4" >> $GITHUB_ENV
+        
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.BaseFileName}}-firmware-${{ steps.date_only.outputs.date_only }}
+          path: ${{ env.OutputFolder }}/**
