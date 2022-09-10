@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'PCB/**'
+  workflow_dispatch:
+    
 
 jobs:
   FabricationOutputs:

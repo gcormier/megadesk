@@ -1,9 +1,9 @@
 name: "Build firmware artifacts on push"
-on: push
-  #push:
-    #paths:
-    #  - 'Code/**'
-
+on:
+  push:
+    paths:
+      - 'Code/**'
+  workflow_dispatch:
 
 jobs:
   build:
