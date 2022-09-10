@@ -1,5 +1,8 @@
 name: "Build firmware artifacts on push"
-on: push
+on:
+  push:
+    paths:
+      - 'Code/**'
 
 
 jobs:
