@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'Code/**'
+    tags:
+      - v*
   workflow_dispatch:
 
 jobs:
