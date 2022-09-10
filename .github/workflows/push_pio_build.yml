@@ -78,5 +78,5 @@ jobs:
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.BaseFileName}}-${{ env.GITHUB_REF_NAME }}-${{ steps.date_only.outputs.date_only }}
+          name: ${{ env.BaseFileName}}-firmware-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**
