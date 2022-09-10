@@ -1343,7 +1343,7 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    for (uint8_t index = 0; index < EEPROM.length() - 1; index++)
+    for (int index = 0; index < EEPROM.length() - 1; index++)
       EEPROM.write(index, 0);
 
     // Store signature value
