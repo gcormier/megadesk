@@ -1353,15 +1353,11 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    // use 8bit wraparound as exit-condition
-    for (uint8_t index = 2; index != 0; index++) {
-      eepromPut16(index,0);
-      // 2nd half of eeprom could be a back-up of the 1st half...
-      // then swap/copy between the two (for different users? backups?)
-    }
+    for (uint8_t index = 2; index < EEPROM.length(); index++)
+      EEPROM.write(index, 0);
+
     // Store signature value
     eepromPut16(EEPROM_SIG_SLOT, MAGIC_SIG);
-
   }
 #ifdef MINMAX
   // retrieve max/min height
