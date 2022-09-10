@@ -73,10 +73,10 @@ uint16_t oldHeight = 0; // previously reported height
   HardwareSerial &linSerial = Serial1;
 
 #else
-  #define PIN_UP          10
-  #define PIN_DOWN        9
-  #define PIN_BEEP        7
-  #define PIN_LIN_SERIAL  1
+  #define PIN_UP          PIN_PB0
+  #define PIN_DOWN        PIN_PB1
+  #define PIN_BEEP        PIN_PA7
+  #define PIN_LIN_SERIAL  PIN_PA1
 
   HardwareSerial &userSerial = Serial1;
   HardwareSerial &linSerial = Serial;
@@ -214,7 +214,9 @@ void startFresh()
 // use a constructor to disable the watchdog well before setup() is called
 softReset::softReset()
 {
-    //MCUSR = 0;
+    #ifndef AVR2
+      MCUSR = 0;
+    #endif
     wdt_disable();
 }
 softReset soft;
@@ -1343,7 +1345,7 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    for (int index = 0; index < EEPROM.length() - 1; index++)
+    for (uint16_t index = 0; index < EEPROM.length() - 1; index++)
       EEPROM.write(index, 0);
 
     // Store signature value
