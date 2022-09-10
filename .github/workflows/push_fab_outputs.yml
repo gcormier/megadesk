@@ -1,6 +1,8 @@
 name: "KiBot - Fabrication and Documentation (push)"
-on: push
-
+on:
+  push:
+    paths:
+      - 'PCB/**'
 
 jobs:
   FabricationOutputs:
