@@ -80,3 +80,21 @@ jobs:
         with:
           name: ${{ env.BaseFileName}}-firmware-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**
+
+
+
+      - name: Display environment variables
+        run: |
+          echo "$GITHUB_CONTEXT"
+          echo "$GITHUB_ENV"
+
+      # Conditional release if it was tagged with v*     
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            ${{ env.FILENAME1 }}
+            ${{ env.FILENAME2 }}
+            ${{ env.FILENAME3 }}
+            ${{ env.FILENAME4 }}
