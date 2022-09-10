@@ -55,10 +55,15 @@ jobs:
 
 
 
+      - name: Display environment variables
+        run: |
+          echo "$GITHUB_CONTEXT"
+          echo "$GITHUB_ENV"
+          
 
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
             ${{ env.FILENAME1 }}
