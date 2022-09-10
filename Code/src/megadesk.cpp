@@ -1,13 +1,3 @@
-/** 
- * attiny841
- * PA4/5 UART1 User
- * PA1/2 UART0 LIN
- * 
- * attiny1624
- * PA1/2 UART1 LIN
- * PB2/3 UART0 User
- **/
-
 // want to override minimum/maximum heights?
 #define MINMAX
 
@@ -21,7 +11,7 @@
 #define ENABLERESET
 
 // Serial control/telemetry
-//#define SERIALCOMMS
+#define SERIALCOMMS
 // Transmit/receive *ascii* commands (instead of raw bytes) over serial for human interfacing/control.
 #define HUMANSERIAL
 // Echo back the interpreted command before acting on it.
@@ -1353,7 +1343,7 @@ void initAndReadEEPROM(bool force)
 
   if ((signature != MAGIC_SIG) || force)
   {
-    for (uint8_t index = 2; index < EEPROM.length(); index++)
+    for (uint8_t index = 0; index < EEPROM.length() - 1; index++)
       EEPROM.write(index, 0);
 
     // Store signature value
