@@ -15,6 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Create build folder
+        run: |
+          mkdir $OutputFolder
 
       - name: Install pyhon
         uses: actions/setup-python@v2
