@@ -3,7 +3,6 @@ on:
   push:
     tags:
       - v*
-  workflow_dispatch:
 
 jobs:
   build:
@@ -19,23 +18,43 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
 
-      - name: Build noserial
-        run: pio run --project-dir ./Code --environment attiny841_noserial
 
+      - name: Build t841 noserial
+        run: pio run --project-dir ./Code --environment attiny841_noserial
       - name: Rename noserial firmware
         run: |
           mv ./Code/.pio/build/attiny841_noserial/firmware.hex ./Code/.pio/build/attiny841_noserial/megadesk-$GITHUB_REF_NAME.hex
-          FILENAME=./Code/.pio/build/attiny841_noserial/megadesk-$GITHUB_REF_NAME.hex
+          FILENAME=./Code/.pio/build/attiny841_noserial/megadesk-$GITHUB_REF_NAME-t841.hex
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
 
-      - name: Build serial
-        run: pio run --project-dir ./Code --environment attiny841_serial
 
+      - name: Build t841 serial
+        run: pio run --project-dir ./Code --environment attiny841_serial
       - name: Rename serial firmware
         run: |
           mv ./Code/.pio/build/attiny841_serial/firmware.hex ./Code/.pio/build/attiny841_serial/megadesk-$GITHUB_REF_NAME-serial.hex
-          SFILENAME=./Code/.pio/build/attiny841_serial/megadesk-$GITHUB_REF_NAME-serial.hex
+          SFILENAME=./Code/.pio/build/attiny841_serial/megadesk-$GITHUB_REF_NAME-t841-serial.hex
           echo "SFILENAME=$SFILENAME" >> $GITHUB_ENV
+
+      - name: Build t1624 noserial
+        run: pio run --project-dir ./Code --environment attiny1624_noserial
+      - name: Rename noserial firmware
+        run: |
+          mv ./Code/.pio/build/attiny1624_noserial/firmware.hex ./Code/.pio/build/attiny1624_noserial/megadesk-$GITHUB_REF_NAME.hex
+          FILENAME=./Code/.pio/build/attiny1624_noserial/megadesk-$GITHUB_REF_NAME-t1624.hex
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+
+
+      - name: Build t1624 serial
+        run: pio run --project-dir ./Code --environment attiny1624_serial
+      - name: Rename serial firmware
+        run: |
+          mv ./Code/.pio/build/attiny1624_serial/firmware.hex ./Code/.pio/build/attiny1624_serial/megadesk-$GITHUB_REF_NAME-serial.hex
+          SFILENAME=./Code/.pio/build/attiny1624_serial/megadesk-$GITHUB_REF_NAME-t1624-serial.hex
+          echo "SFILENAME=$SFILENAME" >> $GITHUB_ENV
+
+
+
 
       - name: Release
         uses: softprops/action-gh-release@v1

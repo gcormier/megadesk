@@ -8,18 +8,8 @@
 # below.
 name: "KiBot - Fabrication and Documentation (push)"
 
-on:
-  push:
-    branches:
-      - master
+on: push
 
-#on:
-#  workflow_dispatch:
-#    inputs:
-#      version:
-#        description: "Design version"
-#        required: true
-#        default: "gerb-review"
 
 jobs:
   FabricationOutputs:
@@ -47,7 +37,7 @@ jobs:
       # Actually run KiBot to generate all the files. The KiBot script used is
       # in the .kibot/release.kibot.yaml folder.
       - name: KiBot
-        uses: INTI-CMNB/KiBot@v1_k6
+        uses: INTI-CMNB/KiBot@v2_k6
         with:
           config: PCB/.kibot/megadesk.kibot.yaml
           dir: ${{ env.OutputFolder }}

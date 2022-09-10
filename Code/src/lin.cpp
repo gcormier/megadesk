@@ -51,7 +51,7 @@ void Lin::begin(int speed)
 void Lin::serialBreak(void)
 {
   serial.end();
-
+  pinMode(txPin, OUTPUT);
   digitalWrite(txPin, LOW);  // Send BREAK
   delayMicroseconds(breakTime);
 
