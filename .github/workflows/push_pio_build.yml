@@ -4,6 +4,11 @@ on: push
 
 jobs:
   build:
+    env:
+      BaseFileName: $BaseFileName
+      Timezone: America/New_york
+      OutputFolder: build
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -32,35 +37,35 @@ jobs:
         run: pio run --project-dir ./Code --environment attiny841_noserial
       - name: Rename t841 noserial firmware
         run: |
-          mv ./Code/.pio/build/attiny841_noserial/firmware.hex ./Code/.pio/build/attiny841_noserial/megadesk-$GITHUB_REF_NAME.hex
-          FILENAME=./Code/.pio/build/attiny841_noserial/megadesk-$GITHUB_REF_NAME-t841-noserial.hex
-          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          mv ./Code/.pio/build/attiny841_noserial/firmware.hex $OutputFolder/$BaseFileName-t841-noserial.hex
+          FILENAME1=$OutputFolder/$BaseFileName-t841-noserial.hex
+          echo "FILENAME1=$FILENAME1" >> $GITHUB_ENV
 
 
       - name: Build t841 serial
         run: pio run --project-dir ./Code --environment attiny841_serial
       - name: Rename t841 serial firmware
         run: |
-          mv ./Code/.pio/build/attiny841_serial/firmware.hex ./Code/.pio/build/attiny841_serial/megadesk-$GITHUB_REF_NAME-serial.hex
-          SFILENAME=./Code/.pio/build/attiny841_serial/megadesk-$GITHUB_REF_NAME-t841-serial.hex
-          echo "SFILENAME=$SFILENAME" >> $GITHUB_ENV
+          mv ./Code/.pio/build/attiny841_serial/firmware.hex $OutputFolder/$BaseFileName-t841-serial.hex
+          FILENAME2=$OutputFolder/$BaseFileName-t841-serial.hex
+          echo "FILENAME2=$FILENAME2" >> $GITHUB_ENV
 
       - name: Build t1624 noserial
         run: pio run --project-dir ./Code --environment attiny1624_noserial
       - name: Rename t1624 noserial firmware
         run: |
-          mv ./Code/.pio/build/attiny1624_noserial/firmware.hex ./Code/.pio/build/attiny1624_noserial/megadesk-$GITHUB_REF_NAME.hex
-          FILENAME=./Code/.pio/build/attiny1624_noserial/megadesk-$GITHUB_REF_NAME-t1624-noserial.hex
-          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          mv ./Code/.pio/build/attiny1624_noserial/firmware.hex $OutputFolder/$BaseFileName-t1624-noserial.hex
+          FILENAME3=$OutputFolder/$BaseFileName-t1624-noserial.hex
+          echo "FILENAME3=$FILENAME3" >> $GITHUB_ENV
 
 
       - name: Build t1624 serial
         run: pio run --project-dir ./Code --environment attiny1624_serial
       - name: Rename t1624 serial firmware
         run: |
-          mv ./Code/.pio/build/attiny1624_serial/firmware.hex ./Code/.pio/build/attiny1624_serial/megadesk-$GITHUB_REF_NAME-serial.hex
-          SFILENAME=./Code/.pio/build/attiny1624_serial/megadesk-$GITHUB_REF_NAME-t1624-serial.hex
-          echo "SFILENAME=$SFILENAME" >> $GITHUB_ENV
+          mv ./Code/.pio/build/attiny1624_serial/firmware.hex $OutputFolder/$BaseFileName-t1624-serial.hex
+          FILENAME4=$OutputFolder/$BaseFileName-t1624-serial.hex
+          echo "FILENAME4=$FILENAME4" >> $GITHUB_ENV
         
 
       - name: Archive production artifacts
