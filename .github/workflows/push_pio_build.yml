@@ -1,4 +1,4 @@
-name: "Build firmware artifacts on push"
+name: "Firmware builds"
 on:
   push:
     paths:
