@@ -1,4 +1,4 @@
-name: "KiBot - Fabrication and Documentation (push)"
+name: "FABrication Output"
 on:
   push:
     paths:
