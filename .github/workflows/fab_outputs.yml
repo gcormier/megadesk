@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'PCB/**'
+    tags:
+      - pcb-v*
   workflow_dispatch:
     
 
@@ -44,3 +46,13 @@ jobs:
         with:
           name: ${{ env.BaseFileName }}-fab-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**
+
+      # Conditional release
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/pcb-v')
+        with:
+          files: |
+            ${{ env.OutputFolder }}/*.zip
+            ${{ env.OutputFolder }}/*.pdf
+        
