@@ -8,7 +8,7 @@ on: push
 jobs:
   build:
     env:
-      BaseFileName: $BaseFileName
+      BaseFileName: megadesk-$GITHUB_REF_NAME
       Timezone: America/New_york
       OutputFolder: build
 
