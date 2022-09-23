@@ -20,6 +20,8 @@ Disabled by default in codebase/firmwares.
 
 Enables serial input/output for what the megadesk is doing and to send commands. Some people wanted to have a smart/connected megadesk, but due to the size limitations of the space inside the case, an external module is the best solution. A lot of discussion in PR #12 and PR #58.
 
+More information in [Serial.md](Serial.md). There's also specific details on [esphome](esphome.md).
+
 ### Custom MIN/MAX
 Enabled by default, no limits.
 
@@ -93,8 +95,6 @@ To recall a memory slot you push the up button the number of times for that memo
 # Hacking, contributing and DIY
 This has been moved to [DIY.md](DIY.md) 
 
-# Serial commands
-This has been moved to [Serial.md](Serial.md)
 
 # esphome configuration
 esphome example configuration avalible at [esphome.md](esphome.md)
