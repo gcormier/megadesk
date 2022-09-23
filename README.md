@@ -8,22 +8,12 @@ Do you wish your IKEA Bekant had memory buttons? I sure did. So I made megadesk.
 # For sale on Tindie - Plug and Play!
 I've setup a store on Tindie for those who wish to order a ready to go, plug and play version. It comes with a fully assembled PCB as well as the cable you will need to connect it. No soldering or assembly required! <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
 
-## July 21, 2021 - Megaupdate
-We've had a lot of contributions lately from @philwmcdonald and @tagno25 which have really upped the features available on megadesk! They've been in the development branch for a while, but have now been merged to the master branch!
-
-Functions can be accessed/toggled/programmed with "memory" positions that are always above position 10, as it's unlikely someone needs 10 memory positions. 
+## Features
 
 ### Recalibration
-Memory position 14.
-
-
-The factory recalibration routine has been implemented. The original BEKANT controller is no longer needed to recalibrate motors. **This will cause the desk to move to the lowest possible extremity. Please exercise caution and be prepared to unplug the power if needed.** Any interruption to this procedure requires a power-cycle.
-
-### Reset
-Memory position 15.
-
-Reboot megadesk controller without power-cycling. On success, plays a full fanfare. On failure, repeatedly plays partial fanfare until communications succeed with both legs/motors.
-
+The factory recalibration routine has been implemented. The original BEKANT controller is no longer needed to recalibrate motors.
+**This will cause the desk to move to the lowest possible extremity. Please exercise caution and be prepared to unplug the power if needed.**
+Any interruption to this procedure requires a power-cycle.
 
 ### Serial control 
 Disabled by default in codebase/firmwares.
@@ -35,32 +25,18 @@ Enabled by default, no limits.
 
 This allows you to specify custom values for the minimum and maximum height of your desk. This is useful if you have things stored underneath, or maximum height limitations (shelf on the wall).
 
-A default unit has no limitations.
 - Memory 11 will use the current desk height to set the minimum limit. If already set, it will clear it.
 - Memory 12 will use the current desk height to set the maximum limit. If already set, it will clear it.
 
 ### Audio Feedback
-Memory position 17, disabled by default.
+Disabled by default.
 
- Adds extra audio feedback when pushing buttons or using functions.
+Adds extra audio feedback when pushing buttons or using functions.
 
 ### Dual-button memory
-Memory Position 18, disabled by default.
-
+Disabled by default.
 
 This allows storing unique memory positions against each button. When enabled, you could save a double-click position for the up button as well a double-click position for the down button.
-
-### Improved stability
-Code improvements to detect bad/unhandled states with the motors and attemp to re-establish proper communications with them. Should improve startup reliability.
-
-### General Improvements
-Huge optimization of code size by @philwmcdonald which has enabled us to include these features and make room for more. Some changes to audio tones.
-
-### Serial control 
-Disabled in default codebase/firmware. Available via rebuild/reflash.
-
-Enables serial input/output for what the megadesk is doing and to send commands. Some people wanted to have a smart/connected megadesk, but due to the size limitations of the space inside the case, an external module is the best solution. A lot of discussion in PR #12 and PR #58.
-
 
 # Disassembly of the existing control unit
 I now have a <a href="https://www.youtube.com/watch?v=jCPlM2KYwDQ">video with a few tips</a> on disassembling the IKEA Bekant controller and installing megadesk. Due to popular request, I now have a <a href="https://www.youtube.com/watch?v=qiOev3miDo8">second video with live surgery</a> of a brand new, unopened control unit.
@@ -86,8 +62,6 @@ Unfortunately the beeps aren't captured well in the video unless you turn up the
 
 
 # Setting and Recalling memory slots
-Note. Recent software allows either button to store and recall memory *if* Dual-button memory is enabled.
-
 ## Setting
 To set assign a memory slot you press the up button two or more times. On the final button press you hold until you hear a tone that indicates what slot you have assigned (2 beeps, 3 beeps, etc).
 
