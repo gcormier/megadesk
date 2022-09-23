@@ -72,18 +72,6 @@ Unfortunately the beeps aren't captured well in the video unless you turn up the
 
 <a href = "https://youtu.be/7XOhuRgoEjk"><img  src = "https://img.youtube.com/vi/7XOhuRgoEjk/0.jpg"  /></a>
 
-# Variants
-(Updated Feb 20, 2021)
-There are now 3 different status codes, which means 3 possible configurations. The unit ships by default with mode 1 activated. Changing to an incorrect mode will not harm the desk. The unit will beep and be responsive, but the motors will not engage.
-
-(older software)
-Pressing the UP button 16 times will play a 2-note "beep-boop" tone. 
-- Single - variant mode 1
-- Double - variant mode 2
-- Triple - variant mode 3
-
-Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode. Units from shipped prior will need to be flashed with the new firmware.
-
 # Quick Commands
 | UP pushes | Function | Audio Feedback
 | --------- | -------- | --------
@@ -92,13 +80,12 @@ Any unit shipped after Feb 20, 2021 from the Tindie store will have the 3rd mode
 | 12        | Set the highest/maximum height to current position, or, reset back to default (toggles) | 4 high beeps when setting a limit. Single high beep - disabled.
 | 14        | Recalibration procedure, desk will lower down to the lowest limits | (Will begin moving)
 | 15        | Reset | Fanfare
-| 16        | Units before Feb 2021 - toggle different variants. Newer units, no operation
+| 16        | Newer units, no operation. Units before Feb 2021 - toggle different variants.
 | 17        | Toggle audio-feedback mode | double beep enabled. single beep disabled.
 | 18        | Toggle both-button mode | double beep enabled. single beep disabled.
 
 
 # Setting and Recalling memory slots
-
 Note. Recent software allows either button to store and recall memory *if* Dual-button memory is enabled.
 
 ## Setting
@@ -106,7 +93,6 @@ To set assign a memory slot you press the up button two or more times. On the fi
 
 ## Recalling
 To recall a memory slot you push the up button the number of times for that memory slot (2 for first slot, 3 for second slot, etc). If you try to recall a memory slot that has not been saved you will hear an "error" chime indicating that no height information could be recalled.
-
 
 # Troubleshooting
 1. Have you tried turning it off again? :)
