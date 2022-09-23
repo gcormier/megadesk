@@ -1,9 +1,9 @@
+[![Firmware builds](https://github.com/gcormier/megadesk/actions/workflows/firmware_build.yml/badge.svg)](https://github.com/gcormier/megadesk/actions/workflows/firmware_build.yml)
 
 # megadesk
-
 Do you wish your IKEA Bekant had memory buttons? I sure did. So I made megadesk. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
 
-<img  src="https://github.com/gcormier/megadesk/blob/master/PCB%20and%20Housing.png"  width=25%/> <img  src="https://github.com/gcormier/megadesk/blob/master/megadesk_front.png"  width=20%/>
+<img  src="PCB%20and%20Housing.png" width=25%/>
 
 # For sale on Tindie - Plug and Play!
 I've setup a store on Tindie for those who wish to order a ready to go, plug and play version. It comes with a fully assembled PCB as well as the cable you will need to connect it. No soldering or assembly required! <a  href="https://www.tindie.com/products/gcormier/megadesk/">https://www.tindie.com/products/gcormier/megadesk/</a>
