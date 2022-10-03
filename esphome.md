@@ -108,7 +108,9 @@ class Megadesk : public Component, public Sensor, public UARTDevice {
 ```
 esphome:
   name: megadesk
+  comment: ESPHome Device controlling Megadesk controller
   platform: ESP8266
+  # details on how to find/select your board can be found at https://esphome.io/components/esp8266.html
   board: d1_mini
   includes:
     - megadesk.h
@@ -123,7 +125,7 @@ esphome:
       - uart.write: "<R0.12."
 
 logger:
-  baud_rate:0
+  baud_rate: 0
 
 api:
   password: ""
@@ -132,8 +134,8 @@ ota:
   password: ""
 
 wifi:
-  ssid: "xxxxxxxxxxx"
-  password: "xxxxxxxxx"
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
   ap:
     ssid: "Desk Fallback Hotspot"
