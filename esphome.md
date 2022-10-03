@@ -123,7 +123,7 @@ esphome:
       - uart.write: "<R0.12."
 
 logger:
-  baud_rate:0
+  baud_rate: 0
 
 api:
   password: ""
