@@ -1,4 +1,4 @@
 (fp_lib_table
   (lib (name "megadesk")(type "KiCad")(uri "${KIPRJMOD}/megadesk.pretty")(options "")(descr ""))
-  (lib (name "!megadeskcompanion")(type "KiCad")(uri "C:/Users/Greg/Desktop/megadesk_companion/!megadeskcompanion.pretty")(options "")(descr ""))
+  (lib (name "Espressif")(type "KiCad")(uri "D:/kicad-greg/kicad-espressif/footprints/Espressif.pretty")(options "")(descr ""))
 )

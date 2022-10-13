@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name "!megadesk")(type "KiCad")(uri "${KIPRJMOD}/megadesk.kicad_sym")(options "")(descr ""))
+  (lib (name "Espressif")(type "KiCad")(uri "D:/kicad-greg/kicad-espressif/libraries/Espressif.kicad_sym")(options "")(descr ""))
 )
