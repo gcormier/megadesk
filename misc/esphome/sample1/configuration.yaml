@@ -1,4 +1,4 @@
- Custom Sensor to detect when standing
+ # Custom Sensor to detect when standing
 
 template:
   - binary_sensor:
