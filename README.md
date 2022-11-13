@@ -78,23 +78,27 @@ To recall a memory slot you push the up button the number of times for that memo
     - Note that the power supply that comes with the BEKANT can store a charge for quite some time. It might be necessary to leave it unplugged for 60-120 seconds for it to lose that charge.
 1. Is the safety key inserted? It is still required for the motors to engage. You will not hear any beeps when using buttons if it is removed.
 1. Try different variant modes described above by pushing UP 16 times. (Pre Feb-2021 units only)
-1. Test the up/down button connectivity
-    - Holding DOWN while powering on will wipe the memory and enter a button test mode, where the up/down buttons can be held to test that they are working - a power cycle is required to exit this mode.
+1. Test the buttons
+    - Holding DOWN while powering on will wipe the EEPROM and enter a button test mode, where the up/down buttons can be held to test that they are working - a power cycle is required to exit this mode.
+    - If they don't work
+        - Ensure the safety key is fully inserted
+        - Ensure the ribbon cable is seated far enough
+        - If the FPC connector has a latch, ensure it is [latched](https://www.youtube.com/shorts/f_H-t_oJuzk)
+        - You can clean the ribbon cable gently with a swab and rubbing alcohol which has been [reported to help](https://github.com/gcormier/megadesk/discussions/114) with intermittent issues
 1. Factory Reset
-    - Holding DOWN while powering on will wipe the memory and enter a button test mode, where the up/down buttons can be held to test that they are working - a power cycle is required to exit this mode.
+    - Holding DOWN while powering on will wipe the EEPROM and enter a button test mode (see above) - a power cycle is required to exit this mode.
 1. Recalibrate/reset the motors
-   1. factory controller
+   1. Factory controller
       - This step must be done with the **ORIGINAL** BEKANT controller.
       - Hold the UP and DOWN buttons for 8 seconds, after that let go of up while maintaining the pressure on the down button.
       - The desk will lower until it stops on its own.
       - Let go of all buttons, and test regular desk functionality with the original controller.
       - Once functionality is confirmed, replace with megadesk.   
-   1. Recalibrate/reset the motors, megadesk
+   1. Megadesk
       - Push the UP button 14 times. 
 
 # Hacking, contributing and DIY
 This has been moved to [DIY.md](DIY.md) 
 
-
 # esphome configuration
-esphome example configuration avalible at [esphome.md](esphome.md)
+esphome example configuration avalible at [esphome.md](esphome.md), and other sample configurations in [esphome folder](https://github.com/gcormier/megadesk/tree/master/esphome)
