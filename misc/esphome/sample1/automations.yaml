@@ -1,0 +1,37 @@
+- id: '1665206728980'
+  alias: Stand Every Workday
+  description: ''
+  trigger:
+  - platform: time
+    at: 07:55:00
+  condition:
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
+  - condition: device
+    device_id: 24637765d54f431d8aabcc70fea8d9e3
+    domain: device_tracker
+    entity_id: device_tracker.iphone
+    type: is_home
+  action:
+  - device_id: dcc5e28a83dac013a370ee84060e0f3b
+    domain: button
+    entity_id: button.standing
+    type: press
+  mode: single
+- id: '1665206778134'
+  alias: Sit at End of Workday
+  description: Set desk to sitting to keep 'standing' stats accurate
+  trigger:
+  - platform: time
+    at: '17:00:00'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
+  action:
+  - device_id: dcc5e28a83dac013a370ee84060e0f3b
+    domain: button
+    entity_id: button.sitting
+    type: press
+  mode: single

@@ -1,0 +1,49 @@
+ Custom Sensor to detect when standing
+
+template:
+  - binary_sensor:
+      - name: "standing"
+        state: >
+          {{ states('number.megadesk_height_cm')|float > 100 }}
+
+
+sensor:
+  # time spent standing
+  - platform: history_stats
+    name: standing_today
+    entity_id: binary_sensor.standing
+    state: 'on'
+    type: time
+    start: '{{ now().replace(hour=0, minute=0, second=0) }}'
+    end: '{{ now().replace(hour=23, minute=59, second=59) }}'
+  - platform: template
+    sensors:
+      time_standing:
+        unit_of_measurement: "Hours"
+        value_template: "{{ (states('sensor.standing_today') | float) }}"
+        friendly_name: 'Time Standing'
+  
+    # time TV is on Today
+  - platform: history_stats
+    name: roku_on_today
+    entity_id: media_player.55_tcl_roku_tv
+    state: 'on'
+    type: time
+    start: '{{ now().replace(hour=0, minute=0, second=0) }}'
+    end: '{{ now().replace(hour=23, minute=59, second=59) }}'
+  - platform: template
+    sensors:
+      tv_consumption:
+        unit_of_measurement: "Hours"
+        value_template: "{{ (states('sensor.roku_on_today') | float) }}"
+        friendly_name: 'TV Consumption'
+  
+
+# work day sensor targeted to BC (used by automation for standing desk)
+
+binary_sensor:
+  - platform: workday
+    country: CA
+    province: BC
+    workdays: [mon, tue, wed, thu, fri]
+    excludes: [sat, sun, holiday]
