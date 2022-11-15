@@ -18,18 +18,18 @@ jobs:
 
     steps:
       # Check out the files
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Get the current date and time, in the timezone specified above, for use later.
       - name: Get current date and time
         id: date
-        run: echo "::set-output name=date::$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d %T')"
-
+        run: echo "date=$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d %T')" >> $GITHUB_OUTPUT
+        
       # Get the current date
       - name: Get current date
         id: date_only
-        run: echo "::set-output name=date_only::$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d')"
-
+        run: echo "date_only=$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        
       # Actually run KiBot to generate all the files. The KiBot script used is
       # in the .kibot/release.kibot.yaml folder.
       - name: KiBot
@@ -42,7 +42,7 @@ jobs:
 
       # Archive all the artifacts from output and attach to the action's results.
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.BaseFileName }}-fab-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**
