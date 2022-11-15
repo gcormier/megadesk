@@ -23,7 +23,7 @@ jobs:
           mkdir $OutputFolder
 
       - name: Install pyhon
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
 
       - name: Install pio
         run: |
