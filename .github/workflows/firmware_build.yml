@@ -83,13 +83,6 @@ jobs:
           name: ${{ env.BaseFileName}}-firmware-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**
 
-
-
-      - name: Display environment variables
-        run: |
-          echo "$GITHUB_CONTEXT"
-          echo "$GITHUB_ENV"
-
       # Conditional release if it was tagged with v*     
       - name: Release
         uses: softprops/action-gh-release@v1
