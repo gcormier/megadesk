@@ -8,7 +8,7 @@
 #define SMALL_INIT
 
 // enable reset via button-press and/or bad linInit
-#define ENABLERESET
+//#define ENABLERESET
 
 // Serial control/telemetry
 //#define SERIALCOMMS
@@ -37,8 +37,9 @@
 #include <EEPROM.h>
 #include "lin.h"
 #include "megadesk.h"
-#include <avr/wdt.h>
-
+#ifndef ESP32
+  #include <avr/wdt.h>
+#endif
 // constants related to presses/eeprom slots
 // (on attiny841: 512byte eeprom means slots 0-255)
 // EEPROM magic signature to detect if eeprom is valid
@@ -217,7 +218,9 @@ softReset::softReset()
     #ifndef AVR2
       MCUSR = 0;
     #endif
+    #ifndef ESP32
     wdt_disable();
+    #endif
 }
 softReset soft;
 
