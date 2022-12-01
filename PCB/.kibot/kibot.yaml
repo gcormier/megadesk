@@ -1,6 +1,3 @@
-# Gerber and drill files for JLCPCB, without stencil
-# URL: https://jlcpcb.com/
-# Based on setting used by Gerber Zipper (https://github.com/g200kg/kicad-gerberzipper)
 kibot:
   version: 1
 
