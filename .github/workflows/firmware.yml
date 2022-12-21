@@ -16,14 +16,14 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3 
       
       - name: Create build folder
         run: |
           mkdir $OutputFolder
 
       - name: Install pyhon
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
 
       - name: Install pio
         run: |
@@ -78,7 +78,7 @@ jobs:
         
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ env.BaseFileName}}-firmware-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.OutputFolder }}/**
