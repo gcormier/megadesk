@@ -1,4 +1,4 @@
-[![Firmware builds](https://github.com/gcormier/megadesk/actions/workflows/firmware_build.yml/badge.svg)](https://github.com/gcormier/megadesk/actions/workflows/firmware_build.yml)
+[![Firmware build](https://github.com/gcormier/megadesk/actions/workflows/firmware.yml/badge.svg)](https://github.com/gcormier/megadesk/actions/workflows/firmware.yml)
 
 # megadesk
 Do you wish your IKEA Bekant had memory buttons? I sure did. So I made megadesk. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
