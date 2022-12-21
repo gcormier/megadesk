@@ -37,7 +37,7 @@ outputs:
       use_gerber_net_attributes: false
       line_width: 0.1
       subtract_mask_from_silk: true
-      inner_extension_pattern: '.gp%n'
+      inner_extension_pattern: '.g%n'
     layers:
       # Note: a more generic approach is to use 'copper' but then the filenames
       # are slightly different.
@@ -122,3 +122,19 @@ outputs:
         hide_pcb_info: true
         hide_stats_info: true
         quote_all: true
+
+  - name: 'STEP'
+    comment: "STEP file"
+    type: step
+
+  - name: 'Rendering'
+    type: render_3d
+    options:
+      view: top
+      rotate_x: 4
+      rotate_y: 0
+      rotate_z: -3
+      ray_tracing: true
+      auto_crop: true
+      transparent_background: true
+      output: "render.png"
