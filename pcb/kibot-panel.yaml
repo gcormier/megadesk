@@ -26,7 +26,7 @@ outputs:
         - layout:
             rows: 4
             cols: 5
-            space: 2
+            #space: 2
             #hbackbone: 5
             #vbackbone: 5
             #hboneskip: 1
@@ -71,7 +71,7 @@ outputs:
             type: simple
             text: Design created on {date}
             anchor: mb
-            voffset: 2.5
+            voffset: -2.5
             hjustify: center
             vjustify: center
 
