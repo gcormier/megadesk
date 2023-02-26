@@ -1,0 +1,68 @@
+name: "Fabrication"
+on:
+  push:
+    paths:
+      - '**.kicad_sch'
+      - '**.kicad_pcb'
+      - '**kibot.yaml'
+  pull_request:
+    paths:
+      - '**.kicad_sch'
+      - '**.kicad_pcb'
+      - '**kibot.yaml'
+    tags:
+      - pcb-v*
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  BaseFileName: megadesk
+  Timezone: America/Toronto
+  PanelFolder: pcb/panel_output
+  runs-on: ubuntu-latest
+
+jobs:
+  make_panel:
+    name: Create panel
+    runs-on: ubuntu-latest
+      
+    steps:
+      # Check out the files
+      - uses: actions/checkout@v3
+
+      # Generate the panel first
+      - name: KiBot
+        uses: INTI-CMNB/KiBot@v2_k6
+        with:
+          config: pcb/kibot-panel.yaml
+          dir: ${{ env.PanelFolder }} 
+          schema: pcb/${{ env.BaseFileName }}.kicad_sch
+          board: pcb/${{ env.BaseFileName }}.kicad_pcb
+
+      # Get the current date and time, in the timezone specified above, for use later.
+      - name: Get current date and time
+        id: date
+        run: echo "date=$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d %T')" >> $GITHUB_OUTPUT
+
+      # Get the current date
+      - name: Get current date
+        id: date_only
+        run: echo "date_only=$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      # Generate fab output based on panel
+      - name: KiBot
+        uses: INTI-CMNB/KiBot@v2_k6
+        with:
+          config: pcb/kibot.yaml
+          dir: ${{ env.PanelFolder }} 
+          schema: pcb/megadesk_panel.kicad_sch
+          board: pcb/megadesk_panel.kicad_pcb
+
+      # Archive all the artifacts from output and attach to the action's results.
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.BaseFileName }}-panel-fab-${{ steps.date_only.outputs.date_only }}
+          path: ${{ env.PanelFolder }}/**
+
+        
