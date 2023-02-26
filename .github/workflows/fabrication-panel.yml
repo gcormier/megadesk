@@ -65,7 +65,7 @@ jobs:
         with:
           config: pcb/kibot.yaml
           dir: ${{ env.PanelFolder }} 
-          schema: ${{ env.PanelFolder }}/megadesk-panel.kicad_sch
+          schema: pcb/megadesk.kicad_sch
           board: ${{ env.PanelFolder }}/megadesk-panel.kicad_pcb
 
       # Archive all the artifacts from output and attach to the action's results.
