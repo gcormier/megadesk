@@ -74,7 +74,7 @@ jobs:
         
       - name: debug4
         id: deb4
-        run: id && chown -R 1001:1001 ${{ env.PanelFolder }}/* && echo "pwn dat cache"
+        run: id && sudo chown -R 1001:123 ${{ env.PanelFolder }}/* && echo "pwn dat cache"
         
       - name: debug5
         id: deb5
