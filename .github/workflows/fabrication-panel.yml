@@ -68,11 +68,15 @@ jobs:
           schema: pcb/megadesk.kicad_sch
           board: ${{ env.PanelFolder }}/megadesk-panel.kicad_pcb
 
+      - name: debug3
+        id: deb3
+        run: ls -l pcb/panel_output/*
+        
       # Archive all the artifacts from output and attach to the action's results.
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.BaseFileName }}-panel-fab-${{ steps.date_only.outputs.date_only }}
+          name: ${{ env.BaseFileName }}-panel-${{ steps.date_only.outputs.date_only }}
           path: ${{ env.PanelFolder }}/**
 
         
