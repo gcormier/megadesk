@@ -4,5 +4,5 @@ on:
   workflow_call:
 
 jobs:
-  fabrication:
+  fabrication-panel:
     uses: gcormier/kicad-jobs/.github/workflows/kicad-fabrication-panel.yaml@main
