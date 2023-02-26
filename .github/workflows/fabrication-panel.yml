@@ -49,16 +49,6 @@ jobs:
         id: date_only
         run: echo "date_only=$(TZ='${{ env.Timezone }}' date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      - name: debug
-        id: deb
-        run: ls -l pcb/*
-
-      - name: debug2
-        id: deb2
-        run: ls -l pcb/panel_output/*
-        
-
-
       # Generate fab output based on panel
       - name: KiBot
         uses: INTI-CMNB/KiBot@v2_k6
@@ -67,18 +57,10 @@ jobs:
           dir: ${{ env.PanelFolder }} 
           schema: pcb/megadesk.kicad_sch
           board: ${{ env.PanelFolder }}/megadesk-panel.kicad_pcb
-
-      - name: debug3
-        id: deb3
-        run: ls -l pcb/panel_output/*
         
       - name: debug4
         id: deb4
-        run: id && sudo chown -R 1001:123 ${{ env.PanelFolder }}/* && echo "pwn dat cache"
-        
-      - name: debug5
-        id: deb5
-        run: ls -l pcb/panel_output/*
+        run: id && sudo chown -R 1001:123 ${{ env.PanelFolder }}/*
 
       # Archive all the artifacts from output and attach to the action's results.
       - name: Archive production artifacts
