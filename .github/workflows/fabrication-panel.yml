@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v3
 
       # Generate the panel first
-      - name: KiBot
+      - name: KiBot (Panel)
         uses: INTI-CMNB/KiBot@v2_k6
         with:
           config: pcb/kibot-panel.yaml
@@ -55,8 +55,8 @@ jobs:
         with:
           config: pcb/kibot.yaml
           dir: ${{ env.PanelFolder }} 
-          schema: pcb/megadesk_panel.kicad_sch
-          board: pcb/megadesk_panel.kicad_pcb
+          schema: panel_output/megadesk_panel.kicad_sch
+          board: panel_output/megadesk_panel.kicad_pcb
 
       # Archive all the artifacts from output and attach to the action's results.
       - name: Archive production artifacts
