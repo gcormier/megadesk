@@ -1,4 +1,4 @@
-name: "Fabrication"
+name: "Fabrication - Panel"
 on:
   push:
     paths:
