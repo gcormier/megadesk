@@ -37,7 +37,6 @@
       9,
       10,
       11,
-      12,
       13,
       14,
       15,
@@ -62,8 +61,8 @@
       35,
       36
     ],
-    "visible_layers": "ffc0830_ffffffff",
-    "zone_display_mode": 1
+    "visible_layers": "ffc8830_ffffffff",
+    "zone_display_mode": 0
   },
   "meta": {
     "filename": "megadesk.kicad_prl",
