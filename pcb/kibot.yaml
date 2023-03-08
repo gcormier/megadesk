@@ -49,7 +49,7 @@ outputs:
       - B.SilkS
       - F.Mask
       - B.Mask
-      #- Edge.Cuts
+      - Edge.Cuts
 
   - name: JLCPCB_drill
     comment: Drill files compatible with JLCPCB
