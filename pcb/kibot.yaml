@@ -50,7 +50,6 @@ outputs:
       - F.Mask
       - B.Mask
       - Edge.Cuts
-      - Edge.VCuts
 
   - name: JLCPCB_drill
     comment: Drill files compatible with JLCPCB
