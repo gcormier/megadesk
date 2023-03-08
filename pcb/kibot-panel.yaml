@@ -26,7 +26,7 @@ outputs:
         - layout:
             rows: 4
             cols: 5
-            #space: 2
+            space: 0
             #hbackbone: 5
             #vbackbone: 5
             #hboneskip: 1
@@ -50,12 +50,12 @@ outputs:
             space: 3
             fillet: 1mm
           tooling:
-            type: 3hole
+            type: 4hole
             hoffset: 2.5
             voffset: 2.5
             size: 1.152
           fiducials:
-            type: 3fid
+            type: 4fid
             hoffset: 5
             voffset: 3.85
             coppersize: 1
