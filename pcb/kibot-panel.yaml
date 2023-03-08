@@ -40,7 +40,7 @@ outputs:
             #hcount: 0
           cuts:
             type: vcuts
-            layer: Edge.VCuts
+            layer: Edge.Cuts
             #drill: 0.5
             #spacing: 1mm
             #offset: 0.2
