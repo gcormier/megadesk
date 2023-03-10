@@ -24,8 +24,8 @@ outputs:
       units: mm
       configs:
         - layout:
-            rows: 4
-            cols: 5
+            rows: 2
+            cols: 3
             space: 0
             #hbackbone: 5
             #vbackbone: 5
