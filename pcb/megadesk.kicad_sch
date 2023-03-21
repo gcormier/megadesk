@@ -977,7 +977,6 @@
     )
   )
 
-
   (junction (at 218.44 77.47) (diameter 0) (color 0 0 0 0)
     (uuid 40165eda-4ba6-4565-9bb4-b9df6dbb08da)
   )
@@ -2267,7 +2266,7 @@
   )
 
   (symbol (lib_id "Device:C") (at 92.71 63.5 0) (unit 1)
-    (in_bom yes) (on_board no) (dnp no)
+    (in_bom yes) (on_board no) (dnp yes)
     (uuid 00000000-0000-0000-0000-00005aa1f9da)
     (property "Reference" "C4" (at 93.345 60.96 0)
       (effects (font (size 1.27 1.27)) (justify left))
