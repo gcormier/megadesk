@@ -5,13 +5,13 @@ on:
       - '**.kicad_sch'
       - '**.kicad_pcb'
       - '**kibot.yaml'
+    tags:
+      - pcb-v*
   pull_request:
     paths:
       - '**.kicad_sch'
       - '**.kicad_pcb'
       - '**kibot.yaml'
-    tags:
-      - pcb-v*
   workflow_dispatch:
   workflow_call:
 
