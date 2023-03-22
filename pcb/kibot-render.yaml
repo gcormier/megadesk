@@ -1,0 +1,19 @@
+kibot:
+  version: 1
+
+outputs:
+  - name: 'STEP'
+    comment: "STEP file"
+    type: step
+
+  - name: 'Rendering'
+    type: render_3d
+    options:
+      view: top
+      rotate_x: 4
+      rotate_y: 0
+      rotate_z: -3
+      ray_tracing: true
+      auto_crop: true
+      transparent_background: true
+      output: "render.png"

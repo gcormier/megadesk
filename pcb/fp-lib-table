@@ -1,3 +1,4 @@
 (fp_lib_table
+  (version 7)
   (lib (name "megadesk")(type "KiCad")(uri "${KIPRJMOD}/megadesk.pretty")(options "")(descr ""))
 )

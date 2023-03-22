@@ -5,16 +5,18 @@ on:
       - '**.kicad_sch'
       - '**.kicad_pcb'
       - '**kibot.yaml'
+    tags:
+      - pcb-v*
   pull_request:
     paths:
       - '**.kicad_sch'
       - '**.kicad_pcb'
       - '**kibot.yaml'
-    tags:
-      - pcb-v*
   workflow_dispatch:
   workflow_call:
 
 jobs:
   fabrication:
     uses: gcormier/kicad-jobs/.github/workflows/kicad-fabrication.yaml@main
+    permissions:
+      contents: write
