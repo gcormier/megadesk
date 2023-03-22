@@ -2002,7 +2002,7 @@
     (property "Datasheet" "~" (at 119.38 27.94 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "C376121" (at 119.38 27.94 0)
+    (property "LCSC" "C492411" (at 119.38 27.94 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Part Number" "Molex 0022288030" (at 119.38 27.94 0)
