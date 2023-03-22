@@ -1,5 +1,6 @@
 name: "Fabrication - Panel"
 on:
+
   workflow_dispatch:
   workflow_call:
 
