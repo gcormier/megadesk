@@ -18,3 +18,5 @@ on:
 jobs:
   fabrication:
     uses: gcormier/kicad-jobs/.github/workflows/kicad-fabrication.yaml@main
+    permissions:
+      contents: write

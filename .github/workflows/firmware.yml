@@ -9,6 +9,8 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
     env:
       BaseFileName: ${{ github.event.repository.name }}
       Timezone: America/Toronto
