@@ -60,6 +60,10 @@
 uint16_t oldHeight = 0; // previously reported height
 #endif
 
+#define FEEDBACK_DEFAULT  1
+#define FEEDBACK_LOTS     2
+#define FEEDBACK_NONE     0
+
 #define HYSTERESIS    137    // ignore movement requests < this distance
 #define MOVE_OFFSET   159    // amount to move when moving manually
 
@@ -160,7 +164,7 @@ Command manualMove; // press and hold up/down?
 
 // feedback pips
 #ifdef FEEDBACK
-bool feedback;
+uint16_t feedback;
 uint16_t scale[] = { NOTE_C6, NOTE_D6, NOTE_E6, NOTE_F6, NOTE_G6, NOTE_A6, NOTE_B6, NOTE_C7, };
 #endif
 
@@ -279,10 +283,12 @@ void setup()
   beep(NOTE_C6);
 
   initAndReadEEPROM(false);
-  beep(NOTE_E6);
+  if (feedback)
+    beep(NOTE_E6);
 
   lin.begin(19200);
-  beep(NOTE_G6);
+  if (feedback)
+    beep(NOTE_G6);
 #ifdef DEBUGSTARTUP
   // output bit period and recv-timeout times.
   writeSerial(1000000/19200, (34+90)*1000000/19200, 0xaa);
@@ -293,7 +299,7 @@ void setup()
   // final note played once for single button mode, twice for bothbutton mode
   if (up_press)
     toggleBothMode();
-  else
+  else if (feedback)
     beep(NOTE_C7, bothbuttons+1);
 }
 
@@ -340,7 +346,7 @@ void readButtons()
       lastbutton = buttons;
 
 #ifdef FEEDBACK
-      if (feedback)
+      if (feedback == FEEDBACK_LOTS)
         playTone(scale[pushCount % (sizeof(scale)/sizeof(scale[0]))],
                 PIP_DURATION); // musical feedback
 #endif
@@ -401,7 +407,7 @@ void readButtons()
           // could still be a trigger for something. For now just...
 #ifdef FEEDBACK
           // play short dull buzz, indicating this is a no-op.
-          if (feedback) playTone(NOTE_A4, PIP_DURATION);
+          if (feedback == FEEDBACK_LOTS) playTone(NOTE_A4, PIP_DURATION);
 #endif
         }
       }
@@ -743,8 +749,10 @@ void loop()
     else
     {
       // load position
+     if (feedback)
       beep(NOTE_LOW, pushCount);
-      if (USED_DOWN)
+    
+    if (USED_DOWN)
         pushCount += DOWN_SLOT_START;
       targetHeight = loadMemory(pushCount);
       memoryMoving = true;
@@ -870,7 +878,7 @@ uint8_t linBurst()
 #endif
 #ifdef FEEDBACK
     // more serious problem? longer tone...
-    if (feedback) playTone(NOTE_A4, SHORT_PAUSE);
+    if (feedback == FEEDBACK_LOTS) playTone(NOTE_A4, SHORT_PAUSE);
 #endif
 #endif
     // what kind of corrective action can be taken?
@@ -1049,10 +1057,13 @@ uint16_t loadMemory(uint8_t memorySlot)
     // empty
     delay(LONG_PAUSE);
     // sad trombone
-    beep(NOTE_DSHARP6);
-    beep(NOTE_D6);
-    beep(NOTE_CSHARP6);
-    beep(NOTE_C6);
+    if (feedback) {
+      beep(NOTE_DSHARP6);
+      beep(NOTE_D6);
+      beep(NOTE_CSHARP6);
+      beep(NOTE_C6);
+    }
+    
 #if (defined SERIALCOMMS && defined SERIALERRORS)
     writeSerial(response_error, 0, memorySlot); // Indicate an error
 #endif
@@ -1420,7 +1431,11 @@ void toggleBothMode()
 #ifdef FEEDBACK
 void toggleFeedback()
 {
-  feedback = !feedback;
+  // Feedback can be 0-2 inclusive for the various states
+  feedback++;
+  if (feedback > 2)
+    feedback = 0;
+
   eepromPut16(FEEDBACK_SLOT, feedback);
   beep(NOTE_C6, feedback+1);
 }
