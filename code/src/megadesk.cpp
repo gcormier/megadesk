@@ -765,7 +765,9 @@ void loop()
   }
 
   // avoid moving toward an out-of-bounds position
-  if ((targetHeight < DANGER_MIN_HEIGHT) || (targetHeight > DANGER_MAX_HEIGHT)) {
+  // this depends on the direction we are moving in
+  if ((targetHeight < DANGER_MIN_HEIGHT && manualMove == Command::DOWN) ||
+      (targetHeight > DANGER_MAX_HEIGHT) && manualMove == Command::UP) {
 #if (defined SERIALCOMMS && defined SERIALERRORS)
     writeSerial(response_error, targetHeight); // Indicate an error and the bad targetHeight
 #endif
