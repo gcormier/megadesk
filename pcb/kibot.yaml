@@ -7,7 +7,7 @@ filters:
     type: generic
     include_only:
       - column: 'LCSC'
-        regex: '^C\d+'
+        regex: '^.+'
 
 variants:
   - name: rotated
