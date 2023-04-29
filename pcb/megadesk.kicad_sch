@@ -2280,7 +2280,7 @@
     (property "Datasheet" "~" (at 92.71 63.5 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "DNP" (at 92.71 63.5 0)
+    (property "LCSC" "" (at 92.71 63.5 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Details" "+/- 20% or better" (at 92.71 63.5 0)
