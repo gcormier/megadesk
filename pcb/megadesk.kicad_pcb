@@ -125,12 +125,12 @@
     (property "ki_description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)")
     (property "ki_keywords" "connector")
     (path "/00000000-0000-0000-0000-00005a83b312")
-    (attr through_hole exclude_from_pos_files)
-    (fp_text reference "J1" (at 4.385 -2.27 -90) (layer "F.SilkS") hide
+    (attr through_hole)
+    (fp_text reference "J1" (at 4.385 -2.27 90) (layer "F.SilkS") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp 5fc525c0-1317-4aa5-bf59-3ff04cc3ae42)
     )
-    (fp_text value "Interface" (at 4.385 7.35 -90) (layer "F.Fab")
+    (fp_text value "Interface" (at 4.385 7.35 90) (layer "F.Fab")
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp a2b7b765-57f3-462d-bfd4-b909fad5ed38)
     )
