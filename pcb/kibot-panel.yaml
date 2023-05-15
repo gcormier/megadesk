@@ -75,3 +75,5 @@ outputs:
             voffset: -2.5
             hjustify: center
             vjustify: center
+          post:
+            refillzones: true
