@@ -1,3 +1,6 @@
+ # esphome yaml for various ESP8266 boards such as the Wemos D1 Mini
+ # You should double-check the tx/rx pin for your hardware and ensure to update it in the UART section below.
+
 esphome:
   name: megadesk
   comment: ESPHome Device controlling Megadesk controller
