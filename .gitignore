@@ -67,3 +67,4 @@ fp-info-cache
 *.csv
 
 PCB/megadesk-backups*
+**secrets.yaml
