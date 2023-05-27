@@ -16,6 +16,16 @@ esphome:
       - delay: 1s
       - uart.write: "<R0.12."
 
+#####
+# You need to make sure tx_pin and rx_pin are set properly for your device.
+# When in doubt, try swapping them in case of a mixup on RX/TX.
+#####
+uart:
+  id: uart_desk
+  baud_rate: 115200
+  tx_pin: D0
+  rx_pin: D1
+
 logger:
   baud_rate: 0
 
@@ -37,12 +47,6 @@ captive_portal:
 
 web_server:
   port: 80
-
-uart:
-  id: uart_desk
-  baud_rate: 115200
-  tx_pin: D0
-  rx_pin: D1
 
 sensor:
   - platform: custom
