@@ -1,0 +1,178 @@
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+esphome:
+  name: megadesk
+  comment: megadesk-companion
+  includes:
+    - megadesk.h
+  on_boot:
+    priority: -100
+    then:
+      - delay: 1s
+      - uart.write: "<C0.0."
+      - delay: 1s
+      - uart.write: "<R0.11."
+      - delay: 1s
+      - uart.write: "<R0.12."
+
+#####
+# You need to make sure tx_pin and rx_pin are set properly for your device.
+# When in doubt, try swapping them in case of a mixup on RX/TX.
+#####
+uart:
+  id: uart_desk
+  baud_rate: 115200
+  tx_pin: GPIO6
+  rx_pin: GPIO7
+
+logger:
+  baud_rate: 0
+
+api:
+  password: ""
+
+ota:
+  password: ""
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "Desk Fallback Hotspot"
+    password: "xxxxxxxxxx"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+sensor:
+  - platform: custom
+    lambda: |-
+      auto megadesk = new Megadesk(id(uart_desk));
+      App.register_component(megadesk);
+      return { megadesk->raw_height, megadesk->min_height, megadesk->max_height };
+    sensors:
+    - id: megadesk_raw
+      internal: true
+      on_value:
+        then:
+          - component.update: megadesk_height_inches
+          - component.update: megadesk_height_cm
+          - component.update: megadesk_height_raw
+    - name: "Megadesk Minimum Height"
+    - name: "Megadesk Maximum Height"
+
+number:
+  - platform: template
+    name: "Megadesk Height (inches)"
+    id: megadesk_height_inches
+    min_value: 23
+    max_value: 47
+    step: 0.53
+    mode: slider
+    update_interval: never
+    unit_of_measurement: 'inches'
+    #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+    lambda: |-
+      return ((((id(megadesk_raw).state - 299) * (47 - 23)) / (6914 - 299)) + 23);
+    set_action:
+      - number.set:
+          id: megadesk_height_raw
+          value: !lambda "return int((((x - 23) * (6914 - 299)) / (47 - 23)) + 299);"
+  - platform: template
+    name: "Megadesk Height (cm)"
+    id: megadesk_height_cm
+    min_value: 58.42
+    max_value: 118.745
+    step: 0.53
+    mode: slider
+    update_interval: never
+    unit_of_measurement: 'cm'
+    #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
+    lambda: |-
+      return ((((id(megadesk_raw).state - 299) * (119.38 - 58.42)) / (6914 - 299)) + 58.42);
+    set_action:
+      - number.set:
+          id: megadesk_height_raw
+          value: !lambda "return int((((x - 58.42) * (6640 - 299)) / (119.38 - 58.42)) + 299);"
+  - platform: template
+    name: "Megadesk Height (raw)"
+    id: megadesk_height_raw
+#    internal: true
+    min_value: 299
+    max_value: 6640
+    step: 1
+    mode: slider
+    update_interval: never
+    lambda: |-
+      return id(megadesk_raw).state;
+    set_action:
+      - uart.write: !lambda |-
+          char buf[20];
+          sprintf(buf, "<=%i,.", int(x));
+          std::string s = buf;
+          return std::vector<unsigned char>( s.begin(), s.end() );
+
+button:
+  - platform: template
+    name: "Desk Position 2"
+    on_press:
+      then:
+        - uart.write: "<L0,2."
+  - platform: template
+    name: "Desk Position 3"
+    on_press:
+      then:
+        - uart.write: "<L0,3."
+  - platform: template
+    name: "Desk Position 4"
+    on_press:
+      then:
+        - uart.write: "<L0,4."
+  - platform: template
+    name: "Desk Position 5"
+    on_press:
+      then:
+        - uart.write: "<L0,5."
+  - platform: template
+    name: "Toggle Minimum Desk Height"
+    on_press:
+      then:
+        - uart.write: "<L0,11."
+        - uart.write: "<R0,11."
+  - platform: template
+    name: "Toggle Maximum Desk Height"
+    on_press:
+      then:
+        - uart.write: "<L0,12."
+        - uart.write: "<R0,12."
+  - platform: template
+    name: "Recalibrate Desk"
+    on_press:
+      then:
+        - uart.write: "<L0,14."
+  - platform: template
+    name: "Reboot Megadesk"
+    on_press:
+      then:
+        - uart.write: "<L0,15."
+  - platform: template
+    name: "Toggle Audio feedback"
+    on_press:
+      then:
+        - uart.write: "<L0,17."
+  - platform: template
+    name: "Toggle both-button mode"
+    on_press:
+      then:
+        - uart.write: "<L0,18."
+
+interval:
+  - interval: 300s
+    then:
+      - uart.write: "<C0.0."
