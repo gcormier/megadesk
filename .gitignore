@@ -9,36 +9,6 @@
 .vscode/launch.json
 *.pdb
 
-# VM
-*/__vm/
-*.vcxproj
-*.vcxproj.*
-*.vcxproj.filters
-*.sln
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-
-# Visual Studio 2015/2017 cache/options directory
-.vs/
-# Uncomment if you have tasks that create the project's static files in wwwroot
-#wwwroot/
-
-# Visual Studio 2017 auto generated files
-Generated\ Files/
-
-# MSTest test Results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
 
 # Temporary files
 *.000
@@ -68,3 +38,4 @@ fp-info-cache
 
 PCB/megadesk-backups*
 **secrets.yaml
+esphome/secrets.yaml
