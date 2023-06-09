@@ -2,6 +2,8 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: arduino
+    version: 2.0.9
+    platform_version: https://github.com/platformio/platform-espressif32.git#v5.3.0
 
 esphome:
   name: megadesk
