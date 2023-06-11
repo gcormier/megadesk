@@ -16,7 +16,9 @@ The factory recalibration routine has been implemented. The original BEKANT cont
 Any interruption to this procedure requires a power-cycle.
 
 ### Serial control 
-Enables serial input/output for what the megadesk is doing and to send commands. Some people wanted to have a smart/connected megadesk, but due to the size limitations of the space inside the case, an external module is the best solution. A lot of discussion in PR #12 and PR #58, as well as [discussion thread #87](https://github.com/gcormier/megadesk/discussions/87). You should also check out [Megadesk Companion](https://github.com/gcormier/megadesk_companion) for a plug and play solution.
+Enables serial input/output for what the megadesk is doing and to send commands. Some people wanted to have a smart/connected megadesk, but due to the size limitations of the space inside the case, an external module is the best solution. A lot of discussion in PR #12 and PR #58, as well as [discussion thread #87](https://github.com/gcormier/megadesk/discussions/87). 
+
+You should also check out [Megadesk Companion](https://github.com/gcormier/megadesk_companion) for a plug and play `esphome` solution.
 
 More information in [Serial.md](Serial.md). There's also specific details on [esphome](esphome.md).
 
