@@ -2,6 +2,9 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: arduino
+    # If you are running the latest version of esphome (2023.5.4 or later)
+    # you might not need the following lines
+    # latest stable via pip at this time (2022.9.4) requires these 2 lines
     version: 2.0.9
     platform_version: https://github.com/platformio/platform-espressif32.git#v5.3.0
 
