@@ -1,3 +1,6 @@
+## megadesk companion
+[megadesk companion](https://github.com/gcormier/megadesk_companion) is available for plug and play esphome/homeassistant integration.
+
 # esphome configuration
 This is only an example for the Wemos D1 Mini. Any esphome compatible device can be used.
 
