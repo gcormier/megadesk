@@ -3,6 +3,10 @@
 # megadesk
 Do you wish your IKEA Bekant had memory buttons? I sure did. So I made megadesk. Design goals were to have it fit in the original housing and use as many stock parts as possible, be completely independant of the existing controller, as well as store any number of memory positions.
 
+You can now use the [megadesk companion](https://www.tindie.com/products/gcormier/megadesk-companion/) if you want to integrate it with your smarthome.
+
+
+
 <img  src="PCB%20and%20Housing.png" width=25%/> <img  src="render.png" width=30%/>
 
 # For sale on Tindie - Plug and Play!
@@ -96,6 +100,11 @@ To recall a memory slot you push the up button the number of times for that memo
       - Once functionality is confirmed, replace with megadesk.   
    1. Megadesk
       - Push the UP button 14 times. 
+
+# In the news
+If you've made a blog/video posting with Megadesk, please open a PR to add it here, or send me a message with the URL.
+1. https://calvin.me/ikea-bekant-megadesk/
+1. https://www.youtube.com/watch?v=QopaeB1k6LU
 
 # Hacking, contributing and DIY
 This has been moved to [DIY.md](DIY.md) 
