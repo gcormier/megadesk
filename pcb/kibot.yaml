@@ -39,6 +39,8 @@ outputs:
       # are slightly different.
       - F.Cu
       - B.Cu
+      - In.Cu1
+      - In.Cu2
       - F.Paste
       - B.Paste
       - F.SilkS
