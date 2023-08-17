@@ -1,0 +1,20 @@
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+ 
+
+esphome:
+  name: megadesk
+  comment: megadesk-companion
+
+ota:
+  password: ""
+
+wifi:
+  ssid: leavethisbroken
+  password: leavethisbroken
+
+  ap:
+    ssid: "Megadesk Fallback"
+    password: "megadesk"
