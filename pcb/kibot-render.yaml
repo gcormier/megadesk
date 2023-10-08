@@ -17,3 +17,26 @@ outputs:
       auto_crop: true
       transparent_background: true
       output: "render.png"
+
+  - name: 'Rendering top'
+    type: render_3d
+    options:
+      view: top
+      rotate_x: 0
+      rotate_y: 0
+      rotate_z: 0
+      #ray_tracing: true
+      auto_crop: true
+      transparent_background: true
+      output: "render-top.png"
+      width: 1920   # default 1280x720, bump to 1920x1080
+
+  - name: 'Rendering bottom'
+    type: render_3d
+    options:
+      view: bottom
+      #ray_tracing: true
+      auto_crop: true
+      transparent_background: true
+      output: "render-bottom.png"
+      width: 1920   # default 1280x720, bump to 1920x1080
