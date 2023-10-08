@@ -41,7 +41,7 @@ outputs:
             type: 4hole
             hoffset: 5mm
             voffset: 2.5mm
-            size: 1.152mm
+            size: 2mm
           fiducials:
             type: 4fid
             hoffset: 15mm
