@@ -62,7 +62,7 @@ class Megadesk : public Component, public Sensor, public UARTDevice {
     }
   }
 
-  void parseData(byte command, uint16_t position, uint8_t push_addr)
+  void parseData(uint8_t command, uint16_t position, uint8_t push_addr)
   {
     if (command == '=')
     {

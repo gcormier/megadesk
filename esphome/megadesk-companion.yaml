@@ -1,16 +1,20 @@
+# If you get errors compiling this with esphome, make sure you are on a recent version.
+# 'esphome version' will output the version you are on.
+#
+# If you want to compile in the Home Assistant esphome addon, you need to copy megadesk.h into your esphome folder
+# on your Home Assistant platform.
+
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    type: arduino
-    # If you are running the latest version of esphome (2023.5.4 or later)
-    # you might not need the following lines
-    # latest stable via pip at this time (2022.9.4) requires these 2 lines
-    version: 2.0.9
-    platform_version: https://github.com/platformio/platform-espressif32.git#v5.3.0
+    type: esp-idf
+    version: recommended
 
 esphome:
   name: megadesk
   comment: megadesk-companion
+  platformio_options:
+    board_build.flash_mode: dio # If you don't specify this using esp-idf framework, the device will boot-loop.
   includes:
     - megadesk.h
   on_boot:
@@ -25,7 +29,10 @@ esphome:
 
 #####
 # You need to make sure tx_pin and rx_pin are set properly for your device.
-# When in doubt, try swapping them in case of a mixup on RX/TX.
+# For 5-pin Megadesks, this will not need changing.
+#
+# If you have a 3-pin megadesk, try swapping them in case of a mixup on RX/TX
+# when you soldered the wires.
 #####
 uart:
   id: uart_desk
@@ -34,7 +41,7 @@ uart:
   rx_pin: GPIO7
 
 logger:
-  baud_rate: 0
+  hardware_uart: USB_SERIAL_JTAG # Logging over the USB-C port (WiFi will always log as well)
 
 api:
   password: ""
@@ -47,8 +54,8 @@ wifi:
   password: !secret wifi_password
 
   ap:
-    ssid: "Desk Fallback Hotspot"
-    password: "xxxxxxxxxx"
+    ssid: "Megadesk Fallback"
+    password: "megadesk"
 
 captive_portal:
 
