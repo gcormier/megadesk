@@ -39,3 +39,4 @@ fp-info-cache
 PCB/megadesk-backups*
 **secrets.yaml
 esphome/secrets.yaml
+pcb/megadesk-backups/*
