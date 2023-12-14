@@ -54,7 +54,7 @@ wifi:
   password: !secret wifi_password
 
   ap:
-    ssid: "Megadesk Fallback"
+    ssid: "Companion Fallback"
     password: "megadesk"
 
 captive_portal:
