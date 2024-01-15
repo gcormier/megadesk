@@ -1,120 +1,15 @@
 kibot:
   version: 1
 
-filters:
-  - name: only_jlc_parts
-    comment: 'Only parts with JLC (LCSC) code'
-    type: generic
-    include_only:
-      - column: 'LCSC'
-        regex: '^.+'
-
-variants:
-  - name: rotated
-    comment: 'Just a place holder for the rotation filter'
-    type: kibom
-    variant: rotated
-    pre_transform: _rot_footprint
+import:
+  - file: JLCPCB
+    definitions:
+      _KIBOT_POS_ONLY_SMD: false
+      #_KIBOT_MANF_DIR: './'
+      _KIBOT_PLOT_FOOTPRINT_VALUES: true
 
 outputs:
-  - name: JLCPCB_gerbers
-    comment: Gerbers compatible with JLCPCB
-    type: gerber
-    dir: gerbers
-    options: &gerber_options
-      exclude_edge_layer: true
-      exclude_pads_from_silkscreen: true
-      tent_vias: true
-      use_protel_extensions: true
-      create_gerber_job_file: false
-      disable_aperture_macros: true
-      gerber_precision: 4.6
-      use_gerber_x2_attributes: false
-      use_gerber_net_attributes: false
-      line_width: 0.1
-      subtract_mask_from_silk: true
-      inner_extension_pattern: '.g%n'
-    layers:
-      - F.Cu
-      - B.Cu
-      - F.Paste
-      - B.Paste
-      - F.SilkS
-      - B.SilkS
-      - F.Mask
-      - B.Mask
-      - Edge.Cuts
-
-  - name: JLCPCB_drill
-    comment: Drill files compatible with JLCPCB
-    type: excellon
-    dir: gerbers
-    options:
-      pth_and_npth_single_file: false
-      pth_id: '-PTH'
-      npth_id: '-NPTH'
-      metric_units: true
-      map: gerber
-      #route_mode_for_oval_holes: false
-      output: "%f%i.%x"
-
-  - name: ZipOutputs
-    comment: ZIP file for JLCPCB
-    type: compress
-    dir: ./
-    options:
-      output: megadesk-gerbers.zip
-      files:
-        - from_output: JLCPCB_gerbers
-          dest: /
-        - from_output: JLCPCB_drill
-          dest: /
-          
   - name: PDF_Print
     comment: 'Exports the PCB to the most common exhange format. Suitable for printing.'
     type: 'pdf_sch_print'
     dir: ./
-
-  - name: 'JLCPCB_position'
-    comment: "Pick and place file, JLCPCB style"
-    type: position
-    options:
-      variant: rotated
-      output: '%f_cpl_jlc.%x'
-      format: CSV
-      units: millimeters
-      separate_files_for_front_and_back: false
-      only_smd: false
-      columns:
-        - id: Ref
-          name: Designator
-        - Val
-        - Package
-        - id: PosX
-          name: "Mid X"
-        - id: PosY
-          name: "Mid Y"
-        - id: Rot
-          name: Rotation
-        - id: Side
-          name: Layer
-
-  - name: 'JLCPCB_bom'
-    comment: "BoM for JLCPCB"
-    type: bom
-    options:
-      output: '%f_%i_jlc.%x'
-      exclude_filter: 'only_jlc_parts'
-      ref_separator: ','
-      columns:
-        - field: Value
-          name: Comment
-        - field: References
-          name: Designator
-        - Footprint
-        - field: 'LCSC'
-          name: 'LCSC Part #'
-      csv:
-        hide_pcb_info: true
-        hide_stats_info: true
-        quote_all: true

@@ -1,20 +1,9 @@
 kibot:
   version: 1
 
-filters:
-  - name: only_jlc_parts
-    comment: 'Only parts with JLC (LCSC) code'
-    type: generic
-    include_only:
-      - column: 'LCSC'
-        regex: '^.+'
-
-variants:
-  - name: rotated
-    comment: 'Just a place holder for the rotation filter'
-    type: kibom
-    variant: rotated
-    pre_transform: _rot_footprint
+preflight:
+  check_zone_fills: true
+  fill_zones: true
 
 outputs:
   - name: 'panel'
