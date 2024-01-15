@@ -6,6 +6,6 @@ on:
 
 jobs:
   fabrication-panel:
-    uses: gcormier/kicad-jobs/.github/workflows/kicad-fabrication-panel.yaml@main
+    uses: gcormier/kicad-jobs/.github/workflows/kicad-fabrication-panel-dev.yaml@main
     permissions:
       contents: write
