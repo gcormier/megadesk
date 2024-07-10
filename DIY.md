@@ -21,7 +21,7 @@ avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m
 
 ATiny 841 - To preserve memory-slots/eeprom when reflashing the image.
 ```
-avrdude -c usbtiny -p t841 -U hfuse:w:0xd6:m
+avrdude -c usbtiny -p t841 -U hfuse:w:0xd4:m
 ```
 
 # Hacking and Contributing
