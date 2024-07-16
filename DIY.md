@@ -14,14 +14,12 @@ Otherwise, the existing cable can be unsoldered from the board and fitted with a
 
 Don't forget to set fuses on your board for the appropriate oscillator!
 
-ATTiny 841 - 8Mhz internal
+ATTiny 841 - 8Mhz internal, recommended fuses:
 ```
 avrdude -c usbtiny -p t841 -U lfuse:w:0xe2:m
-```
-
-ATiny 841 - To preserve memory-slots/eeprom when reflashing the image.
-```
 avrdude -c usbtiny -p t841 -U hfuse:w:0xd4:m
+avrdude -c usbtiny -p t841 -U efuse:w:0xf4:m
+
 ```
 
 # Hacking and Contributing
