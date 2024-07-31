@@ -41,3 +41,4 @@ PCB/megadesk-backups*
 esphome/secrets.yaml
 pcb/megadesk-backups/*
 pcb/3DxService.log
+pcb/fp-info-cache
