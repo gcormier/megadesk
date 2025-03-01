@@ -1,9 +1,3 @@
-# If you get errors compiling this with esphome, make sure you are on a recent version.
-# 'esphome version' will output the version you are on.
-#
-# If you want to compile in the Home Assistant esphome addon, you need to copy megadesk.h into your esphome folder
-# on your Home Assistant platform.
-
 esp32:
   board: esp32-c3-devkitm-1
   framework:
@@ -12,36 +6,23 @@ esp32:
 
 esphome:
   name: megadesk
-  comment: megadesk-companion
+  comment: ESPHome Device controlling Megadesk controller
   platformio_options:
     board_build.flash_mode: dio # If you don't specify this using esp-idf framework, the device will boot-loop.
-  includes:
-    - megadesk.h
-  on_boot:
-    priority: -100
-    then:
-      - delay: 1s
-      - uart.write: "<C0.0."
-      - delay: 1s
-      - uart.write: "<R0.11."
-      - delay: 1s
-      - uart.write: "<R0.12."
-
-#####
-# You need to make sure tx_pin and rx_pin are set properly for your device.
-# For 5-pin Megadesks, this will not need changing.
-#
-# If you have a 3-pin megadesk, try swapping them in case of a mixup on RX/TX
-# when you soldered the wires.
-#####
-uart:
-  id: uart_desk
-  baud_rate: 115200
-  tx_pin: GPIO6
-  rx_pin: GPIO7
 
 logger:
-  hardware_uart: USB_SERIAL_JTAG # Logging over the USB-C port (WiFi will always log as well)
+  # Use the ESP32-C3-MINI's native USB port for serial logging. Comment this out if you want to use the pin header.
+  # Seems buggy.
+  hardware_uart: USB_SERIAL_JTAG
+
+external_components:
+  # Local source for development.
+  #- source: components
+  
+  # Remote source, use this one unless you are developing.
+  - source: github://gcormier/megadesk_companion/esphome@main
+    components: [ megadesk ]
+    refresh: 120s
 
 api:
   password: ""
@@ -50,36 +31,55 @@ ota:
   - platform: esphome
     password: ""
 
+# Change this, or have a secrets.yaml with your wifi information.
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
   ap:
-    ssid: "Companion Fallback"
-    password: "megadesk"
+    ssid: "Desk Fallback Hotspot"
+    password: "xxxxxxxxxx"
 
+# If you want to control your desk from a web browser director, or using an API
 captive_portal:
 
 web_server:
   port: 80
 
+###
+# Do not change these pins if you have a Megadesk Companion.
+# If you have a 3-pin megadesk, try swapping them in case of a mixup on RX/TX
+# when you soldered the wires.
+###
+uart:
+  id: uart_desk
+  baud_rate: 115200
+  tx_pin: GPIO6
+  rx_pin: GPIO7
+
+
+# Megadesk - read-only sensors for the height. Remove any you don't want.
 sensor:
-  - platform: custom
-    lambda: |-
-      auto megadesk = new Megadesk(id(uart_desk));
-      App.register_component(megadesk);
-      return { megadesk->raw_height, megadesk->min_height, megadesk->max_height };
-    sensors:
-    - id: megadesk_raw
-      internal: true
+  - platform: megadesk
+    max_height:
+      name: "Max Height"
+    min_height:
+      name: "Min Height"
+    raw_height:
+      name: "Raw Height"
+      id: megadesk_raw
       on_value:
         then:
           - component.update: megadesk_height_inches
           - component.update: megadesk_height_cm
           - component.update: megadesk_height_raw
-    - name: "Megadesk Minimum Height"
-    - name: "Megadesk Maximum Height"
+    height_cm:
+      name: "Height (cm)"
+    height_inches:
+      name: "Height (in)"
 
+
+# Megadesk - Slider that will allow you to set the height of the desk. Remove any you don't want.
 number:
   - platform: template
     name: "Megadesk Height (inches)"
@@ -97,6 +97,7 @@ number:
       - number.set:
           id: megadesk_height_raw
           value: !lambda "return int((((x - 23) * (6914 - 299)) / (47 - 23)) + 299);"
+    
   - platform: template
     name: "Megadesk Height (cm)"
     id: megadesk_height_cm
@@ -131,6 +132,7 @@ number:
           std::string s = buf;
           return std::vector<unsigned char>( s.begin(), s.end() );
 
+## Megadesk - Memory recalls and settings. Remove any you don't want.
 button:
   - platform: template
     name: "Desk Position 2"
@@ -185,6 +187,7 @@ button:
       then:
         - uart.write: "<L0,18."
 
+# Periodically update values every 5 minutes. Probably not needed?
 interval:
   - interval: 300s
     then:
