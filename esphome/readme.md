@@ -4,3 +4,5 @@ This was updated March 1 2025 to handle the deprecation of custom components in 
 
 ## Others
 If you are using a home-built board such as a Wemos D1 Mini, you can look at [megadesk-8266.yaml](megadesk-8266.yaml) for reference. These have been contributed by the community, and you may need to change your configuration file depending on your specific implementation.
+
+That configuration uses the `megadesk` external component in [components/megadesk](components/megadesk) to parse Megadesk's serial responses. Wiring, calibration and migration notes are in [esphome.md](../esphome.md).
