@@ -2,7 +2,18 @@
 [megadesk companion](https://github.com/gcormier/megadesk_companion) is available for plug and play esphome/homeassistant integration.
 
 # esphome configuration
-This is only an example for the Wemos D1 Mini. Any esphome compatible device can be used.
+This is only an example for home-built ESP8266 boards such as the Wemos D1 Mini. Any esphome compatible device can be used.
+
+The example configuration is [esphome/megadesk-8266.yaml](esphome/megadesk-8266.yaml). It uses the
+`megadesk` external component in [esphome/components/megadesk](esphome/components/megadesk), which
+parses the serial responses Megadesk sends back. Commands to Megadesk are plain `uart.write` actions
+in the YAML.
+
+Megadesk must be running firmware compiled with `SERIALCOMMS` and `HUMANSERIAL` (see [Serial.md](Serial.md)).
+
+The YAML expects three entries in a `secrets.yaml` next to it: `wifi_ssid`, `wifi_password` and
+`megadesk_fallback_ap_password` (the password for the fallback hotspot the ESP brings up if it can't
+join your Wi-Fi).
 
 Do NOT use the 5V from the Megadesk to power your esphome controller. Megadesk does not have the ability to dissipate
 the amount of heat produced by the linear regulators with a high-power device. These devices can requires 100-300mA of current. For comparison, the megadesk itself only requires 10-15mA.
@@ -16,272 +27,98 @@ SCK -> TX
 GND -> GND
 ```
 
+The example uses the ESP8266 hardware UART (`TX`/`RX`, GPIO1/GPIO3) at 115200 8N1 and turns the
+logger's serial output off (`logger: baud_rate: 0`) so the two don't fight over the port. Other pins
+work too; ESPHome falls back to software serial for them.
 
-## esphome custom component
-(Store this file in your esphome configuration directory, for example `megadesk.h`)
-```
-#include "esphome.h"
+## Using the component
+The YAML pulls the component straight from this repository:
 
-class Megadesk : public Component, public Sensor, public UARTDevice {
- public:
-  Megadesk(UARTComponent *parent) : UARTDevice(parent) {}
-
-  Sensor *raw_height = new Sensor();
-  Sensor *min_height = new Sensor();
-  Sensor *max_height = new Sensor();
-
-  void setup() override {}
-
-  int digits=0;
-
-  int readdigits()
-  {
-    int r;
-    while ((r = read()) > 0) {
-      if ((r < 0x30) || (r > 0x39)) {
-        // non-digit we're done, return what we have
-        return digits;
-      }
-      // it's a digit, add with base10 shift
-      digits = 10*digits + (r-0x30);
-      // keep reading...
-    }
-    return -1;
-  }
-
-  void recvData()
-  {
-    const int numChars = 2;
-    const int numFields = 4; // read/store all 4 fields for simplicity, use only the last 3.
-    // static variables allows segmented/char-at-a-time decodes
-    static uint16_t receivedBytes[numFields];
-    static uint8_t ndx = 0;
-    int r; // read char/digit
-
-    // read 2 chars
-    while ((ndx < numChars) && ((r = read()) != -1))
-    {
-      if ((ndx == 0) && (r != '>'))
-      {
-        // first char is not Tx, keep reading...
-        continue;
-      }
-      receivedBytes[ndx] = r;
-      ++ndx;
-    }
-    // read ascii digits
-    while ((ndx >= numChars) && ((r = readdigits()) != -1)) {
-      receivedBytes[ndx] = r;
-      digits = 0; // clear
-      if (++ndx == numFields) {
-        // thats all 4 fields. parse/process them now and break-out.
-        parseData(receivedBytes[1],
-                  receivedBytes[2],
-                  receivedBytes[3]);
-        ndx = 0;
-        return;
-      }
-    }
-  }
-
-  void parseData(byte command, uint16_t position, uint8_t push_addr)
-  {
-    if (command == '=')
-    {
-      raw_height->publish_state(position);
-    } else if (command == 'R'){
-      if (push_addr == 11){
-        min_height->publish_state(position);
-      } else if (push_addr == 12){
-        max_height->publish_state(position);
-      }
-    }
-  }
-
-  void loop() override {
-    while (available()) {
-      recvData();
-    }
-  }
-};
+```yaml
+external_components:
+  - source: github://gcormier/megadesk
+    components: [megadesk]
 ```
 
+If you would rather keep a local copy, copy `esphome/components/megadesk` next to your YAML and use
+`type: local` instead (the example has the alternative commented out). The `github://` source only
+works once the component is on `master`; to try it from a branch, use
+`github://gcormier/megadesk@<branch>` or the local copy.
 
-## esphome YAML
+The component exposes three optional sensors:
+
+| Sensor       | Meaning                                                              |
+|--------------|----------------------------------------------------------------------|
+| `raw_height` | Current position, updated whenever Megadesk reports it (`>=...`)     |
+| `min_height` | Contents of EEPROM slot 11 (minimum height limit), from `>R...,11`   |
+| `max_height` | Contents of EEPROM slot 12 (maximum height limit), from `>R...,12`   |
+
+All three are **raw Megadesk positions**, not inches or centimetres.
+
+The example YAML adds two read-only template sensors on top, `Megadesk Current Height (inches)` and
+`(cm)`, so the current height is visible as a number. The sliders in the ESPHome web page are bare
+range controls and don't show their value, so those sensors are what you read; the sliders are what
+you drag.
+
+The component requires the UART to be 115200 8N1 with both TX and RX configured, and fails
+validation at build time otherwise. That matches what stock Megadesk firmware uses
+(`userSerial.begin(115200)`).
+
+## Raw positions vs. physical height
+Megadesk works in raw positions. Its firmware only accepts targets between `DANGER_MIN_HEIGHT` (299)
+and `DANGER_MAX_HEIGHT` (6640); see `code/src/megadesk.cpp`. The raw slider in the example uses that
+range directly.
+
+The inch and centimetre sliders are a convenience layer on top. Raw positions map to physical height
+linearly, but where that line sits depends on your desk, your desktop thickness, and where you measure
+from, so the example doesn't hard-code one answer. Instead it takes a three-point calibration from
+`substitutions:` and fits a straight line through the points at compile time.
+
+### Calibrating your desk
+1. Pick one fixed reference, e.g. floor to the underside of the desktop.
+2. Move the desk to a low position. Note the raw position Megadesk **reports** (the raw slider /
+   `raw_height` sensor), and measure the height.
+3. Repeat at a high position and at a position roughly in the middle.
+4. Enter the six numbers as `megadesk_cal_raw_low` / `megadesk_cal_height_low_in`,
+   `megadesk_cal_raw_mid` / `megadesk_cal_height_mid_in`, `megadesk_cal_raw_high` /
+   `megadesk_cal_height_high_in`.
+5. Work out the slider limits at the raw limits and enter them as `megadesk_height_min_in` /
+   `megadesk_height_max_in` (and the cm equivalents, `cm = in * 2.54`). With the line through your low
+   and high points:
+
 ```
-esphome:
-  name: megadesk
-  comment: ESPHome Device controlling Megadesk controller
-  platform: ESP8266
-  # details on how to find/select your board can be found at https://esphome.io/components/esp8266.html
-  board: d1_mini
-  includes:
-    - megadesk.h
-  on_boot:
-    priority: -100
-    then:
-      - delay: 1s
-      - uart.write: "<C0.0."
-      - delay: 1s
-      - uart.write: "<R0.11."
-      - delay: 1s
-      - uart.write: "<R0.12."
-
-logger:
-  baud_rate: 0
-
-api:
-  password: ""
-
-ota:
-  password: ""
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-  ap:
-    ssid: "Desk Fallback Hotspot"
-    password: "xxxxxxxxxx"
-
-captive_portal:
-
-web_server:
-  port: 80
-
-uart:
-  id: uart_desk
-  baud_rate: 115200
-  tx_pin: D0
-  rx_pin: D1
-
-sensor:
-  - platform: custom
-    lambda: |-
-      auto megadesk = new Megadesk(id(uart_desk));
-      App.register_component(megadesk);
-      return { megadesk->raw_height, megadesk->min_height, megadesk->max_height };
-    sensors:
-    - id: megadesk_raw
-      internal: true
-      on_value:
-        then:
-          - component.update: megadesk_height_inches
-          - component.update: megadesk_height_cm
-          - component.update: megadesk_height_raw
-    - name: "Megadesk Minimum Height"
-    - name: "Megadesk Maximum Height"
-
-number:
-  - platform: template
-    name: "Megadesk Height (inches)"
-    id: megadesk_height_inches
-    min_value: 23
-    max_value: 47
-    step: 0.53
-    mode: slider
-    update_interval: never
-    unit_of_measurement: 'inches'
-    #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
-    lambda: |-
-      return ((((id(megadesk_raw).state - 299) * (47 - 23)) / (6914 - 299)) + 23);
-    set_action:
-      - number.set:
-          id: megadesk_height_raw
-          value: !lambda "return int((((x - 23) * (6914 - 299)) / (47 - 23)) + 299);"
-  - platform: template
-    name: "Megadesk Height (cm)"
-    id: megadesk_height_cm
-    min_value: 58.42
-    max_value: 118.745
-    step: 0.53
-    mode: slider
-    update_interval: never
-    unit_of_measurement: 'cm'
-    #NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
-    lambda: |-
-      return ((((id(megadesk_raw).state - 299) * (119.38 - 58.42)) / (6914 - 299)) + 58.42);
-    set_action:
-      - number.set:
-          id: megadesk_height_raw
-          value: !lambda "return int((((x - 58.42) * (6640 - 299)) / (119.38 - 58.42)) + 299);"
-  - platform: template
-    name: "Megadesk Height (raw)"
-    id: megadesk_height_raw
-#    internal: true
-    min_value: 299
-    max_value: 6640
-    step: 1
-    mode: slider
-    update_interval: never
-    lambda: |-
-      return id(megadesk_raw).state;
-    set_action:
-      - uart.write: !lambda |-
-          char buf[20];
-          sprintf(buf, "<=%i,.", int(x));
-          std::string s = buf;
-          return std::vector<unsigned char>( s.begin(), s.end() );
-
-button:
-  - platform: template
-    name: "Desk Position 2"
-    on_press:
-      then:
-        - uart.write: "<L0,2."
-  - platform: template
-    name: "Desk Position 3"
-    on_press:
-      then:
-        - uart.write: "<L0,3."
-  - platform: template
-    name: "Desk Position 4"
-    on_press:
-      then:
-        - uart.write: "<L0,4."
-  - platform: template
-    name: "Desk Position 5"
-    on_press:
-      then:
-        - uart.write: "<L0,5."
-  - platform: template
-    name: "Toggle Minimum Desk Height"
-    on_press:
-      then:
-        - uart.write: "<L0,11."
-        - uart.write: "<R0,11."
-  - platform: template
-    name: "Toggle Maximum Desk Height"
-    on_press:
-      then:
-        - uart.write: "<L0,12."
-        - uart.write: "<R0,12."
-  - platform: template
-    name: "Recalibrate Desk"
-    on_press:
-      then:
-        - uart.write: "<L0,14."
-  - platform: template
-    name: "Reboot Megadesk"
-    on_press:
-      then:
-        - uart.write: "<L0,15."
-  - platform: template
-    name: "Toggle Audio feedback"
-    on_press:
-      then:
-        - uart.write: "<L0,17."
-  - platform: template
-    name: "Toggle both-button mode"
-    on_press:
-      then:
-        - uart.write: "<L0,18."
-
-interval:
-  - interval: 300s
-    then:
-      - uart.write: "<C0.0."
+slope  = (height_high - height_low) / (raw_high - raw_low)
+offset = height_low - slope * raw_low
+height at 299  = slope * 299  + offset
+height at 6640 = slope * 6640 + offset
 ```
+
+The middle point is the check that the desk really is linear: the fitted line should pass within a
+small fraction of an inch of all three measurements (on the example desk the largest residual was
+about 0.02 in). If one point is well off the line, re-measure it.
+
+The YAML fits the line by least squares across the three points, so it doesn't matter whether the
+middle point is exactly in the middle. The fit is `constexpr` and evaluated by the compiler; only the
+two resulting constants end up in the firmware.
+
+Centimetres are derived from the inch calibration with exactly 2.54, so the two sliders always agree.
+Every physical set request is converted back to raw and clamped to `299..6640` before it's sent, so
+slider limits that are slightly off can't push Megadesk outside its accepted range.
+
+Note that the **Recalibrate Desk** button is something else: it runs Megadesk's motor recalibration
+(slot 14), which lowers the desk until both legs bottom out and re-zeroes the leg encoders. Re-check
+your height calibration after using it.
+
+### Migrating from the old custom component
+Before this version the example used `includes: [megadesk.h]` and `platform: custom`, which ESPHome
+has removed. The old parser also called `read()` on an empty UART buffer, which on current ESPHome
+blocks the main loop for the UART timeout (`Reading from UART timed out at byte 0!`,
+`megadesk took a long time for an operation`). Its inch/cm conversions could also request raw
+positions above 6640, which Megadesk rejects.
+
+To migrate, replace your YAML with the new example (keeping your own Wi-Fi, board and pin settings)
+and delete `megadesk.h` from your configuration directory. Existing entity names are unchanged; three
+new read-only current-height sensors appear.
 
 ### example in Home Assistant dashboard
 <img src="Home-Assistant.jpg" width=40%/>
